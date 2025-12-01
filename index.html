@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- PWA 設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="旅の記">
@@ -14,16 +15,35 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
     
+    <!-- 引入更多日系手寫字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- SortableJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'paper': '#f9f7f2', 'sakura': '#f8c3cd', 'matcha': '#bccc9a', 'fuji': '#7b90d2', 'pencil': '#595857', 'clay': '#e5a37f' },
-                    fontFamily: { 'maru': ['"Zen Maru Gothic"', 'sans-serif'], 'hand': ['"Yomogi"', 'cursive'] }
+                    colors: { 
+                        'paper': '#f9f7f2', 
+                        'paper-dark': '#efede6',
+                        'sakura': '#f8c3cd', 
+                        'matcha': '#bccc9a', 
+                        'fuji': '#7b90d2', 
+                        'pencil': '#595857', 
+                        'clay': '#e5a37f',
+                        'ink': '#2c2c2c'
+                    },
+                    fontFamily: { 
+                        'maru': ['"Zen Maru Gothic"', 'sans-serif'], 
+                        'hand': ['"Yomogi"', '"Zen Maru Gothic"', 'cursive'],
+                        'serif': ['"Noto Serif TC"', 'serif']
+                    },
+                    boxShadow: {
+                        'paper': '2px 3px 0px rgba(0,0,0,0.05)'
+                    }
                 }
             }
         }
@@ -32,9 +52,692 @@
     <style>
         :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
         body {
-            font-family: 'Zen Maru Gothic', sans-serif; background-color: #f9f7f2; color: #595857;
-            background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,.5) 50%), radial-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 50px 50px, 20px 20px; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+            /* 主要字體改為圓體，閱讀起來比較舒適但有文青感 */
+            font-family: 'Zen Maru Gothic', 'Noto Serif TC', sans-serif; 
+            background-color: #f9f7f2; 
+            color: #595857;
+            background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: center top;
+            -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
+            min-height: 100vh; padding-bottom: calc(80px + var(--sab));
+        }
+        
+        /* 強制手寫風格 */
+        .handwritten { font-family: 'Yomogi', cursive; letter-spacing: 0.05em; }
+        
+        /* 紙膠帶效果 */
+        .washi-tape { position: relative; opacity: 0.85; mask-image: url("data:image/svg+xml,%3Csvg width='200' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 L200 0 L200 18 Q190 20 180 18 Q170 16 160 18 Q150 20 140 18 Q130 16 120 18 Q110 20 100 18 Q90 16 80 18 Q70 20 60 18 Q50 16 40 18 Q30 20 20 18 Q10 16 0 18 Z' fill='black'/%3E%3C/svg%3E"); -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='200' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0 L200 0 L200 18 Q190 20 180 18 Q170 16 160 18 Q150 20 140 18 Q130 16 120 18 Q110 20 100 18 Q90 16 80 18 Q70 20 60 18 Q50 16 40 18 Q30 20 20 18 Q10 16 0 18 Z' fill='black'/%3E%3Csvg%3E"); mask-size: cover; -webkit-mask-size: cover; }
+        .tape-blue { background-color: rgba(123, 144, 210, 0.6); } 
+        .tape-green { background-color: rgba(188, 204, 154, 0.6); }
+        .tape-pink { background-color: rgba(248, 195, 205, 0.6); }
+
+        /* 一般卡片樣式 */
+        .hand-card { 
+            background: #fff; 
+            border-radius: 2px 15px 3px 18px / 15px 3px 18px 2px; /* 更不規則的圓角 */
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.02); 
+            position: relative; 
+            transition: transform 0.2s; 
+        }
+
+        /* 班機專用卡片樣式 (改為非全白) */
+        .flight-card-style {
+            background-color: #fefcf5; /* 淡藍色 */
+            background-image: radial-gradient(#dcd7c9 1px, transparent 1px);
+            background-size: 10px 10px;
+            border: 2px dashed #dcd7c9; /* 虛線邊框 */
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.05); /* 硬陰影，像貼紙 */
+            color: #4a4a4a;
+        }
+
+        .btn-action { border: 2px solid #595857; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; transition: all 0.2s; }
+        .btn-action:active { transform: scale(0.95); }
+        .nav-item.active i, .nav-item.active span { color: #7b90d2; font-weight: 900; } .nav-item.active i { transform: translateY(-3px) scale(1.1); }
+        .modal { transition: opacity 0.3s ease-in-out; } .modal.hidden { opacity: 0; pointer-events: none; } .modal.visible { opacity: 1; pointer-events: auto; }
+        .highlight-target { animation: highlight-pulse 1s ease-out; border: 2px solid #e5a37f; }
+        @keyframes highlight-pulse { 0% { box-shadow: 0 0 0 0 rgba(229, 163, 127, 0.7); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(229, 163, 127, 0); transform: scale(1.02); } 100% { box-shadow: 0 0 0 0 rgba(229, 163, 127, 0); transform: scale(1); } }
+        .sortable-drag { opacity: 0.9; transform: scale(1.02); }
+        .sortable-ghost { opacity: 0.4; background-color: #f3f4f6; border: 2px dashed #cbd5e1; }
+        .drag-handle { cursor: grab; }
+        .guide-card-content { padding-left: 1.5rem !important; }
+        .negative-balance { color: #f87171; }
+        .positive-balance { color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="pb-2 px-4 text-center sticky top-0 bg-[#f9f7f2]/95 z-40 backdrop-blur-sm transition-all duration-300" style="padding-top: max(1.5rem, var(--sat));">
+        <h1 class="text-4xl font-black tracking-widest text-ink handwritten relative inline-block mt-2" style="font-weight: 900;">
+            <span class="absolute -top-4 -left-6 text-3xl rotate-[-15deg] opacity-60">✈️</span>
+            旅の記
+            <!-- 標題裝飾線 -->
+            <svg class="absolute -bottom-2 left-0 w-full h-3 text-sakura/60" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="3" fill="none"/></svg>
+        </h1>
+        <div class="flex justify-center items-center gap-2 mt-2">
+            <p class="text-[10px] text-fuji font-bold tracking-[0.2em] font-serif uppercase">My Travel Logbook</p>
+            <!-- Cloud Status Indicator -->
+            <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200">
+                <i class="fa-solid fa-cloud"></i> <span>連線中...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main id="app" class="px-4 w-full mx-auto min-h-screen">
+        
+        <!-- ================= PLAN VIEW ================= -->
+        <section id="view-plan" class="view-section animate-fade">
+            <!-- 裝飾標題 -->
+            <div class="flex justify-between items-center mb-3 mt-4 px-1">
+                <h3 class="text-pencil font-bold handwritten text-xl flex items-center">
+                    <span class="inline-block w-2 h-6 bg-fuji/50 mr-2 rounded-sm transform -rotate-3"></span>
+                    航班資訊
+                </h3>
+                <button onclick="openFlightModal()" class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded-full shadow-sm active:scale-95 text-fuji font-bold hover:bg-fuji hover:text-white transition"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+            </div>
+            
+            <div id="flight-list-container" class="space-y-4 mb-8"></div>
+            
+            <div class="flex justify-between items-center mb-4 px-1 border-t-2 border-dashed border-gray-300/50 pt-8 mt-6">
+                 <h3 class="text-pencil font-bold handwritten text-xl flex items-center">
+                    <span class="inline-block w-2 h-6 bg-matcha/50 mr-2 rounded-sm transform rotate-2"></span>
+                    每日行程
+                </h3>
+            </div>
+            <p class="text-xs text-gray-400 mb-2 px-2"><i class="fa-solid fa-circle-info mr-1"></i> 點擊餐具圖示可直接記帳</p>
+            <div id="itinerary-container" class="space-y-6 pl-2"></div>
+            <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶 (新增行程)</button>
+        </section>
+
+        <!-- ================= GUIDE VIEW ================= -->
+        <section id="view-guide" class="view-section hidden">
+            <div class="flex justify-between items-end mb-4 px-2 mt-4">
+                <h2 class="text-2xl font-bold text-pencil handwritten">深度導覽</h2>
+                <button onclick="openGuideModal()" class="text-sm bg-matcha/30 text-green-800 px-3 py-1 rounded-full border border-matcha hover:bg-matcha hover:text-white transition"><i class="fa-solid fa-plus mr-1"></i>新增</button>
+            </div>
+            <p class="text-xs text-gray-400 mb-2 px-2"><i class="fa-solid fa-hand-grab-o mr-1"></i> 長按卡片可拖曳排序</p>
+            <div id="guide-list" class="space-y-6"></div>
+        </section>
+
+        <!-- ================= WALLET VIEW ================= -->
+        <section id="view-wallet" class="view-section hidden">
+            
+            <!-- Individual Stats Dashboard -->
+            <div class="bg-[#2c3e50] rounded-lg p-4 shadow-paper text-white mb-6 mx-1 relative overflow-hidden mt-4">
+                <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -mr-10 -mt-10"></div>
+                <h4 class="text-sm text-gray-300 font-bold mb-3 flex justify-between items-center relative z-10">
+                    <span class="flex items-center font-serif tracking-wider"><i class="fa-solid fa-chart-simple mr-2"></i>財務總覽 (TWD)</span>
+                    <button onclick="renderExpenses()" class="text-xs text-blue-300 hover:text-white"><i class="fa-solid fa-rotate-right"></i></button>
+                </h4>
+                <div id="individual-stats-dashboard" class="grid grid-cols-2 gap-3 text-xs relative z-10">
+                    <!-- Stats cards rendered here -->
+                </div>
+                <div class="mt-4 flex justify-between items-end relative z-10 border-t border-gray-600 pt-2">
+                    <div class="text-right">
+                        <span class="text-xs text-gray-400">匯率 (1 JPY ≈)</span>
+                        <input type="number" id="exchange-rate" value="0.215" step="0.001" onchange="renderExpenses()" class="w-16 bg-gray-600 text-center rounded text-sm outline-none ml-1 text-white border-b border-gray-500">
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-400 block mb-1">總公費支出</span>
+                        <div class="text-xl font-bold font-mono text-yellow-300" id="wallet-total-display">NT$ 0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Debt Button -->
+             <div class="flex justify-between items-center mb-4 px-1">
+                <button onclick="openIOUModal()" class="text-xs bg-fuji/10 text-fuji font-bold px-3 py-2 rounded border border-fuji/30 hover:bg-fuji/30 transition flex items-center gap-1">
+                    <i class="fa-solid fa-money-bill-transfer"></i> 手動欠款/借款
+                </button>
+                 <button onclick="openPayerModal()" class="text-xs text-gray-400 border border-gray-300 rounded px-2 py-1 hover:bg-white"><i class="fa-solid fa-gear mr-1"></i>管理成員</button>
+            </div>
+
+
+            <!-- Debt Settlement Summary -->
+            <div id="settlement-summary-container" class="mb-6 mx-1">
+                <div class="bg-matcha/10 rounded-lg p-4 shadow-sm border border-matcha/30">
+                    <h4 class="text-sm font-bold text-green-800 mb-2 handwritten text-lg"><i class="fa-solid fa-handshake mr-1"></i> 結算小幫手</h4>
+                    <div id="settlement-summary" class="text-sm space-y-2 font-mono text-gray-600">
+                        <!-- JS content here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expense List Filter -->
+            <div class="flex items-center gap-2 mb-3 px-1">
+                <span class="text-xs font-bold text-gray-500">付款人:</span>
+                <select id="wallet-filter" onchange="renderExpenses()" class="bg-white border border-gray-300 rounded text-sm p-1 outline-none">
+                    <option value="ALL">全部</option>
+                </select>
+            </div>
+            
+            <button onclick="openExpenseModal()" class="w-full btn-action bg-sakura/10 text-red-800 font-bold py-3 mb-6 flex items-center justify-center gap-2 border-sakura"><i class="fa-solid fa-pen-nib"></i> 記一筆</button>
+            <div id="expense-list" class="space-y-3 pb-20"></div>
+        </section>
+
+        <!-- ================= LISTS VIEW ================= -->
+        <section id="view-lists" class="view-section hidden">
+            
+            <!-- Must-Eat List -->
+            <div class="hand-card p-5 mb-6 bg-[#fffdf0] relative mt-4">
+                 <div class="washi-tape tape-green h-6 w-32 absolute -top-3 left-1/2 -translate-x-1/2 rotate-1 shadow-sm"></div>
+                 <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2 mt-2">
+                    <h3 class="text-xl font-bold text-pencil handwritten">必吃清單</h3>
+                    <button onclick="openMustEatModal()" class="text-xs bg-matcha/20 text-green-700 px-2 py-1 rounded border border-matcha/50 shadow-sm hover:bg-matcha hover:text-white transition">+ 新增</button>
+                 </div>
+                 <div id="must-eat-list" class="space-y-3"></div>
+            </div>
+
+            <!-- Shopping List -->
+            <div class="hand-card p-5 mb-6 bg-white relative">
+                 <div class="washi-tape tape-pink h-6 w-24 absolute -top-3 right-4 rotate-3 shadow-sm"></div>
+                 <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-200 pb-2 mt-2">
+                    <h3 class="text-xl font-bold text-pencil handwritten">購物清單</h3>
+                    <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded border border-red-100 hover:bg-red-400 hover:text-white transition">+ 新增</button>
+                 </div>
+                 <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4"></div>
+                 <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale"></div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="hand-card p-5 mb-6 bg-[#f0f4f8]">
+                <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
+                <ul id="checklist-container" class="space-y-2"></ul>
+                <div class="mt-4 flex gap-2">
+                    <input type="text" id="new-todo" placeholder="新增項目..." class="flex-1 bg-transparent border-b border-gray-300 text-sm outline-none font-hand">
+                    <button onclick="addTodo()" class="text-fuji hover:scale-110 transition"><i class="fa-solid fa-circle-plus fa-lg"></i></button>
+                </div>
+            </div>
+            
+             <!-- Memo -->
+             <div class="hand-card p-5 bg-[#fffff0] rotate-1 shadow-md">
+                <div class="absolute top-0 left-0 w-full h-2 bg-yellow-400/20"></div>
+                <h3 class="text-lg font-bold mb-2 handwritten text-yellow-800"><i class="fa-solid fa-note-sticky mr-2"></i>隨手記 (MEMO)</h3>
+                <textarea id="memo-pad" class="w-full h-48 bg-transparent border-none resize-none text-sm leading-8 outline-none text-gray-700 handwritten" style="background-image: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px); line-height: 32px;" placeholder="在這裡隨手記下想法..."></textarea>
+                <div id="memo-links" class="mt-2 flex flex-wrap gap-2"></div>
+            </div>
+        </section>
+
+        <!-- ================= INFO VIEW ================= -->
+        <section id="view-info" class="view-section hidden">
+            <h2 class="text-2xl font-bold text-center handwritten mb-6 mt-4">旅途情報</h2>
+            <!-- Trip ID Settings -->
+            <div class="hand-card p-4 mb-6 border-l-4 border-fuji">
+                <h3 class="font-bold text-fuji mb-2 handwritten text-lg"><i class="fa-solid fa-users mr-2"></i>雲端同步設定</h3>
+                <p class="text-xs text-gray-400 mb-2">設定相同的 ID，即可多人同步編輯。</p>
+                <div class="flex gap-2">
+                    <input type="text" id="trip-id-input" value="my_awesome_trip" class="flex-1 border p-2 rounded text-sm font-mono bg-gray-50 tracking-wider">
+                    <button onclick="updateTripId()" class="bg-fuji text-white px-3 py-1 rounded text-sm font-bold shadow hover:bg-fuji/80">連線</button>
+                </div>
+                <!-- 救援按鈕 -->
+                <button onclick="forceUpload()" class="mt-4 text-[10px] text-gray-400 underline w-full text-right">⚠️ 雲端沒資料？點此上傳本機備份</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" class="hand-card p-4 flex flex-col items-center justify-center hover:bg-blue-50 transition"><i class="fa-solid fa-cloud-sun-rain text-3xl text-fuji mb-2"></i><span class="font-bold text-sm">天氣預報</span></a>
+                <a href="https://www.google.com/maps/search/drugstore" target="_blank" class="hand-card p-4 flex flex-col items-center justify-center hover:bg-pink-50 transition"><i class="fa-solid fa-store text-3xl text-sakura mb-2"></i><span class="font-bold text-sm">附近藥妝</span></a>
+            </div>
+            <div class="hand-card p-5 border-l-4 border-red-400 mb-6">
+                <h3 class="font-bold text-red-500 mb-3"><i class="fa-solid fa-phone-volume mr-2"></i>緊急聯絡</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center border-b border-dashed pb-1"><span>警察局</span><a href="tel:110" class="font-bold text-lg font-mono">110</a></div>
+                    <div class="flex justify-between items-center border-b border-dashed pb-1"><span>救護車</span><a href="tel:119" class="font-bold text-lg font-mono">119</a></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2] border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)]" style="padding-bottom: calc(10px + var(--sab));">
+        <div class="flex justify-between items-center w-full mx-auto pb-1">
+            <button onclick="switchTab('plan')" class="nav-item active flex flex-col items-center text-gray-400 transition flex-1" data-target="plan"><i class="fa-solid fa-map text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">行程</span></button>
+            <button onclick="switchTab('guide')" class="nav-item flex flex-col items-center text-gray-400 transition flex-1" data-target="guide"><i class="fa-solid fa-book-open text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">導覽</span></button>
+            <button onclick="switchTab('wallet')" class="nav-item flex flex-col items-center text-gray-400 transition flex-1" data-target="wallet"><i class="fa-solid fa-wallet text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">記帳</span></button>
+            <button onclick="switchTab('lists')" class="nav-item flex flex-col items-center text-gray-400 transition flex-1" data-target="lists"><i class="fa-solid fa-list-check text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">清單</span></button>
+            <button onclick="switchTab('info')" class="nav-item flex flex-col items-center text-gray-400 transition flex-1" data-target="info"><i class="fa-solid fa-circle-info text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">資訊</span></button>
+        </div>
+    </nav>
+
+    <!-- MODALS (Keeping all existing modals logic) -->
+    <!-- 1. Flight Modal -->
+    <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card border-2 border-white">
+            <button onclick="closeModal('flight-modal')" class="absolute top-3 right-3 text-gray-400 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-4 text-center handwritten">航班資訊</h3>
+            <div class="space-y-3">
+                <input type="hidden" id="flight-id"> 
+                <div class="flex gap-2"><input type="text" id="flight-dep" placeholder="出發" class="w-1/2 p-2 border-b-2 border-gray-200 bg-transparent text-center font-bold font-hand text-xl focus:border-fuji outline-none"><input type="text" id="flight-arr" placeholder="抵達" class="w-1/2 p-2 border-b-2 border-gray-200 bg-transparent text-center font-bold font-hand text-xl focus:border-fuji outline-none"></div>
+                <input type="text" id="flight-code" placeholder="航班代號 (例: IT202)" class="w-full p-2 border rounded bg-white text-sm">
+                <input type="text" id="flight-time" placeholder="時間" class="w-full p-2 border rounded bg-white text-sm">
+                <input type="text" id="flight-date" placeholder="日期說明" class="w-full p-2 border rounded bg-white text-sm">
+                <input type="url" id="flight-url" placeholder="連結 (e-ticket/Check-in)" class="w-full p-2 border rounded bg-white text-sm">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center relative hover:bg-white bg-gray-50/50">
+                    <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentFlightPhoto = base64; document.getElementById('flight-photo-preview').src = base64; document.getElementById('flight-photo-preview').classList.remove('hidden'); document.getElementById('flight-photo-text').classList.add('hidden'); })">
+                    <div id="flight-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-image mb-1 block"></i> 自訂背景圖片</div>
+                    <img id="flight-photo-preview" class="hidden h-28 mx-auto object-cover rounded shadow-sm">
+                </div>
+                <button onclick="saveFlight()" class="w-full bg-fuji text-white py-2 rounded-lg font-bold mt-2 shadow hover:bg-fuji/80 transition">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Day Editor Modal -->
+    <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
+            <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-2 text-center handwritten">編輯行程</h3>
+            <input type="hidden" id="day-id-edit">
+            <input type="text" id="day-date-edit" class="w-full p-2 border-b-2 border-matcha bg-transparent font-bold mb-4 font-hand text-xl focus:outline-none" placeholder="日期標題">
+            <label class="flex items-center space-x-2 text-sm text-gray-600 mb-4 bg-yellow-50 p-2 rounded"><input type="checkbox" id="day-highlight-edit" class="accent-red-400"><span>標記為重點天數 (Highlight)</span></label>
+            
+            <!-- Photo Upload Area -->
+            <div class="mb-4 bg-white p-2 rounded border border-gray-200 shadow-inner">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-xs font-bold text-gray-400">當日相片集</h4>
+                    <div class="relative overflow-hidden inline-block">
+                        <button class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs hover:bg-gray-200"><i class="fa-solid fa-plus"></i> 新增</button>
+                        <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addDayPhoto(this)">
+                    </div>
+                </div>
+                <div id="day-photos-preview" class="grid grid-cols-3 gap-2"></div>
+            </div>
+
+            <div class="mb-4">
+                <input type="text" id="day-accommodation-edit" class="w-full p-2 border rounded text-sm mb-2" placeholder="住宿地點">
+                <input type="url" id="day-accommodation-url-edit" class="w-full p-2 border rounded text-sm" placeholder="Google Maps 連結">
+            </div>
+            
+            <!-- V8.1 Enhanced Transportation -->
+            <div class="mb-4 border-t pt-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                <h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1"><i class="fa-solid fa-train"></i> 交通方式</h4>
+                <div class="flex gap-2 mb-2">
+                    <input type="time" id="day-trans-time" class="w-1/3 p-2 border border-gray-300 rounded text-sm">
+                    <input type="text" id="day-trans-content" placeholder="內容 (如: 搭新幹線)" class="flex-1 p-2 border border-gray-300 rounded text-sm">
+                </div>
+                <div class="flex gap-2 mb-2">
+                     <input type="text" id="day-trans-note" placeholder="備註 (如: 買票)" class="flex-1 p-2 border border-gray-300 rounded text-sm">
+                </div>
+                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center relative hover:bg-white bg-white">
+                    <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentTransPhoto = base64; document.getElementById('trans-photo-preview').src = base64; document.getElementById('trans-photo-preview').classList.remove('hidden'); document.getElementById('trans-photo-text').classList.add('hidden'); })">
+                    <div id="trans-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-ticket mb-1 block"></i> 上傳車票/時刻表</div>
+                    <img id="trans-photo-preview" class="hidden h-20 mx-auto object-contain rounded">
+                    <button onclick="clearTransPhoto()" class="absolute top-1 right-1 bg-gray-200 rounded-full w-5 h-5 text-[10px] text-gray-500 z-10"><i class="fa-solid fa-times"></i></button>
+                </div>
+            </div>
+
+            <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用反斜線 '\' 分隔每項活動)"></textarea>
+
+            <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm">
+                <h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排</h4>
+                <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-mug-hot text-orange-300 w-5"></i><input type="text" id="meal-b-name" placeholder="早餐" class="flex-1 text-sm font-bold bg-transparent"></div><div class="flex gap-2 pl-7"><input type="url" id="meal-b-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-b-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div></div>
+                <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-utensils text-green-400 w-5"></i><input type="text" id="meal-l-name" placeholder="午餐" class="flex-1 text-sm font-bold bg-transparent"></div><div class="flex gap-2 pl-7"><input type="url" id="meal-l-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-l-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div></div>
+                <div><div class="flex gap-2 mb-1"><i class="fa-solid fa-wine-glass text-purple-400 w-5"></i><input type="text" id="meal-d-name" placeholder="晚餐" class="flex-1 text-sm font-bold bg-transparent"></div><div class="flex gap-2 pl-7"><input type="url" id="meal-d-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-d-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div></div>
+            </div>
+            <textarea id="day-note-edit" class="w-full h-20 p-2 border border-yellow-200 bg-yellow-50 rounded text-sm mb-4 handwritten" placeholder="每日備註..."></textarea>
+            <div class="flex gap-2"><button onclick="deleteDay()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm">刪除</button><button onclick="saveDay()" class="flex-[2] bg-matcha text-white py-2 rounded-lg font-bold shadow">儲存</button></div>
+        </div>
+    </div>
+
+    <!-- 3. Guide Modal -->
+    <div id="guide-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card">
+            <button onclick="closeModal('guide-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="font-bold mb-3 handwritten text-lg">新增/編輯景點導覽</h3>
+            <input type="hidden" id="guide-id">
+            <input type="text" id="guide-title" placeholder="景點名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold font-hand text-lg focus:border-matcha outline-none">
+            <textarea id="guide-desc" placeholder="介紹內容..." class="w-full mb-3 border bg-white p-2 rounded h-24 text-sm"></textarea>
+            <input type="text" id="guide-coords" placeholder="座標 (36.34,138.61)" class="w-full mb-3 border-b bg-transparent p-2 text-xs">
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center relative mb-3 hover:bg-white bg-white/50">
+                <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentGuidePhoto = base64; document.getElementById('guide-photo-preview').src = base64; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden'); })">
+                <div id="guide-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-image mb-1 block"></i> 更新照片</div>
+                <img id="guide-photo-preview" class="hidden h-32 mx-auto object-cover rounded">
+            </div>
+            <button onclick="saveGuide()" class="w-full bg-matcha text-white py-2 rounded-lg font-bold">儲存</button>
+        </div>
+    </div>
+    
+    <!-- 4. Expense Modal (Other modals... IOU, Payer, Shopping, Link, MustEat, Lightbox - kept same logic, just minor styling inheritance) -->
+    <!-- (Skipping repeating modal HTML for brevity, they inherit body styles. Logic is below) -->
+    <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('expense-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center">記下一筆公費</h3><input type="hidden" id="ex-id"><div class="space-y-3"><div class="grid grid-cols-2 gap-2"><select id="ex-category" class="w-full bg-white border rounded p-2 text-sm"><option value="飲食">🍜 飲食</option><option value="交通">🚃 交通</option><option value="購物">🛍️ 購物</option><option value="門票">🎟️ 門票</option><option value="住宿">🏨 住宿</option><option value="其他">✨ 其他</option></select><input type="text" id="ex-note" placeholder="備註" class="w-full bg-white border-b p-2 text-sm"></div><div class="flex items-center gap-2 bg-white border rounded p-2"><select id="ex-currency" class="bg-transparent text-sm font-bold"><option value="JPY">JPY</option><option value="TWD">TWD</option></select><input type="number" id="ex-amount" placeholder="金額" class="flex-1 text-lg text-right w-full" inputmode="numeric"></div><div class="flex gap-2 text-sm"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">付款人</label><select id="ex-payer" class="w-full bg-white border rounded p-1"></select></div><div class="w-16"><label class="block text-xs text-gray-400 mb-1">人數</label><input type="number" id="ex-people" value="1" min="1" class="w-full bg-white border rounded p-1 text-center"></div></div><div class="border-2 border-dashed rounded-lg p-2 text-center relative"><input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('photo-preview').src = base64; document.getElementById('photo-preview').classList.remove('hidden'); document.getElementById('photo-placeholder').classList.add('hidden'); })"><div id="photo-placeholder" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 上傳照片</div><img id="photo-preview" class="hidden h-24 mx-auto object-contain"></div></div><div class="flex gap-2 mt-4"><button onclick="deleteExpense()" id="btn-delete-expense" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveExpense()" class="flex-[2] bg-clay text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
+    <div id="payer-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理付款人</h4><div id="payer-list" class="space-y-2 mb-3 max-h-40 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('payer-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
+    <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
+    <div id="link-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-2 text-center">連結按鈕</h4><input type="hidden" id="link-day-id"><input type="text" id="link-name" placeholder="名稱" class="w-full mb-2 border p-2 rounded text-sm"><input type="url" id="link-url" placeholder="網址" class="w-full mb-3 border p-2 rounded text-sm"><div class="flex gap-2"><button onclick="closeModal('link-modal')" class="flex-1 bg-gray-200 py-1 rounded text-sm">取消</button><button onclick="saveLink()" class="flex-1 bg-fuji text-white py-1 rounded text-sm">確定</button></div></div></div>
+    <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-matcha">🍽️ 編輯必吃</h3><input type="hidden" id="eat-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><input type="text" id="eat-location" placeholder="地點名稱 (例如: 輕井澤)" class="w-full p-2 border-b-2 border-matcha/50 bg-transparent text-center font-bold"><input type="text" id="eat-name" placeholder="主題名稱 (可選)" class="w-full p-2 border rounded bg-gray-50 text-sm"><textarea id="eat-note" placeholder="備註/交通" class="w-full h-16 p-2 border rounded bg-gray-50 text-sm"></textarea></div><h4 class="text-sm font-bold text-gray-600 mb-2">菜單/項目:</h4><div id="must-eat-items-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div><div class="flex flex-col gap-2 mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200"><div class="flex gap-2"><input type="text" id="new-food-name" placeholder="新增名稱" class="flex-1 p-2 border rounded text-sm outline-matcha"><input type="number" id="new-food-price" placeholder="價格" class="w-20 p-2 border rounded text-sm text-right outline-matcha"></div><div class="flex gap-2 items-center"><input type="url" id="new-food-url" placeholder="網址 (可選)" class="flex-1 p-2 border rounded text-xs outline-matcha"><button onclick="addNewFoodItem()" class="bg-matcha text-white px-3 py-2 rounded-lg hover:bg-green-600 active:scale-95 transition text-sm"><i class="fa-solid fa-plus"></i></button></div></div><div class="flex gap-2 mt-4"><button onclick="deleteMustEatItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hover:bg-red-100">刪除</button><button onclick="saveMustEatItem()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow hover:bg-fuji/80">儲存</button></div></div></div>
+    <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
+    <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4" onclick="closeModal('lightbox-modal')"><div class="absolute top-0 right-0 p-4 text-white text-3xl opacity-80 cursor-pointer"><i class="fa-solid fa-times"></i></div><img id="lightbox-image" src="" class="max-w-full max-h-full object-contain" onclick="event.stopPropagation()"></div>
+
+    <!-- JAVASCRIPT -->
+    <!-- ============================================== -->
+    <!-- FIREBASE MODULE CONFIGURATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAImFK704mHo2HYsnt-VnmeVveZaZSkCLI",
+          authDomain: "triptokyoapp.firebaseapp.com",
+          projectId: "triptokyoapp",
+          storageBucket: "triptokyoapp.firebasestorage.app",
+          messagingSenderId: "875138652318",
+          appId: "1:875138652318:web:1eb712afb49e24a059038f",
+          measurementId: "G-FEG9FJLRX5"
+        };
+
+        let db = null;
+        let tripId = localStorage.getItem('trip_id') || "my_default_trip";
+        let isCloudConnected = false;
+        let unsubscribe = null;
+        let saveTimer = null;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            isCloudConnected = true;
+            console.log("Firebase initialized");
+            startListening();
+        } catch (e) {
+            console.error("Firebase init failed:", e);
+        }
+
+        window.updateTripId = function() {
+            const newId = document.getElementById('trip-id-input').value.trim();
+            if(newId && newId !== tripId) {
+                tripId = newId;
+                localStorage.setItem('trip_id', tripId);
+                alert(`已切換至群組: ${tripId}\n即將重新載入資料...`);
+                if(unsubscribe) unsubscribe();
+                startListening();
+            }
+        };
+
+        window.pushDataToCloud = function() {
+            if (!isCloudConnected || !db) return;
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(async () => {
+                const statusEl = document.getElementById('cloud-status');
+                if(statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 同步中...';
+
+                const payload = {
+                    flights: JSON.parse(localStorage.getItem('flights') || '[]'),
+                    itinerary: JSON.parse(localStorage.getItem('itinerary_v2') || '[]'),
+                    mustEatList: JSON.parse(localStorage.getItem('mustEatList') || '[]'),
+                    expenses: JSON.parse(localStorage.getItem('expenses') || '[]'),
+                    guides: JSON.parse(localStorage.getItem('guides') || '[]'),
+                    todos: JSON.parse(localStorage.getItem('todos') || '[]'),
+                    shoppingList: JSON.parse(localStorage.getItem('shoppingList_v2') || '[]'),
+                    payers: JSON.parse(localStorage.getItem('payers') || '[]'),
+                    manualDebts: JSON.parse(localStorage.getItem('manualDebts_v1') || '[]'),
+                    memo: localStorage.getItem('memo') || "",
+                    lastUpdate: new Date().toISOString()
+                };
+
+                try {
+                    await setDoc(doc(db, "trips", tripId), payload);
+                    if(statusEl) {
+                        statusEl.innerHTML = '<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';
+                        statusEl.classList.add('bg-green-100');
+                        setTimeout(() => statusEl.classList.remove('bg-green-100'), 2000);
+                    }
+                } catch (e) {
+                    console.error("Save failed", e);
+                    if(statusEl) statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i> 同步失敗';
+                }
+            }, 1000);
+        };
+        
+        window.forceUpload = function() {
+             if(confirm("確定要強制把這個裝置的資料覆蓋到雲端嗎？\n(如果雲端已有別人的新資料，將會被覆蓋)")) {
+                 window.pushDataToCloud();
+             }
+        }
+
+        function startListening() {
+            if (!db) return;
+            document.getElementById('trip-id-input').value = tripId;
+            const statusEl = document.getElementById('cloud-status');
+            
+            unsubscribe = onSnapshot(doc(db, "trips", tripId), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.flights) localStorage.setItem('flights', JSON.stringify(data.flights));
+                    if (data.itinerary) localStorage.setItem('itinerary_v2', JSON.stringify(data.itinerary));
+                    if (data.mustEatList) localStorage.setItem('mustEatList', JSON.stringify(data.mustEatList));
+                    if (data.expenses) localStorage.setItem('expenses', JSON.stringify(data.expenses));
+                    if (data.guides) localStorage.setItem('guides', JSON.stringify(data.guides));
+                    if (data.todos) localStorage.setItem('todos', JSON.stringify(data.todos));
+                    if (data.shoppingList) localStorage.setItem('shoppingList_v2', JSON.stringify(data.shoppingList));
+                    if (data.payers) localStorage.setItem('payers', JSON.stringify(data.payers));
+                    if (data.manualDebts) localStorage.setItem('manualDebts_v1', JSON.stringify(data.manualDebts));
+                    if (data.memo !== undefined) localStorage.setItem('memo', data.memo);
+
+                    if(window.refreshUI) window.refreshUI();
+                    if(statusEl) statusEl.innerHTML = '<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';
+                } else {
+                    if(statusEl) statusEl.innerHTML = '建立存檔...';
+                    window.pushDataToCloud();
+                }
+            });
+        }
+    </script>
+
+    <!-- MAIN APP LOGIC -->
+    <script>
+        /* --- DATA & STATE --- */
+        let flights = [], itinerary = [], mustEatList = [], expenses = [], guides = [], todos = [], shoppingList = [], payers = [], manualDebts = [], memoText = "";
+        
+        function reloadLocalData() {
+            flights = JSON.parse(localStorage.getItem('flights')) || [];
+            itinerary = JSON.parse(localStorage.getItem('itinerary_v2')) || [];
+            mustEatList = JSON.parse(localStorage.getItem('mustEatList')) || [];
+            expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            guides = JSON.parse(localStorage.getItem('guides')) || [];
+            todos = JSON.parse(localStorage.getItem('todos')) || [{text: "護照", done: false}];
+            shoppingList = JSON.parse(localStorage.getItem('shoppingList_v2')) || [];
+            payers = JSON.parse(localStorage.getItem('payers')) || ["我", "旅伴", "公費"];
+            manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
+            memoText = localStorage.getItem('memo') || "";
+            itinerary = itinerary.map(d => ({ ...d, transportation: d.transportation||{content:'',note:'',time:'',photo:''}, meals: { b: (d.meals?.b?.name===undefined?{name:d.meals?.b||'',url:'',note:''}:d.meals.b), l: (d.meals?.l?.name===undefined?{name:d.meals?.l||'',url:'',note:''}:d.meals.l), d: (d.meals?.d?.name===undefined?{name:d.meals?.d||'',url:'',note:''}:d.meals.d) } }));
+        }
+
+        reloadLocalData();
+
+        window.refreshUI = function() {
+            reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderPayerOptions();
+        }
+        
+        function saveData() { if(window.pushDataToCloud) window.pushDataToCloud(); }
+
+        /* --- UI RENDER FUNCTIONS --- */
+        let currentPhotoBase64 = null; let currentGuidePhoto = null; let currentShopPhoto = null; let currentFlightPhoto = null; let currentTransPhoto = null; let tempDayPhotos = []; let guideSortable = null; let currentMustEatItems = [];  let currentEditingMustEatId = null;
+
+        function processImage(input, cb) {
+            if(input.files && input.files[0]){
+                const r=new FileReader(); r.onload=function(e){const i=new Image();i.onload=function(){const c=document.createElement('canvas'),x=c.getContext('2d'),w=1000;let wd=i.width,ht=i.height;if(wd>w){ht*=w/wd;wd=w;}c.width=wd;c.height=ht;x.drawImage(i,0,0,wd,ht);cb(c.toDataURL('image/jpeg',0.8));};i.src=e.target.result;};r.readAsDataURL(input.files[0]);
+            }
+        }
+        function openModal(id){document.getElementById(id).classList.remove('hidden');setTimeout(()=>document.getElementById(id).classList.add('visible'),10);}
+        function closeModal(id){const el=document.getElementById(id);el.classList.remove('visible');setTimeout(()=>el.classList.add('hidden'),300);}
+        function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
+
+        /* --- FLIGHTS (NEW HIPSTER STYLE) --- */
+        function renderFlights() {
+             const c=document.getElementById('flight-list-container');c.innerHTML='';
+             if(flights.length === 0) { c.innerHTML = '<p class="text-center text-sm text-gray-400 py-4 dashed-border rounded">尚無航班資料<br>點擊右上方新增</p>'; return; }
+             flights.forEach(f=>{ 
+                 c.innerHTML+=`
+                 <div class="flight-card-style p-4 relative overflow-hidden group mb-4 cursor-pointer transform hover:-rotate-1 transition duration-300" onclick="${f.url?`window.open('${f.url}')`:''}">
+                    ${f.photo?`<div class="absolute inset-0 z-0 opacity-20" style="background:url(${f.photo}) center/cover filter: grayscale(100%);"></div>`:''}
+                    <div class="washi-tape tape-blue h-6 w-32 absolute -top-3 left-1/2 -translate-x-1/2 rotate-2 shadow-sm z-10"></div>
+                    
+                    <div class="relative z-10">
+                        <button onclick="event.stopPropagation(); deleteFlight(${f.id})" class="absolute -top-1 right-0 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-times"></i></button>
+                        <button onclick="event.stopPropagation(); editFlight(${f.id})" class="absolute -top-1 right-6 text-gray-400 hover:text-fuji opacity-0 group-hover:opacity-100"><i class="fa-solid fa-pen"></i></button>
+                        
+                        <div class="flex justify-between items-center text-3xl font-black text-ink tracking-widest mt-3 mb-1 handwritten">
+                            <span>${f.dep}</span>
+                            <div class="flex flex-col items-center">
+                                <i class="fa-solid fa-plane text-sm text-fuji transform rotate-45 mb-1"></i>
+                                <div class="w-16 h-0.5 border-b-2 border-dotted border-gray-400"></div>
+                            </div>
+                            <span>${f.arr}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center border-t-2 border-dashed border-gray-300 pt-2 mt-2">
+                             <div class="text-sm font-bold font-hand text-gray-500">${f.date}</div>
+                             <div class="bg-ink text-white px-2 py-0.5 rounded-sm font-hand text-sm transform -rotate-2">${f.code}</div>
+                             <div class="text-sm font-bold font-hand text-gray-500">${f.time}</div>
+                        </div>
+                    </div>
+                 </div>`; 
+             });
+        }
+        function saveFlight(){ const id=document.getElementById('flight-id').value, dep=document.getElementById('flight-dep').value, arr=document.getElementById('flight-arr').value; if(!dep)return; const f={id:id?parseInt(id):Date.now(), dep, arr, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value, photo:currentFlightPhoto}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} localStorage.setItem('flights',JSON.stringify(flights)); saveData(); renderFlights(); closeModal('flight-modal'); }
+        function deleteFlight(id){if(confirm("Del?")){flights=flights.filter(f=>f.id!==id);localStorage.setItem('flights',JSON.stringify(flights)); saveData(); renderFlights();}}
+        function editFlight(id){ openFlightModal(flights.find(f=>f.id===id)); }
+        function openFlightModal(f=null){ ['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value=''); currentFlightPhoto=null; document.getElementById('flight-photo-preview').classList.add('hidden'); document.getElementById('flight-photo-text').classList.remove('hidden'); if(f){ document.getElementById('flight-id').value=f.id; document.getElementById('flight-dep').value=f.dep; document.getElementById('flight-arr').value=f.arr; document.getElementById('flight-code').value=f.code; document.getElementById('flight-time').value=f.time; document.getElementById('flight-date').value=f.date; document.getElementById('flight-url').value=f.url; if(f.photo){currentFlightPhoto=f.photo; document.getElementById('flight-photo-preview').src=f.photo; document.getElementById('flight-photo-preview').classList.remove('hidden'); document.getElementById('flight-photo-text').classList.add('hidden');} } openModal('flight-modal'); }
+
+        /* --- ITINERARY --- */
+        function renderItinerary() {
+            const c=document.getElementById('itinerary-container'); c.innerHTML='';
+            itinerary.forEach((day)=>{
+                let content=day.content;
+                guides.forEach(g=>{ content=content.replace(new RegExp(g.title,'gi'),`<span class="font-bold border-b-2 border-matcha cursor-pointer hover:bg-matcha/20" onclick="jumpToGuide(${g.id})">${g.title}</span>`); });
+                mustEatList.forEach(e=>{ if(e.location) content=content.replace(new RegExp(e.location,'g'),`<span class="text-matcha font-bold cursor-pointer hover:underline" onclick="jumpToMustEat('${e.id}')">${e.location}<i class="fa-solid fa-utensils text-xs ml-1"></i></span>`); });
+                content=content.split('\\').map(e=>`<li class="flex items-start"><span class="mr-2 mt-1.5 w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0"></span><span>${e.trim()}</span></li>`).join('');
+                
+                const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
+                const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div></div></div>` : '';
+                
+                c.innerHTML+=`
+                <div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-300'} pb-8 group">
+                    <div class="absolute -left-2.5 top-0 w-5 h-5 rounded-full ${day.highlight?'bg-sakura':'bg-gray-300'} border-4 border-paper shadow-sm"></div>
+                    <div class="flex justify-between mb-2 items-end">
+                        <h3 class="font-black text-2xl handwritten ${day.highlight?'text-red-500':'text-pencil'}">${day.date}</h3>
+                        <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-paper border border-gray-100 relative">
+                        ${day.highlight?`<div class="absolute -top-2 -right-2 text-2xl opacity-50 rotate-12">🌸</div>`:''}
+                        <ul class="text-sm space-y-2 leading-relaxed text-gray-600 font-serif">${content}</ul>
+                        ${photosHtml}${trans}
+                        ${day.accommodation?`<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation}</div>`:''}
+                        ${(day.meals.b.name||day.meals.l.name||day.meals.d.name)?`<div class="mt-2 flex gap-2 text-xs text-gray-400 bg-gray-50 p-1.5 rounded">${day.meals.b.name?`<span>早:${day.meals.b.name}</span>`:''}${day.meals.l.name?`<span>午:${day.meals.l.name}</span>`:''}${day.meals.d.name?`<span>晚:${day.meals.d.name}</span>`:''}</div>`:''}
+                    </div>
+                </div>`;
+            });
+        }
+        function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",accommodation:"",transportation:{},meals:{b:{},l:{},d:{}}});localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary();}
+        function openDayEditor(id){
+            const d=itinerary.find(i=>i.id===id); if(!d)return;
+            document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl;
+            document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo;
+            document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview();
+            document.getElementById('meal-b-name').value=d.meals.b.name; document.getElementById('meal-l-name').value=d.meals.l.name; document.getElementById('meal-d-name').value=d.meals.d.name;
+            openModal('day-modal');
+        }
+        function saveDay(){
+            const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return;
+            const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value;
+            i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto};
+            i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos];
+            i.meals={b:{name:document.getElementById('meal-b-name').value},l:{name:document.getElementById('meal-l-name').value},d:{name:document.getElementById('meal-d-name').value}};
+            localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal');
+        }
+        function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal');}}
+        function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
+        function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="removeDayPhoto(${i})" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
+        function removeDayPhoto(i) { tempDayPhotos.splice(i,1); renderDayPhotosPreview(); }
+        function jumpToGuide(id) { switchTab('guide'); setTimeout(()=>{document.getElementById('guide-'+id)?.scrollIntoView({behavior:'smooth'});},100); }
+
+        /* --- OTHER FUNCTIONS (Minimal changes to logic, just rendering styles) --- */
+        function renderGuides() {
+            const list = document.getElementById('guide-list'); list.innerHTML='';
+            if (guideSortable) { guideSortable.destroy(); guideSortable = null; }
+            guides.forEach(g => { list.innerHTML += `<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group"><div class="drag-handle absolute top-0 left-0 h-full w-8 bg-black/5 flex items-center justify-center z-10 cursor-grab hover:bg-black/10"><i class="fa-solid fa-ellipsis-vertical text-gray-400"></i></div><button onclick="openGuideModal(${g.id})" class="absolute top-2 right-2 z-20 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow"><i class="fa-solid fa-pen text-gray-500"></i></button>${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover" onclick="viewPhoto('${g.photo}')">`:''} <div class="p-4 pl-10"><h3 class="font-bold text-lg font-hand">${g.title}</h3><p class="text-sm whitespace-pre-line text-gray-600 mt-1 leading-relaxed">${g.desc}</p></div></div>`; });
+            guideSortable = new Sortable(list, { handle: '.drag-handle', animation: 150, onEnd: function (evt) { const item = guides.splice(evt.oldIndex, 1)[0]; guides.splice(evt.newIndex, 0, item); localStorage.setItem('guides', JSON.stringify(guides)); saveData(); renderItinerary(); } });
+            renderItinerary();
+        }
+        function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-coords'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
+        function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value, d=document.getElementById('guide-desc').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:d, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} localStorage.setItem('guides',JSON.stringify(guides)); saveData(); renderGuides(); closeModal('guide-modal'); }
+        
+        function renderExpenses() {
+            const rate = parseFloat(document.getElementById('exchange-rate').value);
+            let paid = new Map(payers.map(p=>[p,0])), total=0;
+            expenses.forEach(e=>{const v=(e.curr==='JPY'?e.amt*rate:e.amt); total+=v; paid.set(e.payer, paid.get(e.payer)+v);});
+            let net = new Map(payers.map(p=>[p, paid.get(p)-(total/payers.length)]));
+            manualDebts.forEach(d=>{ net.set(d.debtor, net.get(d.debtor)-d.amount); net.set(d.creditor, net.get(d.creditor)+d.amount); });
+            document.getElementById('individual-stats-dashboard').innerHTML = payers.map(p=>`<div class="p-2 bg-black/20 rounded border border-white/5"><div class="font-bold text-gray-200 text-[10px] mb-1">${p}</div><div class="font-mono text-lg font-bold ${net.get(p)>=0?'text-green-400':'text-red-400'}">${net.get(p)>=0?'+':''}${Math.round(net.get(p))}</div></div>`).join('');
+            document.getElementById('wallet-total-display').innerText = 'NT$ '+Math.round(total);
+            // Simple settlement visualization
+            let debtors = [], creditors = [];
+            net.forEach((v,k) => { if(v<-10) debtors.push({p:k,v}); else if(v>10) creditors.push({p:k,v}); });
+            document.getElementById('settlement-summary').innerHTML = debtors.length===0 ? '<div class="text-center opacity-50">目前沒有需要結算的款項</div>' : debtors.map(d=>`<div>${d.p} 需支付公費</div>`).join('');
+            
+            const filter = document.getElementById('wallet-filter').value;
+            const filtered = filter === 'ALL' ? expenses : expenses.filter(e => e.payer === filter);
+            document.getElementById('expense-list').innerHTML = filtered.map(e=>`<div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})"><div class="absolute left-0 top-0 h-full w-1 ${e.curr=='JPY'?'bg-sakura':'bg-fuji'}"></div><div class="w-12 h-12 bg-gray-50 rounded-full flex-shrink-0 flex items-center justify-center border border-gray-100 mt-1">${e.photo?`<img src="${e.photo}" class="w-full h-full object-cover rounded-full">`:'<i class="fa-solid fa-receipt text-gray-300"></i>'}</div><div class="flex-1"><div class="flex justify-between"><b>${e.note}</b><span class="font-mono text-clay font-bold">NT$ ${Math.round((e.curr=='JPY'?e.amt*rate:e.amt)/(e.ppl||1))}</span></div><div class="text-xs text-gray-400 mt-1 flex justify-between"><span>${e.payer} 付款</span><span class="font-mono">${e.curr} ${e.amt}</span></div></div></div>`).join('');
+        }
+        function openExpenseModal(id=null, pre={}) { /* ... same logic ... */ currentPhotoBase64=null; document.getElementById('photo-preview').classList.add('hidden'); document.getElementById('photo-placeholder').classList.remove('hidden'); document.getElementById('btn-delete-expense').classList.add('hidden'); if(id){const ex=expenses.find(e=>e.id==id); document.getElementById('ex-id').value=ex.id; document.getElementById('ex-category').value=ex.cat; document.getElementById('ex-note').value=ex.note; document.getElementById('ex-currency').value=ex.curr; document.getElementById('ex-amount').value=ex.amt; document.getElementById('ex-payer').value=ex.payer; document.getElementById('ex-people').value=ex.ppl; if(ex.photo){currentPhotoBase64=ex.photo; document.getElementById('photo-preview').src=ex.photo; document.getElementById('photo-preview').classList.remove('hidden'); document.getElementById('photo-placeholder').classList.add('hidden');} document.getElementById('btn-delete-expense').classList.remove('hidden');} else { ['ex-id','ex-amount','ex-note'].forEach(k=>document.getElementById(k).value=''); if(pre.note) document.getElementById('ex-note').value=pre.note; if(pre.amt) document.getElementById('ex-amount').value=pre.amt; } openModal('expense-modal'); }
+        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt)return; const ex={id:id?parseInt(id):Date.now(), cat:document.getElementById('ex-category').value, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:document.getElementById('ex-payer').value, ppl:parseInt(document.getElementById('ex-people').value)||1, photo:currentPhotoBase64}; if(id){const idx=expenses.findIndex(e=>e.id==id);if(idx>-1)expenses[idx]=ex;}else{expenses.unshift(ex);} localStorage.setItem('expenses',JSON.stringify(expenses)); saveData(); renderExpenses(); closeModal('expense-modal'); }
+        function deleteExpense(){const id=document.getElementById('ex-id').value;if(id&&confirm("Del?")){expenses=expenses.filter(e=>e.id!=id);localStorage.setItem('expenses',JSON.stringify(expenses)); saveData(); renderExpenses(); closeModal('expense-modal');}}
+        
+        function renderMustEatList() { /* ... similar logic with new styling ... */ 
+            const container = document.getElementById('must-eat-list'); container.innerHTML = '';
+            const sortedList = [...mustEatList].sort((a, b) => a.location.localeCompare(b.location, 'zh-TW'));
+            let currentGroup = ''; let groupHtml = '';
+            sortedList.forEach(item => {
+                if (item.location !== currentGroup) {
+                    if (currentGroup !== '') { groupHtml += '</div>'; container.innerHTML += groupHtml; }
+                    currentGroup = item.location;
+                    groupHtml = `<div class="mb-4 pt-3"><h4 class="text-lg font-black handwritten text-matcha border-b-2 border-matcha/30 inline-block px-2 mb-2">${currentGroup}</h4><div class="mt-1 space-y-2">`;
+                }
+                const checked = item.items ? item.items.filter(i => i.done).length : 0;
+                groupHtml += `<div id="eat-item-${item.id}" class="bg-white p-3 rounded shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer hover:bg-yellow-50/50" onclick="openMustEatModal('${item.id}')"><div class="flex-1"><div class="font-bold text-gray-700 font-hand text-lg">${item.name}</div><div class="text-xs text-gray-400 mt-1">${item.note || ''}</div></div><div class="text-right text-xs font-mono bg-gray-100 px-2 py-1 rounded-full text-gray-500">${checked}/${item.items?.length||0}</div></div>`;
+            });
+            if (currentGroup !== '') { groupHtml += '</div>'; container.innerHTML += groupHtml; }
+        }
+        function openMustEatModal(id=null) { /* ... same ... */ ['eat-id','eat-name','eat-location','eat-note'].forEach(k=>document.getElementById(k).value=''); currentMustEatItems = []; currentEditingMustEatId = null; if (id) { const item = mustEatList.find(i => i.id === id); document.getElementById('eat-id').value = item.id; document.getElementById('eat-name').value = item.name; document.getElementById('eat-location').value = item.location; document.getElementById('eat-note').value = item.note; currentMustEatItems = JSON.parse(JSON.stringify(item.items || [])); currentEditingMustEatId = id; } renderFoodItemsInModal(); openModal('must-eat-modal'); }
+        function renderFoodItemsInModal() { document.getElementById('must-eat-items-container').innerHTML = currentMustEatItems.map(item => `<div class="flex items-center justify-between p-2 border-b border-dashed ${item.done ? 'opacity-50' : ''}"><div class="flex-1 flex items-center"><input type="checkbox" onchange="toggleFoodItemDone('${item.id}')" ${item.done ? 'checked' : ''} class="mr-2 accent-matcha"><span class="${item.done ? 'line-through' : ''}">${item.foodName}</span></div><div class="flex gap-2 items-center"><span class="text-xs font-mono">¥${item.price}</span><button onclick="deleteFoodItem('${item.id}')" class="text-gray-300 hover:text-red-400">x</button></div></div>`).join(''); }
+        function addNewFoodItem() { const name = document.getElementById('new-food-name').value; if (!name) return; currentMustEatItems.push({ id: 'f'+Date.now(), foodName: name, price: parseFloat(document.getElementById('new-food-price').value)||0, done: false, url: document.getElementById('new-food-url').value }); document.getElementById('new-food-name').value=''; renderFoodItemsInModal(); }
+        function toggleFoodItemDone(id) { const i = currentMustEatItems.find(x => x.id === id); if(i) i.done = !i.done; renderFoodItemsInModal(); }
+        function deleteFoodItem(id) { currentMustEatItems = currentMustEatItems.filter(x => x.id !== id); renderFoodItemsInModal(); }
+        function saveMustEatItem() { const id = document.getElementById('eat-id').value; const name = document.getElementById('eat-name').value; const location = document.getElementById('eat-location').value; const note = document.getElementById('eat-note').value; if (!location) return; const newItem = { id: id || 'eat' + Date.now(), name, location, note, items: currentMustEatItems }; if (id) { const idx = mustEatList.findIndex(i => i.id === id); if (idx > -1) mustEatList[idx] = newItem; } else { mustEatList.push(newItem); } localStorage.setItem('mustEatList', JSON.stringify(mustEatList)); saveData(); renderMustEatList(); renderItinerary(); closeModal('must-eat-modal'); }
+        function deleteMustEatItem() { const id = document.getElementById('eat-id').value; if (id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); localStorage.setItem('mustEatList', JSON.stringify(mustEatList)); saveData(); renderMustEatList(); renderItinerary(); closeModal('must-eat-modal'); } }
+        function jumpToMustEat(id) { switchTab('lists'); setTimeout(() => { const el = document.getElementById('eat-item-' + id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('highlight-target'); setTimeout(() => el.classList.remove('highlight-target'), 2000); } }, 100); }
+
+        /* --- IOU --- */
+        function renderIOUOptions() { const payerOpts = payers.map(p => `<option value="${p}">${p}</option>`).join(''); document.getElementById('iou-creditor').innerHTML = payerOpts; document.getElementById('iou-debtor').innerHTML = payerOpts; }
+        function renderIOUList() { document.getElementById('iou-list-container').innerHTML = manualDebts.map(iou => `<div class="flex justify-between items-center p-2 border-b bg-gray-50 rounded-sm cursor-pointer hover:bg-gray-100" onclick="openIOUModal('${iou.id}')"><div class="flex-1 mr-2"><span class="text-xs text-gray-500 block">${iou.note || '調整'}</span><span class="text-sm font-bold text-gray-700">${iou.debtor} 欠 ${iou.creditor}</span></div><span class="text-sm font-mono text-fuji font-bold">NT$ ${Math.round(iou.amount).toLocaleString()}</span></div>`).join(''); }
+        function openIOUModal(id = null) { const delBtn = document.getElementById('btn-delete-iou'); renderIOUOptions(); renderIOUList(); delBtn.classList.add('hidden'); ['iou-id','iou-amount','iou-note'].forEach(k=>document.getElementById(k).value=''); if (id) { const iou = manualDebts.find(i => i.id == id); document.getElementById('iou-id').value = iou.id; document.getElementById('iou-creditor').value = iou.creditor; document.getElementById('iou-debtor').value = iou.debtor; document.getElementById('iou-amount').value = iou.amount; document.getElementById('iou-note').value = iou.note || ''; delBtn.classList.remove('hidden'); } openModal('iou-modal'); }
+        function saveIOU() { const id = document.getElementById('iou-id').value; const creditor = document.getElementById('iou-creditor').value; const debtor = document.getElementById('iou-debtor').value; const amount = parseFloat(document.getElementById('iou-amount').value); const note = document.getElementById('iou-note').value; if (!amount || creditor === debtor) return; const newIOU = { id: id || 'iou' + Date.now(), creditor, debtor, amount, note }; if (id) { const idx = manualDebts.findIndex(i => i.id == id); if (idx > -1) manualDebts[idx] = newIOU; } else { manualDebts.push(newIOU); } localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts)); saveData(); renderExpenses(); closeModal('iou-modal'); }
+        function deleteIOU() { const id = document.getElementById('iou-id').value; if (id && confirm("Del?")) { manualDebts = manualDebts.filter(i => i.id != id); localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts)); saveData(); renderExpenses(); closeModal('iou-modal'); } }
+
+        /* --- OTHERS --- */
+        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
+        function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false});localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
+        function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
+        function updateTodo(i,v){todos[i].text=v;localStorage.setItem('todos',JSON.stringify(todos)); saveData();}
+        function deleteTodo(i){todos.splice(i,1);localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
+        
+        function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ const h=`<div class="p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span></div>`; if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
+        function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
+        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} localStorage.setItem('shoppingList_v2',JSON.stringify(shoppingList)); saveData(); renderShoppingList(); closeModal('shopping-modal'); }
+        function deleteShoppingItem(){const id=document.getElementById('shop-id').value;if(id&&confirm("Del?")){shoppingList=shoppingList.filter(i=>i.id!=id);localStorage.setItem('shoppingList_v2',JSON.stringify(shoppingList)); saveData(); renderShoppingList(); closeModal('shopping-modal');}}
+        
+        function openPayerModal(){document.getElementById('payer-list').innerHTML=payers.map((p,i)=>`<div class="flex justify-between p-2 bg-gray-50 rounded"><span>${p}</span>${payers.length>1?`<button onclick="removePayer(${i})" class="text-red-400">x</button>`:''}</div>`).join(''); openModal('payer-modal');}
+        function addPayer(){const n=document.getElementById('new-payer-name').value;if(n&&!payers.includes(n)){payers.push(n);localStorage.setItem('payers',JSON.stringify(payers)); saveData(); renderPayerOptions(); openPayerModal(); renderExpenses();}}
+        function removePayer(i){payers.splice(i,1);localStorage.setItem('payers',JSON.stringify(payers)); saveData(); renderPayerOptions(); openPayerModal(); renderExpenses();}
+        function renderPayerOptions(){const h=payers.map(p=>`<option value="${p}">${p}</option>`).join('');document.getElementById('ex-payer').innerHTML=h;document.getElementById('wallet-filter').innerHTML='<option value="ALL">全部</option>'+h;}
+
+        document.getElementById('memo-pad').addEventListener('input',(e)=>{ localStorage.setItem('memo',e.target.value); saveData(); });
+        document.getElementById('memo-pad').value = memoText;
+
+        function switchTab(t){document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden'));document.getElementById('view-'+t).classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.querySelector(`[data-target="${t}"]`).classList.add('active');window.scrollTo(0,0);}
+        window.onload=function(){ reloadLocalData(); renderFlights(); renderGuides(); renderChecklist(); renderShoppingList(); renderPayerOptions(); renderMustEatList(); renderExpenses(); switchTab('plan'); }
+    </script>
+</body>
+</html>            background-size: 50px 50px, 20px 20px; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
             min-height: 100vh; padding-bottom: calc(80px + var(--sab));
         }
         .handwritten { font-family: 'Yomogi', cursive; }
@@ -840,3 +1543,4 @@
     </script>
 </body>
 </html>
+
