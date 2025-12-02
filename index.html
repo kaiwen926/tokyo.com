@@ -12,7 +12,7 @@
 
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
-    <title>一起旅行吧</title>
+    <title>旅の記 V31.0 (住宿連結優化)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -86,7 +86,7 @@
         <div class="flex justify-center items-center gap-2 mt-2">
             <p class="text-[10px] text-fuji font-bold tracking-[0.2em] font-serif uppercase handwritten">My Travel Logbook</p>
             <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200">
-                <i class="fa-solid fa-cloud"></i> <span>連線中...</span>
+                <i class="fa-solid fa-cloud"></i> <span>準備中...</span>
             </div>
         </div>
 
@@ -110,7 +110,7 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl"></i>每日行程</h3>
             </div>
-            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊文字開啟連結</p>
+            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊飯店名稱導航</p>
             <div id="itinerary-container" class="space-y-6"></div>
             <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶</button>
         </section>
@@ -187,11 +187,15 @@
             <h2 class="text-2xl font-bold text-center handwritten mb-6 mt-4">旅途情報</h2>
             <div class="hand-card p-4 mb-6 border-l-4 border-fuji">
                 <h3 class="font-bold text-fuji mb-2 handwritten text-lg"><i class="fa-solid fa-users mr-2"></i>雲端同步設定</h3>
+                <div class="text-xs text-gray-400 mb-2">請確保所有裝置使用相同的群組 ID 才能同步。</div>
                 <div class="flex gap-2">
                     <input type="text" id="trip-id-input" value="my_awesome_trip" class="flex-1 border p-2 rounded text-sm font-mono bg-gray-50 tracking-wider">
-                    <button onclick="updateTripId()" class="bg-fuji text-white px-3 py-1 rounded text-sm font-bold shadow hover:bg-fuji/80">連線</button>
+                    <button onclick="updateTripId()" class="bg-fuji text-white px-3 py-1 rounded text-sm font-bold shadow hover:bg-fuji/80">切換/連線</button>
                 </div>
-                <button onclick="forceUpload()" class="mt-4 text-[10px] text-gray-400 underline w-full text-right">⚠️ 雲端沒資料？點此上傳本機備份</button>
+                <div class="flex gap-2 mt-4 pt-4 border-t border-dashed">
+                     <button onclick="forceDownload()" class="flex-1 bg-white border border-gray-300 text-gray-600 px-2 py-2 rounded text-xs hover:bg-gray-50"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> 強制下載 (覆蓋本機)</button>
+                     <button onclick="forceUpload()" class="flex-1 bg-white border border-gray-300 text-gray-600 px-2 py-2 rounded text-xs hover:bg-gray-50"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> 強制上傳 (覆蓋雲端)</button>
+                </div>
             </div>
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" class="hand-card p-4 flex flex-col items-center justify-center hover:bg-blue-50 transition"><i class="fa-solid fa-cloud-sun-rain text-3xl text-fuji mb-2"></i><span class="font-bold text-sm">天氣預報</span></a>
@@ -285,13 +289,159 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // V30 Added Auth
+        
         const firebaseConfig = { apiKey: "AIzaSyAImFK704mHo2HYsnt-VnmeVveZaZSkCLI", authDomain: "triptokyoapp.firebaseapp.com", projectId: "triptokyoapp", storageBucket: "triptokyoapp.firebasestorage.app", messagingSenderId: "875138652318", appId: "1:875138652318:web:1eb712afb49e24a059038f", measurementId: "G-FEG9FJLRX5" };
-        let db=null; let tripId=localStorage.getItem('trip_id')||"my_default_trip"; let isCloudConnected=false; let unsubscribe=null; let saveTimer=null;
-        try{const app=initializeApp(firebaseConfig);db=getFirestore(app);isCloudConnected=true;console.log("Firebase initialized");startListening();}catch(e){console.error("Firebase init failed:",e);}
-        window.updateTripId=function(){const newId=document.getElementById('trip-id-input').value.trim();if(newId&&newId!==tripId){tripId=newId;localStorage.setItem('trip_id',tripId);alert(`已切換至群組: ${tripId}\n即將重新載入資料...`);if(unsubscribe)unsubscribe();startListening();}};
-        window.pushDataToCloud=function(){if(!isCloudConnected||!db)return;clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const statusEl=document.getElementById('cloud-status');if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> 同步中...';const payload={flights:JSON.parse(localStorage.getItem('flights')||'[]'),itinerary:JSON.parse(localStorage.getItem('itinerary_v2')||'[]'),mustEatList:JSON.parse(localStorage.getItem('mustEatList')||'[]'),expenses:JSON.parse(localStorage.getItem('expenses')||'[]'),guides:JSON.parse(localStorage.getItem('guides')||'[]'),todos:JSON.parse(localStorage.getItem('todos')||'[]'),shoppingList:JSON.parse(localStorage.getItem('shoppingList_v2')||'[]'),payers:JSON.parse(localStorage.getItem('payers')||'[]'),manualDebts:JSON.parse(localStorage.getItem('manualDebts_v1')||'[]'),memo:localStorage.getItem('memo')||"",lastUpdate:new Date().toISOString()};try{await setDoc(doc(db,"trips",tripId),payload);if(statusEl){statusEl.innerHTML='<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';statusEl.classList.add('bg-green-100');setTimeout(()=>statusEl.classList.remove('bg-green-100'),2000);}}catch(e){console.error("Save failed",e);if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-triangle-exclamation text-red-500"></i> 同步失敗';}},1000);};
-        window.forceUpload=function(){if(confirm("確定要強制把這個裝置的資料覆蓋到雲端嗎？\n(如果雲端已有別人的新資料，將會被覆蓋)")){window.pushDataToCloud();}}
-        function startListening(){if(!db)return;document.getElementById('trip-id-input').value=tripId;const statusEl=document.getElementById('cloud-status');unsubscribe=onSnapshot(doc(db,"trips",tripId),(docSnap)=>{if(docSnap.exists()){const data=docSnap.data();if(data.flights)localStorage.setItem('flights',JSON.stringify(data.flights));if(data.itinerary)localStorage.setItem('itinerary_v2',JSON.stringify(data.itinerary));if(data.mustEatList)localStorage.setItem('mustEatList',JSON.stringify(data.mustEatList));if(data.expenses)localStorage.setItem('expenses',JSON.stringify(data.expenses));if(data.guides)localStorage.setItem('guides',JSON.stringify(data.guides));if(data.todos)localStorage.setItem('todos',JSON.stringify(data.todos));if(data.shoppingList)localStorage.setItem('shoppingList_v2',JSON.stringify(data.shoppingList));if(data.payers)localStorage.setItem('payers',JSON.stringify(data.payers));if(data.manualDebts)localStorage.setItem('manualDebts_v1',JSON.stringify(data.manualDebts));if(data.memo!==undefined)localStorage.setItem('memo',data.memo);if(window.refreshUI)window.refreshUI();if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';}else{if(statusEl)statusEl.innerHTML='建立存檔...';window.pushDataToCloud();}});}
+        
+        let db=null; let auth=null; let tripId=localStorage.getItem('trip_id')||"my_default_trip"; let isCloudConnected=false; let unsubscribe=null; let saveTimer=null;
+        
+        try{
+            const app=initializeApp(firebaseConfig);
+            db=getFirestore(app);
+            auth=getAuth(app); // V30
+            isCloudConnected=true;
+            console.log("Firebase initialized");
+            
+            // V30: Auth Logic
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const s = document.getElementById('cloud-status');
+                    if(s) s.innerHTML = '<i class="fa-solid fa-check"></i> 已登入';
+                    console.log("Logged in:", user.uid);
+                    startListening();
+                } else {
+                    signInAnonymously(auth).catch((error) => {
+                        console.error("Auth failed", error);
+                        const s = document.getElementById('cloud-status');
+                        if(s) s.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i> 驗證失敗';
+                    });
+                }
+            });
+        }catch(e){console.error("Firebase init failed:",e);}
+        
+        window.updateTripId=function(){
+            const newId=document.getElementById('trip-id-input').value.trim();
+            if(newId&&newId!==tripId){
+                tripId=newId;
+                localStorage.setItem('trip_id',tripId);
+                alert(`已切換至群組: ${tripId}\n即將重新載入資料...`);
+                if(unsubscribe)unsubscribe();
+                startListening();
+            }
+        };
+
+        // V30: Force Upload (Push Local to Cloud)
+        window.forceUpload=function(){
+            if(!isCloudConnected||!db) { alert("尚未連線"); return; }
+            if(confirm("⚠️ 警告：這會用此裝置的資料「覆蓋」雲端上的所有資料。\n確定要執行嗎？")){
+                const statusEl=document.getElementById('cloud-status');
+                if(statusEl) statusEl.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> 上傳中...';
+                
+                const payload={
+                    flights:JSON.parse(localStorage.getItem('flights')||'[]'),
+                    itinerary:JSON.parse(localStorage.getItem('itinerary_v2')||'[]'),
+                    mustEatList:JSON.parse(localStorage.getItem('mustEatList')||'[]'),
+                    expenses:JSON.parse(localStorage.getItem('expenses')||'[]'),
+                    guides:JSON.parse(localStorage.getItem('guides')||'[]'),
+                    todos:JSON.parse(localStorage.getItem('todos')||'[]'),
+                    shoppingList:JSON.parse(localStorage.getItem('shoppingList_v2')||'[]'),
+                    payers:JSON.parse(localStorage.getItem('payers')||'[]'),
+                    manualDebts:JSON.parse(localStorage.getItem('manualDebts_v1')||'[]'),
+                    memo:localStorage.getItem('memo')||"",
+                    lastUpdate:new Date().toISOString()
+                };
+
+                setDoc(doc(db,"trips",tripId),payload)
+                    .then(() => {
+                        if(statusEl) statusEl.innerHTML='<i class="fa-solid fa-cloud text-green-500"></i> 上傳成功';
+                        alert("上傳成功！其他裝置稍後會自動更新。");
+                    })
+                    .catch((e) => {
+                        console.error("Upload failed", e);
+                        alert("上傳失敗: " + e.message);
+                        if(statusEl) statusEl.innerHTML='<i class="fa-solid fa-xmark text-red-500"></i> 上傳失敗';
+                    });
+            }
+        };
+
+        // V30: Force Download (Pull Cloud to Local)
+        window.forceDownload=function(){
+             if(!isCloudConnected||!db) { alert("尚未連線"); return; }
+             if(confirm("這會從雲端下載資料並「覆蓋」此裝置目前的內容。\n確定嗎？")){
+                 getDoc(doc(db,"trips",tripId)).then((docSnap) => {
+                     if (docSnap.exists()) {
+                         const data = docSnap.data();
+                         // (Apply data logic same as listener)
+                         if(data.flights)localStorage.setItem('flights',JSON.stringify(data.flights));
+                        if(data.itinerary)localStorage.setItem('itinerary_v2',JSON.stringify(data.itinerary));
+                        if(data.mustEatList)localStorage.setItem('mustEatList',JSON.stringify(data.mustEatList));
+                        if(data.expenses)localStorage.setItem('expenses',JSON.stringify(data.expenses));
+                        if(data.guides)localStorage.setItem('guides',JSON.stringify(data.guides));
+                        if(data.todos)localStorage.setItem('todos',JSON.stringify(data.todos));
+                        if(data.shoppingList)localStorage.setItem('shoppingList_v2',JSON.stringify(data.shoppingList));
+                        if(data.payers)localStorage.setItem('payers',JSON.stringify(data.payers));
+                        if(data.manualDebts)localStorage.setItem('manualDebts_v1',JSON.stringify(data.manualDebts));
+                        if(data.memo!==undefined)localStorage.setItem('memo',data.memo);
+                        if(window.refreshUI)window.refreshUI();
+                        alert("下載完成！");
+                     } else {
+                         alert("雲端尚無此 ID 的資料");
+                     }
+                 }).catch(e => alert("下載失敗: " + e.message));
+             }
+        };
+
+        window.pushDataToCloud=function(){
+            if(!isCloudConnected||!db)return;
+            clearTimeout(saveTimer);
+            saveTimer=setTimeout(async()=>{
+                const statusEl=document.getElementById('cloud-status');
+                if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> 同步中...';
+                const payload={flights:JSON.parse(localStorage.getItem('flights')||'[]'),itinerary:JSON.parse(localStorage.getItem('itinerary_v2')||'[]'),mustEatList:JSON.parse(localStorage.getItem('mustEatList')||'[]'),expenses:JSON.parse(localStorage.getItem('expenses')||'[]'),guides:JSON.parse(localStorage.getItem('guides')||'[]'),todos:JSON.parse(localStorage.getItem('todos')||'[]'),shoppingList:JSON.parse(localStorage.getItem('shoppingList_v2')||'[]'),payers:JSON.parse(localStorage.getItem('payers')||'[]'),manualDebts:JSON.parse(localStorage.getItem('manualDebts_v1')||'[]'),memo:localStorage.getItem('memo')||"",lastUpdate:new Date().toISOString()};
+                try{
+                    await setDoc(doc(db,"trips",tripId),payload);
+                    if(statusEl){
+                        statusEl.innerHTML='<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';
+                        statusEl.classList.add('bg-green-100');
+                        setTimeout(()=>statusEl.classList.remove('bg-green-100'),2000);
+                    }
+                }catch(e){
+                    console.error("Save failed",e);
+                    if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-triangle-exclamation text-red-500"></i> 同步失敗';
+                }
+            },1000);
+        };
+        
+        function startListening(){
+            if(!db)return;
+            document.getElementById('trip-id-input').value=tripId;
+            const statusEl=document.getElementById('cloud-status');
+            unsubscribe=onSnapshot(doc(db,"trips",tripId),(docSnap)=>{
+                if(docSnap.exists()){
+                    const data=docSnap.data();
+                    // Basic Check: avoid overwriting if we just saved (very rudimentary)
+                    // In a real app we check timestamps, but here we just accept cloud truth to keep sync simple
+                    if(data.flights)localStorage.setItem('flights',JSON.stringify(data.flights));
+                    if(data.itinerary)localStorage.setItem('itinerary_v2',JSON.stringify(data.itinerary));
+                    if(data.mustEatList)localStorage.setItem('mustEatList',JSON.stringify(data.mustEatList));
+                    if(data.expenses)localStorage.setItem('expenses',JSON.stringify(data.expenses));
+                    if(data.guides)localStorage.setItem('guides',JSON.stringify(data.guides));
+                    if(data.todos)localStorage.setItem('todos',JSON.stringify(data.todos));
+                    if(data.shoppingList)localStorage.setItem('shoppingList_v2',JSON.stringify(data.shoppingList));
+                    if(data.payers)localStorage.setItem('payers',JSON.stringify(data.payers));
+                    if(data.manualDebts)localStorage.setItem('manualDebts_v1',JSON.stringify(data.manualDebts));
+                    if(data.memo!==undefined)localStorage.setItem('memo',data.memo);
+                    if(window.refreshUI)window.refreshUI();
+                    if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';
+                }else{
+                    if(statusEl)statusEl.innerHTML='建立新存檔...';
+                    window.pushDataToCloud();
+                }
+            }, (error) => {
+                console.error("Listen failed:", error);
+                if(statusEl) statusEl.innerHTML='<i class="fa-solid fa-link-slash text-red-500"></i> 連線中斷';
+            });
+        }
     </script>
 
     <script>
@@ -381,7 +531,7 @@
         function editFlight(id){ openFlightModal(flights.find(f=>f.id===id)); }
         function openFlightModal(f=null){ ['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value=''); if(f){ document.getElementById('flight-id').value=f.id; document.getElementById('flight-dep').value=f.dep; document.getElementById('flight-arr').value=f.arr; document.getElementById('flight-code').value=f.code; document.getElementById('flight-time').value=f.time; document.getElementById('flight-date').value=f.date; document.getElementById('flight-url').value=f.url; } openModal('flight-modal'); }
 
-        /* ITINERARY (Updated for V29 split button logic) */
+        /* ITINERARY (Updated for V31 clickable accommodation) */
         function renderItinerary() {
             const c=document.getElementById('itinerary-container'); c.innerHTML='';
             itinerary.forEach((day)=>{
@@ -394,6 +544,10 @@
                 const transPhoto = day.transportation.photo ? `<div class="mt-2 cursor-pointer relative group inline-block" onclick="viewPhoto('${day.transportation.photo}')"><img src="${day.transportation.photo}" class="h-16 w-auto object-contain rounded border border-gray-200 bg-white"><div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 rounded transition"><i class="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow-md"></i></div></div>` : '';
                 const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm items-start"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div>${transPhoto}</div></div>` : '';
                 
+                // Accommodation Logic (V31)
+                const accUrl = day.accommodationUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(day.accommodation)}`;
+                const accHtml = day.accommodation ? `<a href="${accUrl}" target="_blank" class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold block hover:bg-indigo-50 transition p-1 rounded"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation} <i class="fa-solid fa-location-dot ml-1 text-[10px]"></i></a>` : '';
+
                 // Meal Buttons (V29: Split Logic)
                 const meals = [
                     { key: 'b', label: '早餐', icon: 'fa-mug-hot', color: 'orange' },
@@ -438,7 +592,7 @@
                         ${day.highlight?`<div class="absolute -top-2 -right-2 text-2xl opacity-50 rotate-12">🌸</div>`:''}
                         <ul class="text-sm space-y-3 leading-relaxed text-gray-600 font-serif">${content}</ul>
                         ${photosHtml}${trans}
-                        ${day.accommodation?`<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation}</div>`:''}
+                        ${accHtml}
                         ${hasMeals ? mealButtons : ''}
                     </div>
                 </div>`;
@@ -503,13 +657,13 @@
                     note:document.getElementById('meal-b-note').value
                 },
                 l:{
-                    name:document.getElementById('meal-l-name').value,
-                    url:document.getElementById('meal-l-url').value,
+                    name:document.getElementById('meal-l-name').value, 
+                    url:document.getElementById('meal-l-url').value, 
                     note:document.getElementById('meal-l-note').value
                 },
                 d:{
-                    name:document.getElementById('meal-d-name').value,
-                    url:document.getElementById('meal-d-url').value,
+                    name:document.getElementById('meal-d-name').value, 
+                    url:document.getElementById('meal-d-url').value, 
                     note:document.getElementById('meal-d-note').value
                 }
             };
@@ -616,4 +770,3 @@
     </script>
 </body>
 </html>
-```eof
