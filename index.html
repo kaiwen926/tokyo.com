@@ -4,27 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- PWA 設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="旅の記">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f9f7f2">
 
-    <!-- [V25 新增] 主畫面圖示設定 (Web Clip Icon) -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
-    <!-- ========================================== -->
-
-    <title>旅の記 V27.0 (頂部快速記帳)</title>
+    <title>一起旅行吧</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- 引入日系手寫字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     
-    <!-- SortableJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <script>
@@ -36,7 +30,7 @@
                         'sakura': '#f8c3cd', 
                         'matcha': '#bccc9a', 
                         'fuji': '#7b90d2', 
-                        'fuji-light': '#eff6ff',
+                        'fuji-light': '#eff6ff', 
                         'pencil': '#595857', 
                         'ink': '#2c2c2c'
                     },
@@ -83,7 +77,6 @@
 </head>
 <body>
 
-    <!-- HEADER (V27: Added relative position and Quick Expense Button) -->
     <header class="pb-2 px-4 text-center sticky top-0 bg-[#f9f7f2]/95 z-40 backdrop-blur-sm transition-all duration-300 relative" style="padding-top: max(1.5rem, var(--sat));">
         <h1 class="text-4xl font-black tracking-widest text-ink handwritten relative inline-block mt-2" style="font-weight: 900;">
             <span class="absolute -top-4 -left-6 text-3xl rotate-[-15deg] opacity-60">✈️</span>
@@ -97,7 +90,6 @@
             </div>
         </div>
 
-        <!-- Quick Expense Button (V27) -->
         <button id="quick-expense-btn" onclick="switchTab('wallet'); openExpenseModal();" 
                 class="absolute top-0 right-5 text-matcha hover:text-green-700 active:scale-95 transition-all text-2xl p-1" 
                 style="padding-top: max(1.8rem, calc(0.3rem + var(--sat))); display: none;" 
@@ -106,10 +98,8 @@
         </button>
     </header>
 
-    <!-- MAIN CONTAINER -->
     <main id="app" class="px-5 w-full mx-auto min-h-screen max-w-md">
         
-        <!-- PLAN VIEW -->
         <section id="view-plan" class="view-section animate-fade">
             <div class="flex justify-between items-center mb-4 mt-6">
                 <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-plane-departure mr-2 text-xl"></i>航班資訊</h3>
@@ -120,12 +110,11 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl"></i>每日行程</h3>
             </div>
-            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊三餐可連結網址或記帳 / 點擊交通圖片可放大</p>
+            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊文字開啟連結</p>
             <div id="itinerary-container" class="space-y-6"></div>
             <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶</button>
         </section>
 
-        <!-- GUIDE VIEW -->
         <section id="view-guide" class="view-section hidden">
             <div class="flex justify-between items-end mb-4 mt-4">
                 <h2 class="text-2xl font-bold text-pencil handwritten">深度導覽</h2>
@@ -134,7 +123,6 @@
             <div id="guide-list" class="space-y-6"></div>
         </section>
 
-        <!-- WALLET VIEW -->
         <section id="view-wallet" class="view-section hidden">
             <div class="bg-[#2c3e50] rounded-2xl p-4 shadow-soft text-white mb-6 relative overflow-hidden mt-4">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -mr-10 -mt-10"></div>
@@ -164,7 +152,6 @@
             <div id="expense-list" class="space-y-3 pb-20"></div>
         </section>
 
-        <!-- LISTS VIEW -->
         <section id="view-lists" class="view-section hidden">
             <div class="hand-card p-5 mb-6 bg-[#fffdf0] relative mt-4">
                  <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2 mt-2">
@@ -196,7 +183,6 @@
             </div>
         </section>
 
-        <!-- INFO VIEW -->
         <section id="view-info" class="view-section hidden">
             <h2 class="text-2xl font-bold text-center handwritten mb-6 mt-4">旅途情報</h2>
             <div class="hand-card p-4 mb-6 border-l-4 border-fuji">
@@ -221,7 +207,6 @@
         </section>
     </main>
 
-    <!-- BOTTOM NAV -->
     <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2] border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)]" style="padding-bottom: calc(10px + var(--sab));">
         <div class="flex justify-between items-center w-full mx-auto pb-1 max-w-md">
             <button onclick="switchTab('plan')" class="nav-item active flex flex-col items-center text-gray-400 transition flex-1" data-target="plan"><i class="fa-solid fa-map text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">行程</span></button>
@@ -232,8 +217,6 @@
         </div>
     </nav>
 
-    <!-- MODALS -->
-    <!-- Flight Modal -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('flight-modal')" class="absolute top-3 right-3 text-gray-400 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
@@ -256,7 +239,6 @@
         </div>
     </div>
 
-    <!-- Day Editor Modal -->
     <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
             <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -269,7 +251,6 @@
             <div class="mb-4 border-t pt-3 bg-gray-50 p-2 rounded-lg border border-gray-100"><h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1"><i class="fa-solid fa-train"></i> 交通方式</h4><div class="flex gap-2 mb-2"><input type="time" id="day-trans-time" class="w-1/3 p-2 border border-gray-300 rounded text-sm"><input type="text" id="day-trans-content" placeholder="內容 (如: 搭新幹線)" class="flex-1 p-2 border border-gray-300 rounded text-sm"></div><div class="flex gap-2 mb-2"><input type="text" id="day-trans-note" placeholder="備註 (如: 買票)" class="flex-1 p-2 border border-gray-300 rounded text-sm"></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center relative hover:bg-white bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentTransPhoto = base64; document.getElementById('trans-photo-preview').src = base64; document.getElementById('trans-photo-preview').classList.remove('hidden'); document.getElementById('trans-photo-text').classList.add('hidden'); })"><div id="trans-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-ticket mb-1 block"></i> 上傳車票/時刻表</div><img id="trans-photo-preview" class="hidden h-20 mx-auto object-contain rounded"><button onclick="clearTransPhoto()" class="absolute top-1 right-1 bg-gray-200 rounded-full w-5 h-5 text-[10px] text-gray-500 z-10"><i class="fa-solid fa-times"></i></button></div></div>
             <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用反斜線 '\' 分隔每項活動)"></textarea>
             
-            <!-- 三餐編輯區塊 (已包含 URL 和 Note) -->
             <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm"><h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排</h4>
                 <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-mug-hot text-orange-300 w-5"></i><input type="text" id="meal-b-name" placeholder="早餐" class="flex-1 text-sm font-bold bg-transparent"></div>
                     <div class="flex gap-2 pl-7"><input type="url" id="meal-b-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-b-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
@@ -286,7 +267,6 @@
             <div class="flex gap-2"><button onclick="deleteDay()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm">刪除</button><button onclick="saveDay()" class="flex-[2] bg-matcha text-white py-2 rounded-lg font-bold shadow">儲存</button></div>
         </div>
     </div>
-    <!-- Other Modals -->
     <div id="guide-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('guide-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 handwritten text-lg">新增/編輯景點導覽</h3><input type="hidden" id="guide-id"><input type="text" id="guide-title" placeholder="景點名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold font-hand text-lg focus:border-matcha outline-none"><textarea id="guide-desc" placeholder="介紹內容..." class="w-full mb-3 border bg-white p-2 rounded h-24 text-sm"></textarea><input type="text" id="guide-coords" placeholder="座標 (36.34,138.61)" class="w-full mb-3 border-b bg-transparent p-2 text-xs"><div class="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center relative mb-3 hover:bg-white bg-white/50"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentGuidePhoto = base64; document.getElementById('guide-photo-preview').src = base64; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden'); })"><div id="guide-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-image mb-1 block"></i> 更新照片</div><img id="guide-photo-preview" class="hidden h-32 mx-auto object-cover rounded"></div><button onclick="saveGuide()" class="w-full bg-matcha text-white py-2 rounded-lg font-bold">儲存</button></div></div>
     <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('expense-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center">記下一筆公費</h3><input type="hidden" id="ex-id"><div class="space-y-3"><div class="grid grid-cols-2 gap-2"><select id="ex-category" class="w-full bg-white border rounded p-2 text-sm"><option value="飲食">🍜 飲食</option><option value="交通">🚃 交通</option><option value="購物">🛍️ 購物</option><option value="門票">🎟️ 門票</option><option value="住宿">🏨 住宿</option><option value="其他">✨ 其他</option></select><input type="text" id="ex-note" placeholder="備註" class="w-full bg-white border-b p-2 text-sm"></div><div class="flex items-center gap-2 bg-white border rounded p-2"><select id="ex-currency" class="bg-transparent text-sm font-bold"><option value="JPY">JPY</option><option value="TWD">TWD</option></select><input type="number" id="ex-amount" placeholder="金額" class="flex-1 text-lg text-right w-full" inputmode="numeric"></div><div class="flex gap-2 text-sm"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">付款人</label><select id="ex-payer" class="w-full bg-white border rounded p-1"></select></div><div class="w-16"><label class="block text-xs text-gray-400 mb-1">人數</label><input type="number" id="ex-people" value="1" min="1" class="w-full bg-white border rounded p-1 text-center"></div></div><div class="border-2 border-dashed rounded-lg p-2 text-center relative"><input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('photo-preview').src = base64; document.getElementById('photo-preview').classList.remove('hidden'); document.getElementById('photo-placeholder').classList.add('hidden'); })"><div id="photo-placeholder" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 上傳照片</div><img id="photo-preview" class="hidden h-24 mx-auto object-contain"></div></div><div class="flex gap-2 mt-4"><button onclick="deleteExpense()" id="btn-delete-expense" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveExpense()" class="flex-[2] bg-clay text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
     <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
@@ -294,7 +274,6 @@
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
     <div id="payer-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理付款人</h4><div id="payer-list" class="space-y-2 mb-3 max-h-40 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('payer-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
     
-    <!-- Updated Lightbox Modal for Zoom -->
     <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/95 z-[100] flex flex-col" onclick="closeModal('lightbox-modal')">
         <div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div>
         <div id="lightbox-container" class="zoom-container p-2" onclick="event.stopPropagation()">
@@ -303,7 +282,6 @@
         <div class="absolute bottom-10 left-0 w-full text-center text-white/50 text-xs pointer-events-none">點擊圖片切換縮放</div>
     </div>
 
-    <!-- JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -316,7 +294,6 @@
         function startListening(){if(!db)return;document.getElementById('trip-id-input').value=tripId;const statusEl=document.getElementById('cloud-status');unsubscribe=onSnapshot(doc(db,"trips",tripId),(docSnap)=>{if(docSnap.exists()){const data=docSnap.data();if(data.flights)localStorage.setItem('flights',JSON.stringify(data.flights));if(data.itinerary)localStorage.setItem('itinerary_v2',JSON.stringify(data.itinerary));if(data.mustEatList)localStorage.setItem('mustEatList',JSON.stringify(data.mustEatList));if(data.expenses)localStorage.setItem('expenses',JSON.stringify(data.expenses));if(data.guides)localStorage.setItem('guides',JSON.stringify(data.guides));if(data.todos)localStorage.setItem('todos',JSON.stringify(data.todos));if(data.shoppingList)localStorage.setItem('shoppingList_v2',JSON.stringify(data.shoppingList));if(data.payers)localStorage.setItem('payers',JSON.stringify(data.payers));if(data.manualDebts)localStorage.setItem('manualDebts_v1',JSON.stringify(data.manualDebts));if(data.memo!==undefined)localStorage.setItem('memo',data.memo);if(window.refreshUI)window.refreshUI();if(statusEl)statusEl.innerHTML='<i class="fa-solid fa-cloud text-green-500"></i> 資料最新';}else{if(statusEl)statusEl.innerHTML='建立存檔...';window.pushDataToCloud();}});}
     </script>
 
-    <!-- MAIN APP LOGIC -->
     <script>
         let flights = [], itinerary = [], mustEatList = [], expenses = [], guides = [], todos = [], shoppingList = [], payers = [], manualDebts = [], memoText = "";
         
@@ -376,29 +353,6 @@
         function openModal(id){document.getElementById(id).classList.remove('hidden');setTimeout(()=>document.getElementById(id).classList.add('visible'),10);}
         function closeModal(id){const el=document.getElementById(id);el.classList.remove('visible');setTimeout(()=>el.classList.add('hidden'),300);}
 
-        /* New Meal Click Handler for URL/Expense Logic (V26) */
-        function handleMealClick(dayId, mealKey) {
-            const day = itinerary.find(d => d.id === dayId);
-            if (!day) return;
-            const meal = day.meals[mealKey];
-            if (!meal || !meal.name) return;
-
-            const mealTypeMap = { b: '早餐', l: '午餐', d: '晚餐' };
-            const mealType = mealTypeMap[mealKey];
-
-            if (meal.url) {
-                // Option 1: Open URL if provided
-                window.open(meal.url, '_blank');
-            } else {
-                // Option 2: Open expense modal if no URL
-                switchTab('wallet');
-                openExpenseModal(null, { 
-                    note: `${mealType}: ${meal.name}` + (meal.note ? ` (${meal.note})` : ''), 
-                    cat: '飲食' 
-                });
-            }
-        }
-
         /* FLIGHTS */
         function renderFlights() {
              const c=document.getElementById('flight-list-container');c.innerHTML='';
@@ -427,7 +381,7 @@
         function editFlight(id){ openFlightModal(flights.find(f=>f.id===id)); }
         function openFlightModal(f=null){ ['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value=''); if(f){ document.getElementById('flight-id').value=f.id; document.getElementById('flight-dep').value=f.dep; document.getElementById('flight-arr').value=f.arr; document.getElementById('flight-code').value=f.code; document.getElementById('flight-time').value=f.time; document.getElementById('flight-date').value=f.date; document.getElementById('flight-url').value=f.url; } openModal('flight-modal'); }
 
-        /* ITINERARY (Updated for handleMealClick) */
+        /* ITINERARY (Updated for V29 split button logic) */
         function renderItinerary() {
             const c=document.getElementById('itinerary-container'); c.innerHTML='';
             itinerary.forEach((day)=>{
@@ -440,14 +394,38 @@
                 const transPhoto = day.transportation.photo ? `<div class="mt-2 cursor-pointer relative group inline-block" onclick="viewPhoto('${day.transportation.photo}')"><img src="${day.transportation.photo}" class="h-16 w-auto object-contain rounded border border-gray-200 bg-white"><div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 rounded transition"><i class="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow-md"></i></div></div>` : '';
                 const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm items-start"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div>${transPhoto}</div></div>` : '';
                 
-                // Meal Buttons (V26: Calls handleMealClick)
-                const mealButtons = `
-                    <div class="mt-2 flex flex-wrap gap-2">
-                      ${day.meals.b.name ? `<button onclick="handleMealClick('${day.id}', 'b')" class="text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full flex items-center hover:bg-orange-100 transition shadow-sm border border-orange-100"><i class="fa-solid fa-mug-hot mr-1.5"></i> ${day.meals.b.name}</button>` : ''}
-                      ${day.meals.l.name ? `<button onclick="handleMealClick('${day.id}', 'l')" class="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-full flex items-center hover:bg-green-100 transition shadow-sm border border-green-100"><i class="fa-solid fa-utensils mr-1.5"></i> ${day.meals.l.name}</button>` : ''}
-                      ${day.meals.d.name ? `<button onclick="handleMealClick('${day.id}', 'd')" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full flex items-center hover:bg-purple-100 transition shadow-sm border border-purple-100"><i class="fa-solid fa-wine-glass mr-1.5"></i> ${day.meals.d.name}</button>` : ''}
-                    </div>
-                `;
+                // Meal Buttons (V29: Split Logic)
+                const meals = [
+                    { key: 'b', label: '早餐', icon: 'fa-mug-hot', color: 'orange' },
+                    { key: 'l', label: '午餐', icon: 'fa-utensils', color: 'green' },
+                    { key: 'd', label: '晚餐', icon: 'fa-wine-glass', color: 'purple' }
+                ];
+
+                let mealButtons = '<div class="mt-2 flex flex-wrap gap-2">';
+                let hasMeals = false;
+                meals.forEach(m => {
+                    const mealData = day.meals[m.key];
+                    if (mealData && mealData.name) {
+                        hasMeals = true;
+                        const hasUrl = !!mealData.url;
+                        const baseClass = `text-xs flex items-center rounded-full border shadow-sm transition group/meal overflow-hidden`;
+                        const colorClass = `bg-${m.color}-50 text-${m.color}-600 border-${m.color}-100`;
+                        
+                        // Icon Button: Always Expense
+                        const iconBtn = `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '${m.label}: ${mealData.name}', cat: '飲食'})" class="px-2 py-1.5 hover:bg-${m.color}-100 border-r border-${m.color}-200/50 outline-none" title="記下一筆"><i class="fa-solid ${m.icon}"></i></button>`;
+                        
+                        // Text Button: Link if exists, else text
+                        let textBtn = '';
+                        if (hasUrl) {
+                            textBtn = `<button onclick="window.open('${mealData.url}', '_blank')" class="px-3 py-1.5 font-bold hover:bg-${m.color}-100 flex items-center gap-1 outline-none">${mealData.name} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1 opacity-50"></i></button>`;
+                        } else {
+                            textBtn = `<span class="px-3 py-1.5 cursor-default font-bold">${mealData.name}</span>`;
+                        }
+                        
+                        mealButtons += `<div class="${baseClass} ${colorClass}">${iconBtn}${textBtn}</div>`;
+                    }
+                });
+                mealButtons += '</div>';
 
                 c.innerHTML+=`
                 <div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
@@ -461,7 +439,7 @@
                         <ul class="text-sm space-y-3 leading-relaxed text-gray-600 font-serif">${content}</ul>
                         ${photosHtml}${trans}
                         ${day.accommodation?`<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation}</div>`:''}
-                        ${(day.meals.b.name||day.meals.l.name||day.meals.d.name)? mealButtons : ''}
+                        ${hasMeals ? mealButtons : ''}
                     </div>
                 </div>`;
             });
@@ -638,3 +616,4 @@
     </script>
 </body>
 </html>
+```eof
