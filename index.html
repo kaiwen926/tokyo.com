@@ -11,20 +11,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f9f7f2">
 
-    <!-- ========================================== -->
     <!-- [V25 新增] 主畫面圖示設定 (Web Clip Icon) -->
-  <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#f9f7f2">
-
-    <!-- ========================================== -->
-    <!-- [V25 新增] 主畫面圖示設定 (Web Clip Icon) -->
-    <!-- iOS / Android 加到主畫面時會顯示這個圖示 -->
-    <!-- 你可以將下方的 href 網址換成任何你喜歡的圖片連結 -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <!-- ========================================== -->
 
-    <title>一起旅行吧</title>
+    <title>旅の記 V27.0 (頂部快速記帳)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -91,8 +83,8 @@
 </head>
 <body>
 
-    <!-- HEADER -->
-    <header class="pb-2 px-4 text-center sticky top-0 bg-[#f9f7f2]/95 z-40 backdrop-blur-sm transition-all duration-300" style="padding-top: max(1.5rem, var(--sat));">
+    <!-- HEADER (V27: Added relative position and Quick Expense Button) -->
+    <header class="pb-2 px-4 text-center sticky top-0 bg-[#f9f7f2]/95 z-40 backdrop-blur-sm transition-all duration-300 relative" style="padding-top: max(1.5rem, var(--sat));">
         <h1 class="text-4xl font-black tracking-widest text-ink handwritten relative inline-block mt-2" style="font-weight: 900;">
             <span class="absolute -top-4 -left-6 text-3xl rotate-[-15deg] opacity-60">✈️</span>
             旅の記
@@ -104,6 +96,14 @@
                 <i class="fa-solid fa-cloud"></i> <span>連線中...</span>
             </div>
         </div>
+
+        <!-- Quick Expense Button (V27) -->
+        <button id="quick-expense-btn" onclick="switchTab('wallet'); openExpenseModal();" 
+                class="absolute top-0 right-5 text-matcha hover:text-green-700 active:scale-95 transition-all text-2xl p-1" 
+                style="padding-top: max(1.8rem, calc(0.3rem + var(--sat))); display: none;" 
+                title="快速記帳">
+            <i class="fa-solid fa-circle-dollar-to-slot"></i>
+        </button>
     </header>
 
     <!-- MAIN CONTAINER -->
@@ -120,7 +120,7 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl"></i>每日行程</h3>
             </div>
-            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊三餐或交通圖片可記帳與放大</p>
+            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊三餐可連結網址或記帳 / 點擊交通圖片可放大</p>
             <div id="itinerary-container" class="space-y-6"></div>
             <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶</button>
         </section>
@@ -268,7 +268,20 @@
             <div class="mb-4"><input type="text" id="day-accommodation-edit" class="w-full p-2 border rounded text-sm mb-2" placeholder="住宿地點"><input type="url" id="day-accommodation-url-edit" class="w-full p-2 border rounded text-sm" placeholder="Google Maps 連結"></div>
             <div class="mb-4 border-t pt-3 bg-gray-50 p-2 rounded-lg border border-gray-100"><h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1"><i class="fa-solid fa-train"></i> 交通方式</h4><div class="flex gap-2 mb-2"><input type="time" id="day-trans-time" class="w-1/3 p-2 border border-gray-300 rounded text-sm"><input type="text" id="day-trans-content" placeholder="內容 (如: 搭新幹線)" class="flex-1 p-2 border border-gray-300 rounded text-sm"></div><div class="flex gap-2 mb-2"><input type="text" id="day-trans-note" placeholder="備註 (如: 買票)" class="flex-1 p-2 border border-gray-300 rounded text-sm"></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-2 text-center relative hover:bg-white bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentTransPhoto = base64; document.getElementById('trans-photo-preview').src = base64; document.getElementById('trans-photo-preview').classList.remove('hidden'); document.getElementById('trans-photo-text').classList.add('hidden'); })"><div id="trans-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-ticket mb-1 block"></i> 上傳車票/時刻表</div><img id="trans-photo-preview" class="hidden h-20 mx-auto object-contain rounded"><button onclick="clearTransPhoto()" class="absolute top-1 right-1 bg-gray-200 rounded-full w-5 h-5 text-[10px] text-gray-500 z-10"><i class="fa-solid fa-times"></i></button></div></div>
             <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用反斜線 '\' 分隔每項活動)"></textarea>
-            <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm"><h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排</h4><div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-mug-hot text-orange-300 w-5"></i><input type="text" id="meal-b-name" placeholder="早餐" class="flex-1 text-sm font-bold bg-transparent"></div><div class="flex gap-2 pl-7"><input type="url" id="meal-b-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-b-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div></div><div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-utensils text-green-400 w-5"></i><input type="text" id="meal-l-name" placeholder="午餐" class="flex-1 text-sm font-bold bg-transparent"></div><div class="flex gap-2 pl-7"><input type="url" id="meal-l-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-l-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div></div><div><div class="flex gap-2 mb-1"><i class="fa-solid fa-wine-glass text-purple-400 w-5"></i><input type="text" id="meal-d-name" placeholder="晚餐" class="flex-1 text-sm font-bold bg-transparent"></div><div class="flex gap-2 pl-7"><input type="url" id="meal-d-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-d-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div></div></div>
+            
+            <!-- 三餐編輯區塊 (已包含 URL 和 Note) -->
+            <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm"><h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排</h4>
+                <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-mug-hot text-orange-300 w-5"></i><input type="text" id="meal-b-name" placeholder="早餐" class="flex-1 text-sm font-bold bg-transparent"></div>
+                    <div class="flex gap-2 pl-7"><input type="url" id="meal-b-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-b-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
+                </div>
+                <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-utensils text-green-400 w-5"></i><input type="text" id="meal-l-name" placeholder="午餐" class="flex-1 text-sm font-bold bg-transparent"></div>
+                    <div class="flex gap-2 pl-7"><input type="url" id="meal-l-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-l-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
+                </div>
+                <div><div class="flex gap-2 mb-1"><i class="fa-solid fa-wine-glass text-purple-400 w-5"></i><input type="text" id="meal-d-name" placeholder="晚餐" class="flex-1 text-sm font-bold bg-transparent"></div>
+                    <div class="flex gap-2 pl-7"><input type="url" id="meal-d-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-d-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
+                </div>
+            </div>
+            
             <textarea id="day-note-edit" class="w-full h-20 p-2 border border-yellow-200 bg-yellow-50 rounded text-sm mb-4 handwritten" placeholder="每日備註..."></textarea>
             <div class="flex gap-2"><button onclick="deleteDay()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm">刪除</button><button onclick="saveDay()" class="flex-[2] bg-matcha text-white py-2 rounded-lg font-bold shadow">儲存</button></div>
         </div>
@@ -318,7 +331,16 @@
             payers = JSON.parse(localStorage.getItem('payers')) || ["我", "旅伴", "公費"];
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             memoText = localStorage.getItem('memo') || "";
-            itinerary = itinerary.map(d => ({ ...d, transportation: d.transportation||{content:'',note:'',time:'',photo:''}, meals: { b: (d.meals?.b?.name===undefined?{name:d.meals?.b||'',url:'',note:''}:d.meals.b), l: (d.meals?.l?.name===undefined?{name:d.meals?.l||'',url:'',note:''}:d.meals.l), d: (d.meals?.d?.name===undefined?{name:d.meals?.d||'',url:'',note:''}:d.meals.d) } }));
+            // Ensure meals are correctly initialized to handle old formats without URL/Note
+            itinerary = itinerary.map(d => ({ 
+                ...d, 
+                transportation: d.transportation||{content:'',note:'',time:'',photo:''}, 
+                meals: { 
+                    b: (d.meals?.b?.name===undefined?{name:d.meals?.b||'',url:'',note:''}:d.meals.b), 
+                    l: (d.meals?.l?.name===undefined?{name:d.meals?.l||'',url:'',note:''}:d.meals.l), 
+                    d: (d.meals?.d?.name===undefined?{name:d.meals?.d||'',url:'',note:''}:d.meals.d) 
+                } 
+            }));
         }
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderPayerOptions(); }
         function saveData() { if(window.pushDataToCloud) window.pushDataToCloud(); }
@@ -354,6 +376,29 @@
         function openModal(id){document.getElementById(id).classList.remove('hidden');setTimeout(()=>document.getElementById(id).classList.add('visible'),10);}
         function closeModal(id){const el=document.getElementById(id);el.classList.remove('visible');setTimeout(()=>el.classList.add('hidden'),300);}
 
+        /* New Meal Click Handler for URL/Expense Logic (V26) */
+        function handleMealClick(dayId, mealKey) {
+            const day = itinerary.find(d => d.id === dayId);
+            if (!day) return;
+            const meal = day.meals[mealKey];
+            if (!meal || !meal.name) return;
+
+            const mealTypeMap = { b: '早餐', l: '午餐', d: '晚餐' };
+            const mealType = mealTypeMap[mealKey];
+
+            if (meal.url) {
+                // Option 1: Open URL if provided
+                window.open(meal.url, '_blank');
+            } else {
+                // Option 2: Open expense modal if no URL
+                switchTab('wallet');
+                openExpenseModal(null, { 
+                    note: `${mealType}: ${meal.name}` + (meal.note ? ` (${meal.note})` : ''), 
+                    cat: '飲食' 
+                });
+            }
+        }
+
         /* FLIGHTS */
         function renderFlights() {
              const c=document.getElementById('flight-list-container');c.innerHTML='';
@@ -382,7 +427,7 @@
         function editFlight(id){ openFlightModal(flights.find(f=>f.id===id)); }
         function openFlightModal(f=null){ ['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value=''); if(f){ document.getElementById('flight-id').value=f.id; document.getElementById('flight-dep').value=f.dep; document.getElementById('flight-arr').value=f.arr; document.getElementById('flight-code').value=f.code; document.getElementById('flight-time').value=f.time; document.getElementById('flight-date').value=f.date; document.getElementById('flight-url').value=f.url; } openModal('flight-modal'); }
 
-        /* ITINERARY (Updated for clickable meal buttons) */
+        /* ITINERARY (Updated for handleMealClick) */
         function renderItinerary() {
             const c=document.getElementById('itinerary-container'); c.innerHTML='';
             itinerary.forEach((day)=>{
@@ -395,12 +440,12 @@
                 const transPhoto = day.transportation.photo ? `<div class="mt-2 cursor-pointer relative group inline-block" onclick="viewPhoto('${day.transportation.photo}')"><img src="${day.transportation.photo}" class="h-16 w-auto object-contain rounded border border-gray-200 bg-white"><div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 rounded transition"><i class="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow-md"></i></div></div>` : '';
                 const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm items-start"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div>${transPhoto}</div></div>` : '';
                 
-                // Meal Buttons
+                // Meal Buttons (V26: Calls handleMealClick)
                 const mealButtons = `
                     <div class="mt-2 flex flex-wrap gap-2">
-                      ${day.meals.b.name ? `<button onclick="openExpenseModal(null, {note: '早餐: ${day.meals.b.name}', cat: '飲食'})" class="text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full flex items-center hover:bg-orange-100 transition shadow-sm border border-orange-100"><i class="fa-solid fa-mug-hot mr-1.5"></i> ${day.meals.b.name}</button>` : ''}
-                      ${day.meals.l.name ? `<button onclick="openExpenseModal(null, {note: '午餐: ${day.meals.l.name}', cat: '飲食'})" class="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-full flex items-center hover:bg-green-100 transition shadow-sm border border-green-100"><i class="fa-solid fa-utensils mr-1.5"></i> ${day.meals.l.name}</button>` : ''}
-                      ${day.meals.d.name ? `<button onclick="openExpenseModal(null, {note: '晚餐: ${day.meals.d.name}', cat: '飲食'})" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full flex items-center hover:bg-purple-100 transition shadow-sm border border-purple-100"><i class="fa-solid fa-wine-glass mr-1.5"></i> ${day.meals.d.name}</button>` : ''}
+                      ${day.meals.b.name ? `<button onclick="handleMealClick('${day.id}', 'b')" class="text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full flex items-center hover:bg-orange-100 transition shadow-sm border border-orange-100"><i class="fa-solid fa-mug-hot mr-1.5"></i> ${day.meals.b.name}</button>` : ''}
+                      ${day.meals.l.name ? `<button onclick="handleMealClick('${day.id}', 'l')" class="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-full flex items-center hover:bg-green-100 transition shadow-sm border border-green-100"><i class="fa-solid fa-utensils mr-1.5"></i> ${day.meals.l.name}</button>` : ''}
+                      ${day.meals.d.name ? `<button onclick="handleMealClick('${day.id}', 'd')" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full flex items-center hover:bg-purple-100 transition shadow-sm border border-purple-100"><i class="fa-solid fa-wine-glass mr-1.5"></i> ${day.meals.d.name}</button>` : ''}
                     </div>
                 `;
 
@@ -423,8 +468,77 @@
         }
         
         function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",accommodation:"",transportation:{},meals:{b:{},l:{},d:{}}});localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary();}
-        function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo; document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); document.getElementById('meal-b-name').value=d.meals.b.name; document.getElementById('meal-l-name').value=d.meals.l.name; document.getElementById('meal-d-name').value=d.meals.d.name; openModal('day-modal'); }
-        function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals={b:{name:document.getElementById('meal-b-name').value},l:{name:document.getElementById('meal-l-name').value},d:{name:document.getElementById('meal-d-name').value}}; localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal'); }
+        
+        // Updated openDayEditor to load URL and Note for meals (V26)
+        function openDayEditor(id){ 
+            const d=itinerary.find(i=>i.id===id); 
+            if(!d)return; 
+            document.getElementById('day-id-edit').value=d.id; 
+            document.getElementById('day-date-edit').value=d.date; 
+            document.getElementById('day-highlight-edit').checked=d.highlight; 
+            document.getElementById('day-content-edit').value=d.content; 
+            document.getElementById('day-accommodation-edit').value=d.accommodation; 
+            document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; 
+            document.getElementById('day-trans-content').value=d.transportation?.content||''; 
+            document.getElementById('day-trans-note').value=d.transportation?.note||''; 
+            document.getElementById('day-trans-time').value=d.transportation?.time||''; 
+            currentTransPhoto=d.transportation?.photo; 
+            document.getElementById('day-note-edit').value=d.dayNote||''; 
+            tempDayPhotos = d.photos ? [...d.photos] : []; 
+            renderDayPhotosPreview(); 
+            
+            // Load Meal details (V26)
+            document.getElementById('meal-b-name').value=d.meals.b.name;
+            document.getElementById('meal-b-url').value=d.meals.b.url || '';
+            document.getElementById('meal-b-note').value=d.meals.b.note || '';
+            
+            document.getElementById('meal-l-name').value=d.meals.l.name;
+            document.getElementById('meal-l-url').value=d.meals.l.url || '';
+            document.getElementById('meal-l-note').value=d.meals.l.note || '';
+            
+            document.getElementById('meal-d-name').value=d.meals.d.name;
+            document.getElementById('meal-d-url').value=d.meals.d.url || '';
+            document.getElementById('meal-d-note').value=d.meals.d.note || '';
+            
+            openModal('day-modal'); 
+        }
+
+        // Updated saveDay to save URL and Note for meals (V26)
+        function saveDay(){ 
+            const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); 
+            if(idx<0)return; 
+            const i=itinerary[idx]; 
+            i.date=document.getElementById('day-date-edit').value; 
+            i.highlight=document.getElementById('day-highlight-edit').checked; 
+            i.content=document.getElementById('day-content-edit').value; 
+            i.accommodation=document.getElementById('day-accommodation-edit').value; 
+            i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; 
+            i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; 
+            i.dayNote=document.getElementById('day-note-edit').value; 
+            i.photos=[...tempDayPhotos]; 
+            
+            // Save Meal details (V26)
+            i.meals={
+                b:{
+                    name:document.getElementById('meal-b-name').value, 
+                    url:document.getElementById('meal-b-url').value,
+                    note:document.getElementById('meal-b-note').value
+                },
+                l:{
+                    name:document.getElementById('meal-l-name').value,
+                    url:document.getElementById('meal-l-url').value,
+                    note:document.getElementById('meal-l-note').value
+                },
+                d:{
+                    name:document.getElementById('meal-d-name').value,
+                    url:document.getElementById('meal-d-url').value,
+                    note:document.getElementById('meal-d-note').value
+                }
+            };
+
+            localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal'); 
+        }
+
         function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal');}}
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="removeDayPhoto(${i})" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
@@ -499,7 +613,27 @@
 
         document.getElementById('memo-pad').addEventListener('input',(e)=>{ localStorage.setItem('memo',e.target.value); saveData(); });
         document.getElementById('memo-pad').value = memoText;
-        function switchTab(t){document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden'));document.getElementById('view-'+t).classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.querySelector(`[data-target="${t}"]`).classList.add('active');window.scrollTo(0,0);}
+        
+        // V27: Updated switchTab logic to control quick expense button visibility
+        function switchTab(t){
+            document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden'));
+            document.getElementById('view-'+t).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+            document.querySelector(`[data-target="${t}"]`).classList.add('active');
+            
+            // V27: Toggle Quick Expense Button visibility
+            const quickExpenseBtn = document.getElementById('quick-expense-btn');
+            if (quickExpenseBtn) {
+                if (t === 'plan') {
+                    quickExpenseBtn.style.display = 'block';
+                } else {
+                    quickExpenseBtn.style.display = 'none';
+                }
+            }
+            
+            window.scrollTo(0,0);
+        }
+        
         window.onload=function(){ reloadLocalData(); renderFlights(); renderGuides(); renderChecklist(); renderShoppingList(); renderPayerOptions(); renderMustEatList(); renderExpenses(); switchTab('plan'); }
     </script>
 </body>
