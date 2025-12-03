@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>LKY Trip</title>
+    <title>一起旅行吧LCK</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -191,7 +191,15 @@
 
         <!-- INFO VIEW -->
         <section id="view-info" class="view-section hidden">
-            <h2 class="text-2xl font-bold text-center handwritten mb-6 mt-4">旅途情報</h2>
+            <!-- [V35.4] 新增右上角小按鈕，取代大紅色警告框 -->
+            <div class="flex justify-between items-center mb-6 mt-4 px-2">
+                <div class="w-8"></div> <!-- Spacer for centering -->
+                <h2 class="text-2xl font-bold handwritten text-center">旅途情報</h2>
+                <button onclick="resetToDefaults()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition shadow-sm" title="強制重置資料">
+                    <i class="fa-solid fa-rotate-right text-xs"></i>
+                </button>
+            </div>
+
             <div class="hand-card p-4 mb-6 border-l-4 border-matcha bg-matcha/5">
                 <h3 class="font-bold text-green-800 mb-2 handwritten text-lg"><i class="fa-brands fa-github mr-2"></i>GitHub Gist 雲端同步 (V35)</h3>
                 <div class="text-xs text-gray-500 mb-4">使用穩定、免費的 GitHub Gist 進行備份。</div>
@@ -307,7 +315,7 @@
                 "id": "day_1",
                 "date": "1/10 Day 1 成田",
                 "highlight": false,
-                "content": "• 18:00 抵達成田機場\n• Aeon Mall 超市吃逛",
+                "content": "18:00 抵達成田機場\nAeon Mall 超市吃逛",
                 "accommodation": "成田機場周邊",
                 "accommodationUrl": "",
                 "transportation": { "content": "搭乘 Skyliner", "note": "事先買票", "time": "18:40" },
@@ -319,7 +327,7 @@
                 "id": "day_2",
                 "date": "Day 2 新宿",
                 "highlight": false,
-                "content": "• 淺草雷門\n• 新宿 (新宿素食拉麵 / 3D貓 / 哥吉拉)\n• 東京都廳免費夜景",
+                "content": "淺草雷門\n新宿 (新宿素食拉麵 / 3D貓 / 哥吉拉)\n東京都廳免費夜景",
                 "accommodation": "東京市區",
                 "accommodationUrl": "",
                 "transportation": { "content": "", "note": "", "time": "" },
@@ -331,7 +339,7 @@
                 "id": "day_3",
                 "date": "Day 3 築地",
                 "highlight": false,
-                "content": "• 築地市場 (築地飯糰)\n• 千客萬來（足浴）或豐洲市場\n• teamLab 豐洲\n• 阿美橫丁",
+                "content": "築地市場 (築地飯糰)\n千客萬來（足浴）或豐洲市場\nteamLab 豐洲\n阿美橫丁",
                 "accommodation": "東京市區",
                 "accommodationUrl": "",
                 "transportation": { "content": "", "note": "", "time": "" },
@@ -343,7 +351,7 @@
                 "id": "day_4",
                 "date": "Day 4 輕井澤",
                 "highlight": true,
-                "content": "• 車站寄行李\n• 輕井澤 Outlet 爆買\n• 玩雪 (Snow Park)\n• Check-in",
+                "content": "車站寄行李\n輕井澤 Outlet 爆買\n玩雪 (Snow Park)\nCheck-in",
                 "accommodation": "Cypress 輕井澤",
                 "accommodationUrl": "",
                 "transportation": { "content": "新幹線往輕井澤", "note": "指定席", "time": "09:00" },
@@ -355,7 +363,7 @@
                 "id": "day_5",
                 "date": "Day 5 輕井澤",
                 "highlight": false,
-                "content": "• 單車漫遊星野榆樹街\n• 午餐\n• 蜻蜓之湯\n• 石之教堂 / 高原教會\n• 回飯店",
+                "content": "單車漫遊星野榆樹街\n午餐\n蜻蜓之湯\n石之教堂 / 高原教會\n回飯店",
                 "accommodation": "Cypress 輕井澤",
                 "accommodationUrl": "",
                 "transportation": { "content": "", "note": "", "time": "" },
@@ -367,7 +375,7 @@
                 "id": "day_6",
                 "date": "Day 6 東京站",
                 "highlight": false,
-                "content": "• 走去雲場池\n• 10:00 退房\n• 新幹線回東京\n• 東京站飯店放行李\n• 17:00 東京鐵塔 RED TOKYO TOWER (星光票)",
+                "content": "走去雲場池\n10:00 退房\n新幹線回東京\n東京站飯店放行李\n17:00 東京鐵塔 RED TOKYO TOWER (星光票)",
                 "accommodation": "東京站飯店",
                 "accommodationUrl": "",
                 "transportation": { "content": "NEX 成田特快", "note": "放行李後再搭乘", "time": "15:30" },
@@ -379,7 +387,7 @@
                 "id": "day_7",
                 "date": "Day 7 成田機場",
                 "highlight": false,
-                "content": "• 東京站最後補貨\n• 18:25 飛機 (返台)",
+                "content": "東京站最後補貨\n18:25 飛機 (返台)",
                 "accommodation": "",
                 "accommodationUrl": "",
                 "transportation": { "content": "NEX 成田特快往機場", "note": "", "time": "15:30" },
@@ -509,14 +517,35 @@
         };
 
         // --- Core App Logic ---
+        
+        // [V35.3] 強制重設功能
+        window.resetToDefaults = function() {
+            if(confirm("確定要強制載入預設的 7 天行程嗎？\n(這會覆蓋目前的空白資料)")) {
+                localStorage.removeItem('itinerary_v2'); // 清除舊有的可能壞掉的資料
+                localStorage.removeItem('flights');
+                localStorage.removeItem('payers');
+                
+                // 強制寫入
+                localStorage.setItem('itinerary_v2', JSON.stringify(RECOVERED_ITINERARY));
+                localStorage.setItem('flights', JSON.stringify(RECOVERED_FLIGHTS));
+                localStorage.setItem('payers', JSON.stringify(RECOVERED_PAYERS));
+                localStorage.setItem('todos', JSON.stringify(RECOVERED_TODOS));
+                
+                alert("已載入預設行程！\n正在重新整理頁面...");
+                location.reload();
+            }
+        };
 
         function reloadLocalData() {
             // [關鍵修改] 優先讀取 LocalStorage，如果是空的，就載入內建的 RECOVERED 資料
-            flights = JSON.parse(localStorage.getItem('flights')) || RECOVERED_FLIGHTS;
+            flights = JSON.parse(localStorage.getItem('flights')) || [];
+            if(flights.length === 0) flights = RECOVERED_FLIGHTS;
+
             itinerary = JSON.parse(localStorage.getItem('itinerary_v2')) || [];
             
-            if (itinerary.length === 0) {
-                console.log("Using recovered itinerary data");
+            // [V35.3] 更嚴格的檢查，如果陣列是空的，就強制使用備份
+            if (!itinerary || itinerary.length === 0) {
+                console.log("LocalStorage is empty, using RECOVERED_ITINERARY");
                 itinerary = RECOVERED_ITINERARY;
             }
 
@@ -613,13 +642,11 @@
                 guides.forEach(g=>{ content=content.replace(new RegExp(g.title,'gi'),`<span class="font-bold border-b-2 border-matcha cursor-pointer hover:bg-matcha/20" onclick="jumpToGuide(${g.id})">${g.title}</span>`); });
                 mustEatList.forEach(e=>{ if(e.location) content=content.replace(new RegExp(e.location,'g'),`<span class="text-matcha font-bold cursor-pointer hover:underline" onclick="jumpToMustEat('${e.id}')">${e.location}<i class="fa-solid fa-utensils text-xs ml-1"></i></span>`); });
                 
-                // Bullet point logic: Split by newlines and add bullets
+                // [V35.3] 移除點點邏輯，改為單純的換行顯示
                 content = content.split('\n').map(line => {
                     const trimmed = line.trim();
                     if(!trimmed) return '';
-                    // If it already starts with a bullet, keep it, otherwise add one
-                    const displayLine = (trimmed.startsWith('•') || trimmed.startsWith('-')) ? trimmed : `• ${trimmed}`;
-                    return `<li class="flex items-start"><span class="mr-2 mt-1.5 w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0"></span><span>${displayLine}</span></li>`;
+                    return `<li class="flex items-start"><span>${trimmed}</span></li>`;
                 }).join('');
 
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
@@ -765,7 +792,7 @@
         function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
         function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false});localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
         function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
-        function updateTodo(i,v){todos[i].text=v;localStorage.setItem('todos',JSON.stringify(todos)); saveData();}
+        function updateTodo(i,v){todos[i].text=v;localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
         function deleteTodo(i){todos.splice(i,1);localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
         function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ const h=`<div class="p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span></div>`; if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
         function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
