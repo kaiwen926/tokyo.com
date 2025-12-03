@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>一起旅行吧LCK</title>
+    <title>一起旅行吧<//title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -90,6 +90,10 @@
             <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200">
                 <i class="fa-solid fa-code-branch"></i> <span>未連線</span>
             </div>
+            <!-- [V35.4] 快速同步按鈕 -->
+            <button onclick="forceDownload()" class="text-[10px] bg-gray-100/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 hover:bg-fuji-light hover:text-fuji" title="立即同步">
+                <i class="fa-solid fa-rotate-right"></i> <span>同步</span>
+            </button>
         </div>
         <button id="quick-expense-btn" onclick="switchTab('wallet'); openExpenseModal();" 
                 class="absolute top-0 right-5 text-matcha hover:text-green-700 active:scale-95 transition-all text-2xl p-1" 
@@ -100,8 +104,13 @@
     </header>
 
     <!-- MAIN CONTAINER -->
-    <main id="app" class="px-5 w-full mx-auto min-h-screen max-w-md">
-        
+    <main id="app" class="px-5 w-full mx-auto min-h-screen max-w-md relative">
+        <!-- 裝飾用小插畫 -->
+        <div class="absolute top-0 left-0 -ml-4 mt-6 text-2xl opacity-50 rotate-[-10deg] pointer-events-none">🌸</div>
+        <div class="absolute top-1/4 right-0 -mr-4 text-3xl text-fuji/30 rotate-[20deg] pointer-events-none">🗻</div>
+        <div class="absolute bottom-1/3 left-0 -ml-8 text-xl text-matcha/40 pointer-events-none">🍵</div>
+
+
         <!-- PLAN VIEW -->
         <section id="view-plan" class="view-section animate-fade">
             <div class="flex justify-between items-center mb-4 mt-6">
@@ -113,7 +122,7 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl"></i>每日行程</h3>
             </div>
-            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊飯店名稱導航</p>
+            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊餐點名稱導航</p>
             <div id="itinerary-container" class="space-y-6"></div>
             <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶</button>
         </section>
@@ -185,24 +194,24 @@
              <div class="hand-card p-5 bg-[#fffff0] rotate-1 shadow-md">
                 <div class="absolute top-0 left-0 w-full h-2 bg-yellow-400/20"></div>
                 <h3 class="text-lg font-bold mb-2 handwritten text-yellow-800"><i class="fa-solid fa-note-sticky mr-2"></i>隨手記 (MEMO)</h3>
-                <textarea id="memo-pad" class="w-full h-48 bg-transparent border-none resize-none text-sm leading-8 outline-none text-gray-700 handwritten" style="background-image: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px); line-height: 32px;" placeholder="在這裡隨手記下想法..."></textarea>
+                <textarea id="memo-pad" class="w-full h-48 p-3 bg-transparent border-none resize-none text-sm leading-8 outline-none text-gray-700 handwritten" style="background-image: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px); line-height: 32px;" placeholder="在這裡隨手記下想法..."></textarea>
             </div>
         </section>
 
         <!-- INFO VIEW -->
         <section id="view-info" class="view-section hidden">
-            <!-- [V35.4] 新增右上角小按鈕，取代大紅色警告框 -->
+            <!-- [V35.4] 標題與重置按鈕 -->
             <div class="flex justify-between items-center mb-6 mt-4 px-2">
                 <div class="w-8"></div> <!-- Spacer for centering -->
                 <h2 class="text-2xl font-bold handwritten text-center">旅途情報</h2>
-                <button onclick="resetToDefaults()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition shadow-sm" title="強制重置資料">
+                <button onclick="resetToDefaults()" class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-100 transition shadow-sm" title="強制重置資料">
                     <i class="fa-solid fa-rotate-right text-xs"></i>
                 </button>
             </div>
 
             <div class="hand-card p-4 mb-6 border-l-4 border-matcha bg-matcha/5">
                 <h3 class="font-bold text-green-800 mb-2 handwritten text-lg"><i class="fa-brands fa-github mr-2"></i>GitHub Gist 雲端同步 (V35)</h3>
-                <div class="text-xs text-gray-500 mb-4">使用穩定、免費的 GitHub Gist 進行備份。</div>
+                <div class="text-xs text-gray-500 mb-4">資料有變動會自動上傳（約 1 秒後）。</div>
                 <div class="space-y-3">
                     <div>
                         <label class="text-xs font-bold text-gray-600 block mb-1">1. Gist ID</label>
@@ -263,20 +272,20 @@
             <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用反斜線 '\' 分隔每項活動)"></textarea>
             <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm"><h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排</h4>
                 <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-mug-hot text-orange-300 w-5"></i><input type="text" id="meal-b-name" placeholder="早餐" class="flex-1 text-sm font-bold bg-transparent"></div>
-                    <div class="flex gap-2 pl-7"><input type="url" id="meal-b-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-b-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
+                    <div class="flex gap-2 pl-7"><input type="url" id="meal-b-url" placeholder="網址 (留空則搜尋地點)" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-b-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
                 </div>
                 <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-utensils text-green-400 w-5"></i><input type="text" id="meal-l-name" placeholder="午餐" class="flex-1 text-sm font-bold bg-transparent"></div>
-                    <div class="flex gap-2 pl-7"><input type="url" id="meal-l-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-l-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
+                    <div class="flex gap-2 pl-7"><input type="url" id="meal-l-url" placeholder="網址 (留空則搜尋地點)" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-l-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
                 </div>
                 <div><div class="flex gap-2 mb-1"><i class="fa-solid fa-wine-glass text-purple-400 w-5"></i><input type="text" id="meal-d-name" placeholder="晚餐" class="flex-1 text-sm font-bold bg-transparent"></div>
-                    <div class="flex gap-2 pl-7"><input type="url" id="meal-d-url" placeholder="網址" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-d-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
+                    <div class="flex gap-2 pl-7"><input type="url" id="meal-d-url" placeholder="網址 (留空則搜尋地點)" class="w-1/2 text-xs border rounded px-1"><input type="text" id="meal-d-note" placeholder="備註" class="w-1/2 text-xs border rounded px-1"></div>
                 </div>
             </div>
             <textarea id="day-note-edit" class="w-full h-20 p-2 border border-yellow-200 bg-yellow-50 rounded text-sm mb-4 handwritten" placeholder="每日備註..."></textarea>
             <div class="flex gap-2"><button onclick="deleteDay()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm">刪除</button><button onclick="saveDay()" class="flex-[2] bg-matcha text-white py-2 rounded-lg font-bold shadow">儲存</button></div>
         </div>
     </div>
-    <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/95 z-[100] flex flex-col" onclick="closeModal('lightbox-modal')">
+    <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/50 z-[100] flex flex-col" onclick="closeModal('lightbox-modal')">
         <div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div>
         <div id="lightbox-container" class="zoom-container p-2" onclick="event.stopPropagation()">
             <img id="lightbox-image" src="" class="max-w-full max-h-full object-contain shadow-2xl rounded-sm" onclick="toggleZoom(this)">
@@ -308,6 +317,7 @@
         let gistToken = localStorage.getItem('gist_token') || "";
         let gistId = localStorage.getItem('gist_id') || "";
         const GIST_FILE_NAME = "travel_data.json";
+        window.autoUploadTimer = null; // for throttling auto-uploads
 
         // [RECOVERY DATA] 您的專屬備份資料
         const RECOVERED_ITINERARY = [
@@ -408,9 +418,20 @@
         // --- Gist Cloud Logic ---
         function updateCloudStatus(msg) {
             const s = document.getElementById('cloud-status');
-            if(s) s.innerHTML = `<i class="fa-brands fa-github"></i> ${msg}`;
-            if(s) s.classList.add('bg-matcha/50');
-            setTimeout(() => { if(s) s.classList.remove('bg-matcha/50'); }, 2000);
+            // Remove previous status colors
+            s.classList.remove('bg-matcha/50', 'bg-red-500/50', 'bg-blue-500/50', 'bg-gray-200/50');
+            // Set new status and color
+            s.innerHTML = `<i class="fa-brands fa-github"></i> <span>${msg}</span>`;
+            if (msg.includes("成功") || msg.includes("同步")) {
+                s.classList.add('bg-matcha/50');
+            } else if (msg.includes("失敗")) {
+                s.classList.add('bg-red-500/50');
+            } else if (msg.includes("載入")) {
+                s.classList.add('bg-blue-500/50');
+            } else {
+                s.classList.add('bg-gray-200/50');
+            }
+            setTimeout(() => { if(s) s.classList.remove('bg-matcha/50', 'bg-red-500/50', 'bg-blue-500/50'); s.classList.add('bg-gray-200/50'); }, 2000);
         }
         
         function saveGistConfig() {
@@ -421,13 +442,13 @@
             localStorage.setItem('gist_token', token);
             gistId = id;
             gistToken = token;
-            alert("GitHub Gist 設定已儲存！");
+            alert("GitHub Gist 設定已儲存！將自動同步。");
             updateCloudStatus("已設定");
             forceDownload(); 
         }
         
         window.forceUpload = async function() {
-            if(!gistId || !gistToken) { alert("請先到資訊頁面設定 Gist ID 和權杖。"); switchTab('info'); return; }
+            if(!gistId || !gistToken) { updateCloudStatus("未連線 (請設定)"); return; }
             updateCloudStatus("上傳中...");
             
             const payload = {
@@ -453,7 +474,6 @@
                 
                 if(response.ok) {
                     updateCloudStatus("上傳成功");
-                    alert("上傳成功！其他裝置請按『下載』同步。");
                 } else {
                     const errorData = await response.json();
                     throw new Error(`上傳失敗: ${response.status} - ${errorData.message || '未知錯誤'}`);
@@ -461,12 +481,12 @@
             } catch (e) {
                 console.error("Upload Error:", e);
                 updateCloudStatus("上傳失敗");
-                alert("上傳失敗：" + e.message + "\n請檢查 Token 權限 (需勾選 gist) 和 Gist ID 是否正確。");
+                // Don't alert too often, as auto-upload runs frequently
             }
         };
         
         window.forceDownload = async function() {
-            if(!gistId || !gistToken) { updateCloudStatus("未連線"); return; }
+            if(!gistId || !gistToken) { updateCloudStatus("未連線 (請設定)"); return; }
             updateCloudStatus("下載中...");
             
             try {
@@ -481,15 +501,15 @@
                 const data = await response.json();
                 const file = data.files[GIST_FILE_NAME];
                 if (!file || !file.content) {
-                     updateCloudStatus("無資料");
-                     alert("Gist 檔案 (travel_data.json) 內容為空或格式錯誤，請先上傳本機資料。");
-                     window.forceUpload();
+                     updateCloudStatus("無雲端資料");
+                     alert("雲端 Gist 檔案內容為空或格式錯誤，請先手動上傳本機資料。");
                      return;
                 }
                 
                 const cloudData = JSON.parse(file.content);
                 
                 if(cloudData.flights) {
+                    // Overwrite LocalStorage with cloud data
                     localStorage.setItem('flights',JSON.stringify(cloudData.flights));
                     localStorage.setItem('itinerary_v2',JSON.stringify(cloudData.itinerary));
                     localStorage.setItem('mustEatList',JSON.stringify(cloudData.mustEatList));
@@ -502,12 +522,10 @@
                     if(cloudData.memo!==undefined)localStorage.setItem('memo',cloudData.memo);
                     
                     updateCloudStatus("已同步");
-                    alert("下載成功！");
                     window.refreshUI();
                 } else {
-                    updateCloudStatus("無資料");
-                    alert("雲端資料結構不完整，請先上傳本機資料。");
-                    window.forceUpload();
+                    updateCloudStatus("結構錯誤");
+                    alert("雲端資料結構不完整，請檢查 Gist 內容。");
                 }
             } catch (e) {
                 console.error("Download Error:", e);
@@ -518,14 +536,13 @@
 
         // --- Core App Logic ---
         
-        // [V35.3] 強制重設功能
         window.resetToDefaults = function() {
-            if(confirm("確定要強制載入預設的 7 天行程嗎？\n(這會覆蓋目前的空白資料)")) {
-                localStorage.removeItem('itinerary_v2'); // 清除舊有的可能壞掉的資料
+            if(confirm("確定要強制載入預設的 7 天行程嗎？\n(這會覆蓋目前的行程、航班、成員和待辦清單)")) {
+                localStorage.removeItem('itinerary_v2'); 
                 localStorage.removeItem('flights');
                 localStorage.removeItem('payers');
+                localStorage.removeItem('todos');
                 
-                // 強制寫入
                 localStorage.setItem('itinerary_v2', JSON.stringify(RECOVERED_ITINERARY));
                 localStorage.setItem('flights', JSON.stringify(RECOVERED_FLIGHTS));
                 localStorage.setItem('payers', JSON.stringify(RECOVERED_PAYERS));
@@ -537,15 +554,12 @@
         };
 
         function reloadLocalData() {
-            // [關鍵修改] 優先讀取 LocalStorage，如果是空的，就載入內建的 RECOVERED 資料
             flights = JSON.parse(localStorage.getItem('flights')) || [];
             if(flights.length === 0) flights = RECOVERED_FLIGHTS;
 
             itinerary = JSON.parse(localStorage.getItem('itinerary_v2')) || [];
             
-            // [V35.3] 更嚴格的檢查，如果陣列是空的，就強制使用備份
             if (!itinerary || itinerary.length === 0) {
-                console.log("LocalStorage is empty, using RECOVERED_ITINERARY");
                 itinerary = RECOVERED_ITINERARY;
             }
 
@@ -558,23 +572,58 @@
             payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
             if (!payers.includes("公費")) {
                 payers.push("公費");
-                localStorage.setItem('payers', JSON.stringify(payers));
             }
             
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             memoText = localStorage.getItem('memo') || "";
+            
+            // [V35.5] Ensure url and note fields exist for meals
             itinerary = itinerary.map(d => ({ 
                 ...d, 
                 transportation: d.transportation||{content:'',note:'',time:'',photo:''}, 
                 meals: { 
-                    b: (d.meals?.b?.name===undefined?{name:d.meals?.b||'',url:'',note:''}:d.meals.b), 
-                    l: (d.meals?.l?.name===undefined?{name:d.meals?.l||'',url:'',note:''}:d.meals.l), 
-                    d: (d.meals?.d?.name===undefined?{name:d.meals?.d||'',url:'',note:''}:d.meals.d) 
+                    b: {
+                        name: d.meals?.b?.name || (typeof d.meals?.b === 'string' ? d.meals.b : '') || '',
+                        url: d.meals?.b?.url || '',
+                        note: d.meals?.b?.note || ''
+                    },
+                    l: {
+                        name: d.meals?.l?.name || (typeof d.meals?.l === 'string' ? d.meals.l : '') || '',
+                        url: d.meals?.l?.url || '',
+                        note: d.meals?.l?.note || ''
+                    },
+                    d: {
+                        name: d.meals?.d?.name || (typeof d.meals?.d === 'string' ? d.meals.d : '') || '',
+                        url: d.meals?.d?.url || '',
+                        note: d.meals?.d?.note || ''
+                    }
                 } 
             }));
         }
+        
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderPayerOptions(); }
-        function saveData() {} // Gist 版不需自動上傳，手動觸發
+        
+        function saveData() {
+            // Save to local storage immediately
+            localStorage.setItem('flights', JSON.stringify(flights));
+            localStorage.setItem('itinerary_v2', JSON.stringify(itinerary));
+            localStorage.setItem('mustEatList', JSON.stringify(mustEatList));
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            localStorage.setItem('guides', JSON.stringify(guides));
+            localStorage.setItem('todos', JSON.stringify(todos));
+            localStorage.setItem('shoppingList_v2', JSON.stringify(shoppingList));
+            localStorage.setItem('payers', JSON.stringify(payers));
+            localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
+            localStorage.setItem('memo', memoText); 
+
+            // Auto upload logic (throttled)
+            if (gistId && gistToken) {
+                clearTimeout(window.autoUploadTimer);
+                window.autoUploadTimer = setTimeout(() => {
+                    forceUpload();
+                }, 1000); 
+            }
+        }
         
         // --- UI & Modals ---
 
@@ -628,8 +677,8 @@
                  </div>`; 
              });
         }
-        function saveFlight(){ const id=document.getElementById('flight-id').value, dep=document.getElementById('flight-dep').value, arr=document.getElementById('flight-arr').value; if(!dep)return; const f={id:id?parseInt(id):Date.now(), dep, arr, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} localStorage.setItem('flights',JSON.stringify(flights)); saveData(); renderFlights(); closeModal('flight-modal'); }
-        function deleteFlight(id){if(confirm("確定刪除此航班?")){flights=flights.filter(f=>f.id!==id);localStorage.setItem('flights',JSON.stringify(flights)); saveData(); renderFlights();}}
+        function saveFlight(){ const id=document.getElementById('flight-id').value, dep=document.getElementById('flight-dep').value, arr=document.getElementById('flight-arr').value; if(!dep)return; const f={id:id?parseInt(id):Date.now(), dep, arr, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
+        function deleteFlight(id){if(confirm("確定刪除此航班?")){flights=flights.filter(f=>f.id!==id); saveData(); renderFlights();}}
         function editFlight(id){ openFlightModal(flights.find(f=>f.id===id)); }
         function openFlightModal(f=null){ ['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value=''); if(f){ document.getElementById('flight-id').value=f.id; document.getElementById('flight-dep').value=f.dep; document.getElementById('flight-arr').value=f.arr; document.getElementById('flight-code').value=f.code; document.getElementById('flight-time').value=f.time; document.getElementById('flight-date').value=f.date; document.getElementById('flight-url').value=f.url; } openModal('flight-modal'); }
 
@@ -642,11 +691,12 @@
                 guides.forEach(g=>{ content=content.replace(new RegExp(g.title,'gi'),`<span class="font-bold border-b-2 border-matcha cursor-pointer hover:bg-matcha/20" onclick="jumpToGuide(${g.id})">${g.title}</span>`); });
                 mustEatList.forEach(e=>{ if(e.location) content=content.replace(new RegExp(e.location,'g'),`<span class="text-matcha font-bold cursor-pointer hover:underline" onclick="jumpToMustEat('${e.id}')">${e.location}<i class="fa-solid fa-utensils text-xs ml-1"></i></span>`); });
                 
-                // [V35.3] 移除點點邏輯，改為單純的換行顯示
+                // [V35.4] 恢復主題圓點和手寫風格
                 content = content.split('\n').map(line => {
                     const trimmed = line.trim();
                     if(!trimmed) return '';
-                    return `<li class="flex items-start"><span>${trimmed}</span></li>`;
+                    // 使用主題櫻花粉色圓點
+                    return `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${trimmed}</span></li>`;
                 }).join('');
 
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
@@ -654,13 +704,34 @@
                 const transPhoto = day.transportation.photo ? `<div class="mt-2 cursor-pointer relative group inline-block" onclick="viewPhoto('${day.transportation.photo}')"><img src="${day.transportation.photo}" class="h-16 w-auto object-contain rounded border border-gray-200 bg-white"><div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 rounded transition"><i class="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow-md"></i></div></div>` : '';
                 const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm items-start"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div>${transPhoto}</div></div>` : '';
                 
-                const mealButtons = `
-                    <div class="mt-2 flex flex-wrap gap-2">
-                      ${day.meals.b.name ? `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '早餐: ${day.meals.b.name}', cat: '飲食'})" class="text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full flex items-center hover:bg-orange-100 transition shadow-sm border border-orange-100"><i class="fa-solid fa-mug-hot mr-1.5"></i> ${day.meals.b.name}</button>` : ''}
-                      ${day.meals.l.name ? `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '午餐: ${day.meals.l.name}', cat: '飲食'})" class="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-full flex items-center hover:bg-green-100 transition shadow-sm border border-green-100"><i class="fa-solid fa-utensils mr-1.5"></i> ${day.meals.l.name}</button>` : ''}
-                      ${day.meals.d.name ? `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '晚餐: ${day.meals.d.name}', cat: '飲食'})" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full flex items-center hover:bg-purple-100 transition shadow-sm border border-purple-100"><i class="fa-solid fa-wine-glass mr-1.5"></i> ${day.meals.d.name}</button>` : ''}
-                    </div>
-                `;
+                // [V35.5] 三餐分流：左邊 Icon 記帳，右邊文字導航
+                const mealConfig = {
+                    b: { icon: 'fa-mug-hot', color: 'orange', label: '早餐' },
+                    l: { icon: 'fa-utensils', color: 'green', label: '午餐' },
+                    d: { icon: 'fa-wine-glass', color: 'purple', label: '晚餐' }
+                };
+                
+                const mealButtons = ['b', 'l', 'd'].map(type => {
+                    const meal = day.meals[type];
+                    if (!meal || !meal.name) return '';
+                    const conf = mealConfig[type];
+                    // 若無網址，預設搜尋 Google Maps
+                    const url = meal.url ? meal.url : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meal.name)}`;
+                    
+                    return `
+                    <div class="inline-flex items-center text-xs rounded-full border shadow-sm overflow-hidden bg-${conf.color}-50 border-${conf.color}-100 mr-2 mb-2 group/meal">
+                        <button onclick="switchTab('wallet'); openExpenseModal(null, {note: '${conf.label}: ${meal.name}', cat: '飲食'})" 
+                                class="px-2 py-1.5 hover:bg-${conf.color}-200 text-${conf.color}-600 border-r border-${conf.color}-200 transition"
+                                title="記一筆：${meal.name}">
+                            <i class="fa-solid ${conf.icon}"></i>
+                        </button>
+                        <a href="${url}" target="_blank" 
+                           class="px-3 py-1.5 text-${conf.color}-700 hover:bg-${conf.color}-100 hover:underline font-hand block h-full flex items-center decoration-${conf.color}-300 decoration-2 underline-offset-2"
+                           title="導航至：${meal.name}">
+                           ${meal.name}
+                        </a>
+                    </div>`;
+                }).join('');
 
                 c.innerHTML+=`
                 <div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
@@ -671,25 +742,90 @@
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
                         ${day.highlight?`<div class="absolute -top-2 -right-2 text-2xl opacity-50 rotate-12">🌸</div>`:''}
-                        <ul class="text-sm space-y-3 leading-relaxed text-gray-600 font-serif">${content}</ul>
+                        <!-- [V35.4] 行程內容改為手寫風格 font-hand -->
+                        <ul class="text-sm space-y-3 leading-relaxed text-gray-600 font-hand text-lg">${content}</ul>
                         ${photosHtml}${trans}
                         ${day.accommodation?`<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation}</div>`:''}
-                        ${(day.meals.b.name||day.meals.l.name||day.meals.d.name)? mealButtons : ''}
+                        ${mealButtons ? `<div class="mt-2 flex flex-wrap">${mealButtons}</div>` : ''}
                     </div>
                 </div>`;
             });
         }
         
-        function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",accommodation:"",transportation:{},meals:{b:{},l:{},d:{}}});localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary();}
-        function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo; document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); document.getElementById('meal-b-name').value=d.meals.b.name; document.getElementById('meal-l-name').value=d.meals.l.name; document.getElementById('meal-d-name').value=d.meals.d.name; openModal('day-modal'); }
-        function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals={b:{name:document.getElementById('meal-b-name').value},l:{name:document.getElementById('meal-l-name').value},d:{name:document.getElementById('meal-d-name').value}}; localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal'); }
-        function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal');}}
+        function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",accommodation:"",transportation:{},meals:{b:{},l:{},d:{}}}); saveData(); renderItinerary();}
+        
+        function openDayEditor(id){ 
+            const d=itinerary.find(i=>i.id===id); if(!d)return; 
+            document.getElementById('day-id-edit').value=d.id; 
+            document.getElementById('day-date-edit').value=d.date; 
+            document.getElementById('day-highlight-edit').checked=d.highlight; 
+            document.getElementById('day-content-edit').value=d.content; 
+            document.getElementById('day-accommodation-edit').value=d.accommodation; 
+            document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; 
+            document.getElementById('day-trans-content').value=d.transportation?.content||''; 
+            document.getElementById('day-trans-note').value=d.transportation?.note||''; 
+            document.getElementById('day-trans-time').value=d.transportation?.time||''; 
+            currentTransPhoto=d.transportation?.photo; 
+            document.getElementById('day-note-edit').value=d.dayNote||''; 
+            tempDayPhotos = d.photos ? [...d.photos] : []; 
+            renderDayPhotosPreview(); 
+            
+            // [V35.5] Populate meal fields correctly
+            document.getElementById('meal-b-name').value=d.meals.b.name;
+            document.getElementById('meal-b-url').value=d.meals.b.url;
+            document.getElementById('meal-b-note').value=d.meals.b.note;
+            
+            document.getElementById('meal-l-name').value=d.meals.l.name;
+            document.getElementById('meal-l-url').value=d.meals.l.url;
+            document.getElementById('meal-l-note').value=d.meals.l.note;
+            
+            document.getElementById('meal-d-name').value=d.meals.d.name;
+            document.getElementById('meal-d-url').value=d.meals.d.url;
+            document.getElementById('meal-d-note').value=d.meals.d.note;
+            
+            openModal('day-modal'); 
+        }
+
+        function saveDay(){ 
+            const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; 
+            const i=itinerary[idx]; 
+            i.date=document.getElementById('day-date-edit').value; 
+            i.highlight=document.getElementById('day-highlight-edit').checked; 
+            i.content=document.getElementById('day-content-edit').value; 
+            i.accommodation=document.getElementById('day-accommodation-edit').value; 
+            i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; 
+            i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; 
+            i.dayNote=document.getElementById('day-note-edit').value; 
+            i.photos=[...tempDayPhotos]; 
+            
+            // [V35.5] Save full meal details
+            i.meals={
+                b:{
+                    name:document.getElementById('meal-b-name').value,
+                    url:document.getElementById('meal-b-url').value,
+                    note:document.getElementById('meal-b-note').value
+                },
+                l:{
+                    name:document.getElementById('meal-l-name').value,
+                    url:document.getElementById('meal-l-url').value,
+                    note:document.getElementById('meal-l-note').value
+                },
+                d:{
+                    name:document.getElementById('meal-d-name').value,
+                    url:document.getElementById('meal-d-url').value,
+                    note:document.getElementById('meal-d-note').value
+                }
+            }; 
+            saveData(); renderItinerary(); closeModal('day-modal'); 
+        }
+
+        function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); saveData(); renderItinerary(); closeModal('day-modal');}}
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="removeDayPhoto(${i})" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
         function removeDayPhoto(i) { tempDayPhotos.splice(i,1); renderDayPhotosPreview(); }
-        function renderGuides() { const list = document.getElementById('guide-list'); list.innerHTML=''; if (guideSortable) { guideSortable.destroy(); guideSortable = null; } guides.forEach(g => { list.innerHTML += `<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group"><div class="drag-handle absolute top-0 left-0 h-full w-8 bg-black/5 flex items-center justify-center z-10 cursor-grab hover:bg-black/10"><i class="fa-solid fa-ellipsis-vertical text-gray-400"></i></div><button onclick="openGuideModal(${g.id})" class="absolute top-2 right-2 z-20 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow"><i class="fa-solid fa-pen text-gray-500"></i></button>${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover" onclick="viewPhoto('${g.photo}')">`:''} <div class="p-4 pl-10"><h3 class="font-bold text-lg font-hand">${g.title}</h3><p class="text-sm whitespace-pre-line text-gray-600 mt-1 leading-relaxed">${g.desc}</p></div></div>`; }); guideSortable = new Sortable(list, { handle: '.drag-handle', animation: 150, onEnd: function (evt) { const item = guides.splice(evt.oldIndex, 1)[0]; guides.splice(evt.newIndex, 0, item); localStorage.setItem('guides', JSON.stringify(guides)); saveData(); renderItinerary(); } }); }
+        function renderGuides() { const list = document.getElementById('guide-list'); list.innerHTML=''; if (guideSortable) { guideSortable.destroy(); guideSortable = null; } guides.forEach(g => { list.innerHTML += `<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group"><div class="drag-handle absolute top-0 left-0 h-full w-8 bg-black/5 flex items-center justify-center z-10 cursor-grab hover:bg-black/10"><i class="fa-solid fa-ellipsis-vertical text-gray-400"></i></div><button onclick="openGuideModal(${g.id})" class="absolute top-2 right-2 z-20 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow"><i class="fa-solid fa-pen text-gray-500"></i></button>${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover" onclick="viewPhoto('${g.photo}')">`:''} <div class="p-4 pl-10"><h3 class="font-bold text-lg font-hand">${g.title}</h3><p class="text-sm whitespace-pre-line text-gray-600 mt-1 leading-relaxed">${g.desc}</p></div></div>`; }); guideSortable = new Sortable(list, { handle: '.drag-handle', animation: 150, onEnd: function (evt) { const item = guides.splice(evt.oldIndex, 1)[0]; guides.splice(evt.newIndex, 0, item); saveData(); renderItinerary(); } }); }
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-coords'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
-        function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value, d=document.getElementById('guide-desc').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:d, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} localStorage.setItem('guides',JSON.stringify(guides)); saveData(); renderGuides(); closeModal('guide-modal'); }
+        function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value, d=document.getElementById('guide-desc').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:d, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
         function jumpToGuide(id) { switchTab('guide'); setTimeout(()=>{document.getElementById('guide-'+id)?.scrollIntoView({behavior:'smooth'});},100); }
         
         /* EXPENSES with Public Fund Logic */
@@ -712,12 +848,9 @@
             }); 
             
             // 2. Calculate Net (Settlement)
-            // 排除公費後的總支出，由 '人' 均分
-            // 假設 '公費' 是大家已經先出好的錢，所以結算時不需再向公費討錢，也不用還錢給公費
             const totalPaidByHumans = total - publicFundSpent;
-            // 實際參與分帳的人數 (扣除 '公費' 這個虛擬人)
             const humanPayers = payers.filter(p => p !== '公費');
-            const splitAmount = totalPaidByHumans / humanPayers.length;
+            const splitAmount = humanPayers.length > 0 ? totalPaidByHumans / humanPayers.length : 0;
 
             let net = new Map(humanPayers.map(p=>[p, (paid.get(p)||0) - splitAmount])); 
             
@@ -777,42 +910,62 @@
             openModal('expense-modal'); 
         }
 
-        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt)return; const ex={id:id?parseInt(id):Date.now(), cat:document.getElementById('ex-category').value, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:document.getElementById('ex-payer').value, ppl:parseInt(document.getElementById('ex-people').value)||1, photo:currentPhotoBase64}; if(id){const idx=expenses.findIndex(e=>e.id==id);if(idx>-1)expenses[idx]=ex;}else{expenses.unshift(ex);} localStorage.setItem('expenses',JSON.stringify(expenses)); saveData(); renderExpenses(); closeModal('expense-modal'); }
-        function deleteExpense(){const id=document.getElementById('ex-id').value;if(id&&confirm("Del?")){expenses=expenses.filter(e=>e.id!=id);localStorage.setItem('expenses',JSON.stringify(expenses)); saveData(); renderExpenses(); closeModal('expense-modal');}}
+        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt)return; const ex={id:id?parseInt(id):Date.now(), cat:document.getElementById('ex-category').value, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:document.getElementById('ex-payer').value, ppl:parseInt(document.getElementById('ex-people').value)||1, photo:currentPhotoBase64}; if(id){const idx=expenses.findIndex(e=>e.id==id);if(idx>-1)expenses[idx]=ex;}else{expenses.unshift(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
+        function deleteExpense(){const id=document.getElementById('ex-id').value;if(id&&confirm("Del?")){expenses=expenses.filter(e=>e.id!=id); saveData(); renderExpenses(); closeModal('expense-modal');}}
         
         function renderMustEatList() { const container = document.getElementById('must-eat-list'); container.innerHTML = ''; const sortedList = [...mustEatList].sort((a, b) => a.location.localeCompare(b.location, 'zh-TW')); let currentGroup = ''; let groupHtml = ''; sortedList.forEach(item => { if (item.location !== currentGroup) { if (currentGroup !== '') { groupHtml += '</div>'; container.innerHTML += groupHtml; } currentGroup = item.location; groupHtml = `<div class="mb-4 pt-3"><h4 class="text-lg font-black handwritten text-matcha border-b-2 border-matcha/30 inline-block px-2 mb-2">${currentGroup}</h4><div class="mt-1 space-y-2">`; } const checked = item.items ? item.items.filter(i => i.done).length : 0; groupHtml += `<div id="eat-item-${item.id}" class="bg-white p-3 rounded shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer hover:bg-yellow-50/50" onclick="openMustEatModal('${item.id}')"><div class="flex-1"><div class="font-bold text-gray-700 font-hand text-lg">${item.name}</div><div class="text-xs text-gray-400 mt-1">${item.note || ''}</div></div><div class="text-right text-xs font-mono bg-gray-100 px-2 py-1 rounded-full text-gray-500">${checked}/${item.items?.length||0}</div></div>`; }); if (currentGroup !== '') { groupHtml += '</div>'; container.innerHTML += groupHtml; } }
         function openMustEatModal(id=null) { ['eat-id','eat-name','eat-location','eat-note'].forEach(k=>document.getElementById(k).value=''); currentMustEatItems = []; currentEditingMustEatId = null; if (id) { const item = mustEatList.find(i => i.id === id); document.getElementById('eat-id').value = item.id; document.getElementById('eat-name').value = item.name; document.getElementById('eat-location').value = item.location; document.getElementById('eat-note').value = item.note; currentMustEatItems = JSON.parse(JSON.stringify(item.items || [])); currentEditingMustEatId = id; } renderFoodItemsInModal(); openModal('must-eat-modal'); }
         function renderFoodItemsInModal() { document.getElementById('must-eat-items-container').innerHTML = currentMustEatItems.map(item => `<div class="flex items-center justify-between p-2 border-b border-dashed ${item.done ? 'opacity-50' : ''}"><div class="flex-1 flex items-center"><input type="checkbox" onchange="toggleFoodItemDone('${item.id}')" ${item.done ? 'checked' : ''} class="mr-2 accent-matcha"><span class="${item.done ? 'line-through' : ''}">${item.foodName}</span></div><div class="flex gap-2 items-center"><span class="text-xs font-mono">¥${item.price}</span><button onclick="deleteFoodItem('${item.id}')" class="text-gray-300 hover:text-red-400">x</button></div></div>`).join(''); }
         function addNewFoodItem() { const name = document.getElementById('new-food-name').value; if (!name) return; currentMustEatItems.push({ id: 'f'+Date.now(), foodName: name, price: parseFloat(document.getElementById('new-food-price').value)||0, done: false, url: document.getElementById('new-food-url').value }); document.getElementById('new-food-name').value=''; renderFoodItemsInModal(); }
-        function toggleFoodItemDone(id) { const i = currentMustEatItems.find(x => x.id === id); if(i) i.done = !i.done; renderFoodItemsInModal(); }
-        function deleteFoodItem(id) { currentMustEatItems = currentMustEatItems.filter(x => x.id !== id); renderFoodItemsInModal(); }
-        function saveMustEatItem() { const id = document.getElementById('eat-id').value; const name = document.getElementById('eat-name').value; const location = document.getElementById('eat-location').value; const note = document.getElementById('eat-note').value; if (!location) return; const newItem = { id: id || 'eat' + Date.now(), name, location, note, items: currentMustEatItems }; if (id) { const idx = mustEatList.findIndex(i => i.id === id); if (idx > -1) mustEatList[idx] = newItem; } else { mustEatList.push(newItem); } localStorage.setItem('mustEatList', JSON.stringify(mustEatList)); saveData(); renderMustEatList(); renderItinerary(); closeModal('must-eat-modal'); }
-        function deleteMustEatItem() { const id = document.getElementById('eat-id').value; if (id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); localStorage.setItem('mustEatList', JSON.stringify(mustEatList)); saveData(); renderMustEatList(); renderItinerary(); closeModal('must-eat-modal'); } }
+        function toggleFoodItemDone(id) { const i = currentMustEatItems.find(x => x.id === id); if(i) i.done = !i.done; renderFoodItemsInModal(); saveData(); }
+        function deleteFoodItem(id) { currentMustEatItems = currentMustEatItems.filter(x => x.id !== id); renderFoodItemsInModal(); saveData(); }
+        function saveMustEatItem() { const id = document.getElementById('eat-id').value; const name = document.getElementById('eat-name').value; const location = document.getElementById('eat-location').value; const note = document.getElementById('eat-note').value; if (!location) return; const newItem = { id: id || 'eat' + Date.now(), name, location, note, items: currentMustEatItems }; if (id) { const idx = mustEatList.findIndex(i => i.id === id); if (idx > -1) mustEatList[idx] = newItem; } else { mustEatList.push(newItem); } saveData(); renderMustEatList(); renderItinerary(); closeModal('must-eat-modal'); }
+        function deleteMustEatItem() { const id = document.getElementById('eat-id').value; if (id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); renderItinerary(); closeModal('must-eat-modal'); } }
         function jumpToMustEat(id) { switchTab('lists'); setTimeout(() => { const el = document.getElementById('eat-item-' + id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('highlight-target'); setTimeout(() => el.classList.remove('highlight-target'), 2000); } }, 100); }
         function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
-        function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false});localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
-        function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
-        function updateTodo(i,v){todos[i].text=v;localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
-        function deleteTodo(i){todos.splice(i,1);localStorage.setItem('todos',JSON.stringify(todos)); saveData(); renderChecklist();}
+        function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false}); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
+        function toggleTodo(i){todos[i].done=!todos[i].done; saveData(); renderChecklist();}
+        function updateTodo(i,v){todos[i].text=v; saveData();}
+        function deleteTodo(i){todos.splice(i,1); saveData(); renderChecklist();}
         function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ const h=`<div class="p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span></div>`; if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
         function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
-        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} localStorage.setItem('shoppingList_v2',JSON.stringify(shoppingList)); saveData(); renderShoppingList(); closeModal('shopping-modal'); }
-        function deleteShoppingItem(){const id=document.getElementById('shop-id').value;if(id&&confirm("Del?")){shoppingList=shoppingList.filter(i=>i.id!=id);localStorage.setItem('shoppingList_v2',JSON.stringify(shoppingList)); saveData(); renderShoppingList(); closeModal('shopping-modal');}}
+        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
+        function deleteShoppingItem(){const id=document.getElementById('shop-id').value;if(id&&confirm("Del?")){shoppingList=shoppingList.filter(i=>i.id!=id); saveData(); renderShoppingList(); closeModal('shopping-modal');}}
         function openPayerModal(){document.getElementById('payer-list').innerHTML=payers.map((p,i)=>`<div class="flex justify-between p-2 bg-gray-50 rounded"><span>${p}</span>${payers.length>1?`<button onclick="removePayer(${i})" class="text-red-400">x</button>`:''}</div>`).join(''); openModal('payer-modal');}
-        function addPayer(){const n=document.getElementById('new-payer-name').value;if(n&&!payers.includes(n)){payers.push(n);localStorage.setItem('payers',JSON.stringify(payers)); saveData(); renderPayerOptions(); openPayerModal(); renderExpenses();}}
-        function removePayer(i){payers.splice(i,1);localStorage.setItem('payers',JSON.stringify(payers)); saveData(); renderPayerOptions(); openPayerModal(); renderExpenses();}
+        function addPayer(){const n=document.getElementById('new-payer-name').value;if(n&&!payers.includes(n)){payers.push(n); saveData(); renderPayerOptions(); openPayerModal(); renderExpenses();}}
+        function removePayer(i){payers.splice(i,1); saveData(); renderPayerOptions(); openPayerModal(); renderExpenses();}
         function renderPayerOptions(){const h=payers.map(p=>`<option value="${p}">${p}</option>`).join('');document.getElementById('ex-payer').innerHTML=h;document.getElementById('wallet-filter').innerHTML='<option value="ALL">全部</option>'+h;}
         function renderIOUOptions() { const payerOpts = payers.map(p => `<option value="${p}">${p}</option>`).join(''); document.getElementById('iou-creditor').innerHTML = payerOpts; document.getElementById('iou-debtor').innerHTML = payerOpts; }
         function renderIOUList() { document.getElementById('iou-list-container').innerHTML = manualDebts.map(iou => `<div class="flex justify-between items-center p-2 border-b bg-gray-50 rounded-sm cursor-pointer hover:bg-gray-100" onclick="openIOUModal('${iou.id}')"><div class="flex-1 mr-2"><span class="text-xs text-gray-500 block">${iou.note || '調整'}</span><span class="text-sm font-bold text-gray-700">${iou.debtor} 欠 ${iou.creditor}</span></div><span class="text-sm font-mono text-fuji font-bold">NT$ ${Math.round(iou.amount).toLocaleString()}</span></div>`).join(''); }
         function openIOUModal(id = null) { const delBtn = document.getElementById('btn-delete-iou'); renderIOUOptions(); renderIOUList(); delBtn.classList.add('hidden'); ['iou-id','iou-amount','iou-note'].forEach(k=>document.getElementById(k).value=''); if (id) { const iou = manualDebts.find(i => i.id == id); document.getElementById('iou-id').value = iou.id; document.getElementById('iou-creditor').value = iou.creditor; document.getElementById('iou-debtor').value = iou.debtor; document.getElementById('iou-amount').value = iou.amount; document.getElementById('iou-note').value = iou.note || ''; delBtn.classList.remove('hidden'); } openModal('iou-modal'); }
-        function saveIOU() { const id = document.getElementById('iou-id').value; const creditor = document.getElementById('iou-creditor').value; const debtor = document.getElementById('iou-debtor').value; const amount = parseFloat(document.getElementById('iou-amount').value); const note = document.getElementById('iou-note').value; if (!amount || creditor === debtor) return; const newIOU = { id: id || 'iou' + Date.now(), creditor, debtor, amount, note }; if (id) { const idx = manualDebts.findIndex(i => i.id == id); if (idx > -1) manualDebts[idx] = newIOU; } else { manualDebts.push(newIOU); } localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts)); saveData(); renderExpenses(); closeModal('iou-modal'); }
-        function deleteIOU() { const id = document.getElementById('iou-id').value; if (id && confirm("Del?")) { manualDebts = manualDebts.filter(i => i.id != id); localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts)); saveData(); renderExpenses(); closeModal('iou-modal'); } }
+        function saveIOU() { const id = document.getElementById('iou-id').value; const creditor = document.getElementById('iou-creditor').value; const debtor = document.getElementById('iou-debtor').value; const amount = parseFloat(document.getElementById('iou-amount').value); const note = document.getElementById('iou-note').value; if (!amount || creditor === debtor) return; const newIOU = { id: id || 'iou' + Date.now(), creditor, debtor, amount, note }; if (id) { const idx = manualDebts.findIndex(i => i.id == id); if (idx > -1) manualDebts[idx] = newIOU; } else { manualDebts.push(newIOU); } saveData(); renderExpenses(); closeModal('iou-modal'); }
+        function deleteIOU() { const id = document.getElementById('iou-id').value; if (id && confirm("Del?")) { manualDebts = manualDebts.filter(i => i.id != id); saveData(); renderExpenses(); closeModal('iou-modal'); } }
 
-        document.getElementById('memo-pad').addEventListener('input',(e)=>{ localStorage.setItem('memo',e.target.value); saveData(); });
-        document.getElementById('memo-pad').value = memoText;
+        document.getElementById('memo-pad').addEventListener('input',(e)=>{ memoText = e.target.value; saveData(); });
+        
         function switchTab(t){document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden'));document.getElementById('view-'+t).classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.querySelector(`[data-target="${t}"]`).classList.add('active');window.scrollTo(0,0);}
-        window.onload=function(){ reloadLocalData(); renderFlights(); renderGuides(); renderChecklist(); renderShoppingList(); renderPayerOptions(); renderMustEatList(); renderExpenses(); switchTab('plan'); 
-            if(gistId) { document.getElementById('gist-id-input').value = gistId; document.getElementById('gist-token-input').value = gistToken; updateCloudStatus("已設定"); }
+        
+        window.onload=function(){ 
+            reloadLocalData(); 
+            
+            // Auto sync logic on load
+            if(gistId) { 
+                document.getElementById('gist-id-input').value = gistId; 
+                document.getElementById('gist-token-input').value = gistToken; 
+                updateCloudStatus("已設定 (載入中)");
+                // Delay rendering until after potential download or failure
+                forceDownload().then(() => {
+                    window.refreshUI();
+                }).catch(() => {
+                    // If download fails, render local data anyway
+                    window.refreshUI();
+                });
+            } else {
+                updateCloudStatus("未連線");
+                window.refreshUI();
+            }
+
+            switchTab('plan'); 
         }
     </script>
 </body>
