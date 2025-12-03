@@ -36,7 +36,8 @@
                         'fuji': '#7b90d2', 
                         'fuji-light': '#eff6ff', 
                         'pencil': '#595857', 
-                        'ink': '#2c2c2c'
+                        'ink': '#2c2c2c',
+                        'clay': '#b5651d'
                     },
                     fontFamily: { 
                         'maru': ['"Zen Maru Gothic"', 'sans-serif'], 
@@ -112,7 +113,7 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl"></i>每日行程</h3>
             </div>
-            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊飯店名稱導航</p>
+            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊文字可導覽</p>
             <div id="itinerary-container" class="space-y-6"></div>
             <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶</button>
         </section>
@@ -192,18 +193,16 @@
         <section id="view-info" class="view-section hidden">
             <h2 class="text-2xl font-bold text-center handwritten mb-6 mt-4">旅途情報</h2>
             <div class="hand-card p-4 mb-6 border-l-4 border-matcha bg-matcha/5">
-                <h3 class="font-bold text-green-800 mb-2 handwritten text-lg"><i class="fa-brands fa-github mr-2"></i>GitHub Gist 雲端同步 (最穩定)</h3>
-                <div class="text-xs text-gray-500 mb-4">請先完成 **步驟 1-3**，然後再設定。</div>
+                <h3 class="font-bold text-green-800 mb-2 handwritten text-lg"><i class="fa-brands fa-github mr-2"></i>GitHub Gist 雲端同步 (V35)</h3>
+                <div class="text-xs text-gray-500 mb-4">使用穩定、免費的 GitHub Gist 進行備份。</div>
                 <div class="space-y-3">
                     <div>
-                        <label class="text-xs font-bold text-gray-600 block mb-1">1. Gist ID (純數字亂碼)</label>
+                        <label class="text-xs font-bold text-gray-600 block mb-1">1. Gist ID</label>
                         <input type="text" id="gist-id-input" placeholder="例如: a3f1c1d8xxxx" class="w-full border p-2 rounded text-sm font-mono bg-white tracking-wider">
-                        <p class="text-[10px] text-gray-400 mt-1">請先建立一個 Gist 並複製 ID。</p>
                     </div>
                     <div>
-                         <label class="text-xs font-bold text-gray-600 block mb-1">2. 存取權杖 (PAT - 需勾選 gist 權限)</label>
+                         <label class="text-xs font-bold text-gray-600 block mb-1">2. 存取權杖 (Token)</label>
                          <input type="password" id="gist-token-input" placeholder="ghp_xxxx..." class="w-full border p-2 rounded text-sm font-mono bg-white tracking-wider">
-                         <p class="text-[10px] text-red-500 mt-1">此權杖等同密碼，請勿分享。僅需輸入一次。</p>
                     </div>
                     <button onclick="saveGistConfig()" class="w-full bg-matcha text-white px-3 py-2 rounded text-sm font-bold shadow hover:bg-matcha/80"><i class="fa-solid fa-floppy-disk mr-1"></i> 儲存連線設定</button>
                 </div>
@@ -221,7 +220,7 @@
         </section>
     </main>
 
-    <!-- MODALS (omitted for brevity, content is the same) -->
+    <!-- MODALS -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('flight-modal')" class="absolute top-3 right-3 text-gray-400 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
@@ -300,7 +299,103 @@
         let flights = [], itinerary = [], mustEatList = [], expenses = [], guides = [], todos = [], shoppingList = [], payers = [], manualDebts = [], memoText = "";
         let gistToken = localStorage.getItem('gist_token') || "";
         let gistId = localStorage.getItem('gist_id') || "";
-        const GIST_FILE_NAME = "travel_data.json"; // 檔案名稱固定
+        const GIST_FILE_NAME = "travel_data.json";
+
+        // [RECOVERY DATA] 您的專屬備份資料
+        const RECOVERED_ITINERARY = [
+            {
+                "id": "day_1",
+                "date": "1/10 Day 1 成田",
+                "highlight": false,
+                "content": "• 18:00 抵達成田機場\n• Aeon Mall 超市吃逛",
+                "accommodation": "成田機場周邊",
+                "accommodationUrl": "",
+                "transportation": { "content": "搭乘 Skyliner", "note": "事先買票", "time": "18:40" },
+                "meals": { "b": { "name": "" }, "l": { "name": "" }, "d": { "name": "超市便當" } },
+                "photos": [],
+                "dayNote": ""
+            },
+            {
+                "id": "day_2",
+                "date": "Day 2 新宿",
+                "highlight": false,
+                "content": "• 淺草雷門\n• 新宿 (新宿素食拉麵 / 3D貓 / 哥吉拉)\n• 東京都廳免費夜景",
+                "accommodation": "東京市區",
+                "accommodationUrl": "",
+                "transportation": { "content": "", "note": "", "time": "" },
+                "meals": { "b": { "name": "超商" }, "l": { "name": "新宿素食拉麵" }, "d": { "name": "自理" } },
+                "photos": [],
+                "dayNote": ""
+            },
+            {
+                "id": "day_3",
+                "date": "Day 3 築地",
+                "highlight": false,
+                "content": "• 築地市場 (築地飯糰)\n• 千客萬來（足浴）或豐洲市場\n• teamLab 豐洲\n• 阿美橫丁",
+                "accommodation": "東京市區",
+                "accommodationUrl": "",
+                "transportation": { "content": "", "note": "", "time": "" },
+                "meals": { "b": { "name": "築地飯糰" }, "l": { "name": "豐洲市場" }, "d": { "name": "阿美橫丁居酒屋" } },
+                "photos": [],
+                "dayNote": ""
+            },
+            {
+                "id": "day_4",
+                "date": "Day 4 輕井澤",
+                "highlight": true,
+                "content": "• 車站寄行李\n• 輕井澤 Outlet 爆買\n• 玩雪 (Snow Park)\n• Check-in",
+                "accommodation": "Cypress 輕井澤",
+                "accommodationUrl": "",
+                "transportation": { "content": "新幹線往輕井澤", "note": "指定席", "time": "09:00" },
+                "meals": { "b": { "name": "新幹線便當" }, "l": { "name": "Outlet美食街" }, "d": { "name": "飯店自助餐" } },
+                "dayNote": "記得戴手套",
+                "photos": []
+            },
+            {
+                "id": "day_5",
+                "date": "Day 5 輕井澤",
+                "highlight": false,
+                "content": "• 單車漫遊星野榆樹街\n• 午餐\n• 蜻蜓之湯\n• 石之教堂 / 高原教會\n• 回飯店",
+                "accommodation": "Cypress 輕井澤",
+                "accommodationUrl": "",
+                "transportation": { "content": "", "note": "", "time": "" },
+                "meals": { "b": { "name": "飯店" }, "l": { "name": "村民食堂" }, "d": { "name": "自理" } },
+                "photos": [],
+                "dayNote": ""
+            },
+            {
+                "id": "day_6",
+                "date": "Day 6 東京站",
+                "highlight": false,
+                "content": "• 走去雲場池\n• 10:00 退房\n• 新幹線回東京\n• 東京站飯店放行李\n• 17:00 東京鐵塔 RED TOKYO TOWER (星光票)",
+                "accommodation": "東京站飯店",
+                "accommodationUrl": "",
+                "transportation": { "content": "NEX 成田特快", "note": "放行李後再搭乘", "time": "15:30" },
+                "meals": { "b": { "name": "麵包" }, "l": { "name": "蕎麥麵" }, "d": { "name": "東京鐵塔周邊" } },
+                "photos": [],
+                "dayNote": ""
+            },
+            {
+                "id": "day_7",
+                "date": "Day 7 成田機場",
+                "highlight": false,
+                "content": "• 東京站最後補貨\n• 18:25 飛機 (返台)",
+                "accommodation": "",
+                "accommodationUrl": "",
+                "transportation": { "content": "NEX 成田特快往機場", "note": "", "time": "15:30" },
+                "meals": { "b": { "name": "" }, "l": { "name": "" }, "d": { "name": "機上餐" } },
+                "photos": [],
+                "dayNote": ""
+            }
+        ];
+        
+        const RECOVERED_FLIGHTS = [
+            { "id": 1764787819658, "dep": "TPE", "arr": "NRT", "code": "IT202", "time": "14:00 - 18:00", "date": "1/10 去程", "url": "" },
+            { "id": 1764787837787, "dep": "NRT", "arr": "TPE", "code": "IT203", "time": "18:20 - 19:55", "date": "1/16 返程", "url": "" }
+        ];
+
+        const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
+        const RECOVERED_TODOS = [{"text": "護照", "done": false}];
 
         // --- Gist Cloud Logic ---
         function updateCloudStatus(msg) {
@@ -320,7 +415,7 @@
             gistToken = token;
             alert("GitHub Gist 設定已儲存！");
             updateCloudStatus("已設定");
-            forceDownload(); // Try to fetch data immediately
+            forceDownload(); 
         }
         
         window.forceUpload = async function() {
@@ -334,13 +429,12 @@
             
             try {
                 const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                    method: 'PATCH', // 使用 PATCH 更新現有 Gist
+                    method: 'PATCH',
                     headers: { 
                         'Authorization': `token ${gistToken}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        // 只需要更新你想改變的檔案
                         files: {
                             [GIST_FILE_NAME]: {
                                 content: JSON.stringify(payload)
@@ -370,23 +464,13 @@
             try {
                 const response = await fetch(`https://api.github.com/gists/${gistId}`, {
                     method: 'GET',
-                    headers: {
-                        // GET 請求可選擇不帶 Token，但帶上可以避免流量限制
-                        'Authorization': `token ${gistToken}`
-                    }
+                    headers: { 'Authorization': `token ${gistToken}` }
                 });
 
-                if (response.status === 404) {
-                    throw new Error("Gist ID 找不到 (404)。");
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`連線錯誤: ${response.statusText}`);
-                }
+                if (response.status === 404) throw new Error("Gist ID 找不到 (404)。");
+                if (!response.ok) throw new Error(`連線錯誤: ${response.statusText}`);
 
                 const data = await response.json();
-                
-                // 檢查並解析 Gist 檔案內容
                 const file = data.files[GIST_FILE_NAME];
                 if (!file || !file.content) {
                      updateCloudStatus("無資料");
@@ -424,18 +508,30 @@
             }
         };
 
-
-        // --- Core App Logic (Same as V34) ---
+        // --- Core App Logic ---
 
         function reloadLocalData() {
-            flights = JSON.parse(localStorage.getItem('flights')) || [];
+            // [關鍵修改] 優先讀取 LocalStorage，如果是空的，就載入內建的 RECOVERED 資料
+            flights = JSON.parse(localStorage.getItem('flights')) || RECOVERED_FLIGHTS;
             itinerary = JSON.parse(localStorage.getItem('itinerary_v2')) || [];
+            
+            if (itinerary.length === 0) {
+                console.log("Using recovered itinerary data");
+                itinerary = RECOVERED_ITINERARY;
+            }
+
             mustEatList = JSON.parse(localStorage.getItem('mustEatList')) || [];
             expenses = JSON.parse(localStorage.getItem('expenses')) || [];
             guides = JSON.parse(localStorage.getItem('guides')) || [];
-            todos = JSON.parse(localStorage.getItem('todos')) || [{text: "護照", done: false}];
+            todos = JSON.parse(localStorage.getItem('todos')) || RECOVERED_TODOS;
             shoppingList = JSON.parse(localStorage.getItem('shoppingList_v2')) || [];
-            payers = JSON.parse(localStorage.getItem('payers')) || ["我", "旅伴", "公費"];
+            
+            payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
+            if (!payers.includes("公費")) {
+                payers.push("公費");
+                localStorage.setItem('payers', JSON.stringify(payers));
+            }
+            
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             memoText = localStorage.getItem('memo') || "";
             itinerary = itinerary.map(d => ({ 
@@ -449,9 +545,9 @@
             }));
         }
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderPayerOptions(); }
-        function saveData() {} // No automatic cloud save
+        function saveData() {} // Gist 版不需自動上傳，手動觸發
         
-        // --- UI & Modals (Rest of the functions) ---
+        // --- UI & Modals ---
 
         let currentPhotoBase64 = null; let currentGuidePhoto = null; let currentShopPhoto = null; let currentFlightPhoto = null; let currentTransPhoto = null; let tempDayPhotos = []; let guideSortable = null; let currentMustEatItems = [];  let currentEditingMustEatId = null;
         function processImage(input, cb) { if(input.files && input.files[0]){ const r=new FileReader(); r.onload=function(e){const i=new Image();i.onload=function(){const c=document.createElement('canvas'),x=c.getContext('2d'),w=1000;let wd=i.width,ht=i.height;if(wd>w){ht*=w/wd;wd=w;}c.width=wd;c.height=ht;x.drawImage(i,0,0,wd,ht);cb(c.toDataURL('image/jpeg',0.8));};i.src=e.target.result;};r.readAsDataURL(input.files[0]); } }
@@ -513,43 +609,31 @@
             const c=document.getElementById('itinerary-container'); c.innerHTML='';
             itinerary.forEach((day)=>{
                 let content=day.content;
+                // Highlight keywords
                 guides.forEach(g=>{ content=content.replace(new RegExp(g.title,'gi'),`<span class="font-bold border-b-2 border-matcha cursor-pointer hover:bg-matcha/20" onclick="jumpToGuide(${g.id})">${g.title}</span>`); });
                 mustEatList.forEach(e=>{ if(e.location) content=content.replace(new RegExp(e.location,'g'),`<span class="text-matcha font-bold cursor-pointer hover:underline" onclick="jumpToMustEat('${e.id}')">${e.location}<i class="fa-solid fa-utensils text-xs ml-1"></i></span>`); });
-                content=content.split('\\').map(e=>`<li class="flex items-start"><span class="mr-2 mt-1.5 w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0"></span><span>${e.trim()}</span></li>`).join('');
+                
+                // Bullet point logic: Split by newlines and add bullets
+                content = content.split('\n').map(line => {
+                    const trimmed = line.trim();
+                    if(!trimmed) return '';
+                    // If it already starts with a bullet, keep it, otherwise add one
+                    const displayLine = (trimmed.startsWith('•') || trimmed.startsWith('-')) ? trimmed : `• ${trimmed}`;
+                    return `<li class="flex items-start"><span class="mr-2 mt-1.5 w-1.5 h-1.5 bg-gray-300 rounded-full flex-shrink-0"></span><span>${displayLine}</span></li>`;
+                }).join('');
+
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
                 
                 const transPhoto = day.transportation.photo ? `<div class="mt-2 cursor-pointer relative group inline-block" onclick="viewPhoto('${day.transportation.photo}')"><img src="${day.transportation.photo}" class="h-16 w-auto object-contain rounded border border-gray-200 bg-white"><div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 rounded transition"><i class="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow-md"></i></div></div>` : '';
                 const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm items-start"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div>${transPhoto}</div></div>` : '';
                 
-                const accUrl = day.accommodationUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(day.accommodation)}`;
-                const accHtml = day.accommodation ? `<a href="${accUrl}" target="_blank" class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold block hover:bg-indigo-50 transition p-1 rounded"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation} <i class="fa-solid fa-location-dot ml-1 text-[10px]"></i></a>` : '';
-
-                const meals = [
-                    { key: 'b', label: '早餐', icon: 'fa-mug-hot', color: 'orange' },
-                    { key: 'l', label: '午餐', icon: 'fa-utensils', color: 'green' },
-                    { key: 'd', label: '晚餐', icon: 'fa-wine-glass', color: 'purple' }
-                ];
-
-                let mealButtons = '<div class="mt-2 flex flex-wrap gap-2">';
-                let hasMeals = false;
-                meals.forEach(m => {
-                    const mealData = day.meals[m.key];
-                    if (mealData && mealData.name) {
-                        hasMeals = true;
-                        const hasUrl = !!mealData.url;
-                        const baseClass = `text-xs flex items-center rounded-full border shadow-sm transition group/meal overflow-hidden`;
-                        const colorClass = `bg-${m.color}-50 text-${m.color}-600 border-${m.color}-100`;
-                        const iconBtn = `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '${m.label}: ${mealData.name}', cat: '飲食'})" class="px-2 py-1.5 hover:bg-${m.color}-100 border-r border-${m.color}-200/50 outline-none" title="記下一筆"><i class="fa-solid ${m.icon}"></i></button>`;
-                        let textBtn = '';
-                        if (hasUrl) {
-                            textBtn = `<button onclick="window.open('${mealData.url}', '_blank')" class="px-3 py-1.5 font-bold hover:bg-${m.color}-100 flex items-center gap-1 outline-none">${mealData.name} <i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1 opacity-50"></i></button>`;
-                        } else {
-                            textBtn = `<span class="px-3 py-1.5 cursor-default font-bold">${mealData.name}</span>`;
-                        }
-                        mealButtons += `<div class="${baseClass} ${colorClass}">${iconBtn}${textBtn}</div>`;
-                    }
-                });
-                mealButtons += '</div>';
+                const mealButtons = `
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      ${day.meals.b.name ? `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '早餐: ${day.meals.b.name}', cat: '飲食'})" class="text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-full flex items-center hover:bg-orange-100 transition shadow-sm border border-orange-100"><i class="fa-solid fa-mug-hot mr-1.5"></i> ${day.meals.b.name}</button>` : ''}
+                      ${day.meals.l.name ? `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '午餐: ${day.meals.l.name}', cat: '飲食'})" class="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-full flex items-center hover:bg-green-100 transition shadow-sm border border-green-100"><i class="fa-solid fa-utensils mr-1.5"></i> ${day.meals.l.name}</button>` : ''}
+                      ${day.meals.d.name ? `<button onclick="switchTab('wallet'); openExpenseModal(null, {note: '晚餐: ${day.meals.d.name}', cat: '飲食'})" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full flex items-center hover:bg-purple-100 transition shadow-sm border border-purple-100"><i class="fa-solid fa-wine-glass mr-1.5"></i> ${day.meals.d.name}</button>` : ''}
+                    </div>
+                `;
 
                 c.innerHTML+=`
                 <div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
@@ -562,66 +646,16 @@
                         ${day.highlight?`<div class="absolute -top-2 -right-2 text-2xl opacity-50 rotate-12">🌸</div>`:''}
                         <ul class="text-sm space-y-3 leading-relaxed text-gray-600 font-serif">${content}</ul>
                         ${photosHtml}${trans}
-                        ${accHtml}
-                        ${hasMeals ? mealButtons : ''}
+                        ${day.accommodation?`<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold"><i class="fa-solid fa-bed mr-1"></i> ${day.accommodation}</div>`:''}
+                        ${(day.meals.b.name||day.meals.l.name||day.meals.d.name)? mealButtons : ''}
                     </div>
                 </div>`;
             });
         }
         
         function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",accommodation:"",transportation:{},meals:{b:{},l:{},d:{}}});localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary();}
-        
-        function openDayEditor(id){ 
-            const d=itinerary.find(i=>i.id===id); 
-            if(!d)return; 
-            document.getElementById('day-id-edit').value=d.id; 
-            document.getElementById('day-date-edit').value=d.date; 
-            document.getElementById('day-highlight-edit').checked=d.highlight; 
-            document.getElementById('day-content-edit').value=d.content; 
-            document.getElementById('day-accommodation-edit').value=d.accommodation; 
-            document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; 
-            document.getElementById('day-trans-content').value=d.transportation?.content||''; 
-            document.getElementById('day-trans-note').value=d.transportation?.note||''; 
-            document.getElementById('day-trans-time').value=d.transportation?.time||''; 
-            currentTransPhoto=d.transportation?.photo; 
-            document.getElementById('day-note-edit').value=d.dayNote||''; 
-            tempDayPhotos = d.photos ? [...d.photos] : []; 
-            renderDayPhotosPreview(); 
-            
-            document.getElementById('meal-b-name').value=d.meals.b.name;
-            document.getElementById('meal-b-url').value=d.meals.b.url || '';
-            document.getElementById('meal-b-note').value=d.meals.b.note || '';
-            document.getElementById('meal-l-name').value=d.meals.l.name;
-            document.getElementById('meal-l-url').value=d.meals.l.url || '';
-            document.getElementById('meal-l-note').value=d.meals.l.note || '';
-            document.getElementById('meal-d-name').value=d.meals.d.name;
-            document.getElementById('meal-d-url').value=d.meals.d.url || '';
-            document.getElementById('meal-d-note').value=d.meals.d.note || '';
-            
-            openModal('day-modal'); 
-        }
-
-        function saveDay(){ 
-            const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); 
-            if(idx<0)return; 
-            const i=itinerary[idx]; 
-            i.date=document.getElementById('day-date-edit').value; 
-            i.highlight=document.getElementById('day-highlight-edit').checked; 
-            i.content=document.getElementById('day-content-edit').value; 
-            i.accommodation=document.getElementById('day-accommodation-edit').value; 
-            i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; 
-            i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; 
-            i.dayNote=document.getElementById('day-note-edit').value; 
-            i.photos=[...tempDayPhotos]; 
-            i.meals={
-                b:{name:document.getElementById('meal-b-name').value, url:document.getElementById('meal-b-url').value, note:document.getElementById('meal-b-note').value},
-                l:{name:document.getElementById('meal-l-name').value, url:document.getElementById('meal-l-url').value, note:document.getElementById('meal-l-note').value},
-                d:{name:document.getElementById('meal-d-name').value, url:document.getElementById('meal-d-url').value, note:document.getElementById('meal-d-note').value}
-            };
-
-            localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal'); 
-        }
-
+        function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo; document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); document.getElementById('meal-b-name').value=d.meals.b.name; document.getElementById('meal-l-name').value=d.meals.l.name; document.getElementById('meal-d-name').value=d.meals.d.name; openModal('day-modal'); }
+        function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals={b:{name:document.getElementById('meal-b-name').value},l:{name:document.getElementById('meal-l-name').value},d:{name:document.getElementById('meal-d-name').value}}; localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal'); }
         function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); localStorage.setItem('itinerary_v2',JSON.stringify(itinerary)); saveData(); renderItinerary(); closeModal('day-modal');}}
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="removeDayPhoto(${i})" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
@@ -630,7 +664,61 @@
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-coords'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value, d=document.getElementById('guide-desc').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:d, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} localStorage.setItem('guides',JSON.stringify(guides)); saveData(); renderGuides(); closeModal('guide-modal'); }
         function jumpToGuide(id) { switchTab('guide'); setTimeout(()=>{document.getElementById('guide-'+id)?.scrollIntoView({behavior:'smooth'});},100); }
-        function renderExpenses() { const rate = parseFloat(document.getElementById('exchange-rate').value); let paid = new Map(payers.map(p=>[p,0])), total=0; expenses.forEach(e=>{const v=(e.curr==='JPY'?e.amt*rate:e.amt); total+=v; paid.set(e.payer, paid.get(e.payer)+v);}); let net = new Map(payers.map(p=>[p, paid.get(p)-(total/payers.length)])); manualDebts.forEach(d=>{ net.set(d.debtor, net.get(d.debtor)-d.amount); net.set(d.creditor, net.get(d.creditor)+d.amount); }); document.getElementById('individual-stats-dashboard').innerHTML = payers.map(p=>`<div class="p-2 bg-black/20 rounded border border-white/5"><div class="font-bold text-gray-200 text-[10px] mb-1">${p}</div><div class="font-mono text-lg font-bold ${net.get(p)>=0?'text-green-400':'text-red-400'}">${net.get(p)>=0?'+':''}${Math.round(net.get(p))}</div></div>`).join(''); document.getElementById('wallet-total-display').innerText = 'NT$ '+Math.round(total); let debtors = [], creditors = []; net.forEach((v,k) => { if(v<-10) debtors.push({p:k,v}); else if(v>10) creditors.push({p:k,v}); }); document.getElementById('settlement-summary').innerHTML = debtors.length===0 ? '<div class="text-center opacity-50">目前沒有需要結算的款項</div>' : debtors.map(d=>`<div>${d.p} 需支付公費</div>`).join(''); const filter = document.getElementById('wallet-filter').value; const filtered = filter === 'ALL' ? expenses : expenses.filter(e => e.payer === filter); document.getElementById('expense-list').innerHTML = filtered.map(e=>`<div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})"><div class="absolute left-0 top-0 h-full w-1 ${e.curr=='JPY'?'bg-sakura':'bg-fuji'}"></div><div class="w-12 h-12 bg-gray-50 rounded-full flex-shrink-0 flex items-center justify-center border border-gray-100 mt-1">${e.photo?`<img src="${e.photo}" class="w-full h-full object-cover rounded-full">`:'<i class="fa-solid fa-receipt text-gray-300"></i>'}</div><div class="flex-1"><div class="flex justify-between"><b>${e.note}</b><span class="font-mono text-clay font-bold">NT$ ${Math.round((e.curr=='JPY'?e.amt*rate:e.amt)/(e.ppl||1))}</span></div><div class="text-xs text-gray-400 mt-1 flex justify-between"><span>${e.payer} 付款</span><span class="font-mono">${e.curr} ${e.amt}</span></div></div></div>`).join(''); }
+        
+        /* EXPENSES with Public Fund Logic */
+        function renderExpenses() { 
+            const rate = parseFloat(document.getElementById('exchange-rate').value); 
+            let paid = new Map(payers.map(p=>[p,0]));
+            let publicFundSpent = 0;
+            let total=0; 
+            
+            // 1. Calculate Total & Who Paid
+            expenses.forEach(e=>{
+                const v = (e.curr==='JPY' ? e.amt*rate : e.amt); 
+                total += v; 
+                
+                if (e.payer === '公費') {
+                    publicFundSpent += v;
+                } else {
+                    paid.set(e.payer, (paid.get(e.payer)||0) + v);
+                }
+            }); 
+            
+            // 2. Calculate Net (Settlement)
+            // 排除公費後的總支出，由 '人' 均分
+            // 假設 '公費' 是大家已經先出好的錢，所以結算時不需再向公費討錢，也不用還錢給公費
+            const totalPaidByHumans = total - publicFundSpent;
+            // 實際參與分帳的人數 (扣除 '公費' 這個虛擬人)
+            const humanPayers = payers.filter(p => p !== '公費');
+            const splitAmount = totalPaidByHumans / humanPayers.length;
+
+            let net = new Map(humanPayers.map(p=>[p, (paid.get(p)||0) - splitAmount])); 
+            
+            // 處理手動借款
+            manualDebts.forEach(d=>{ 
+                if (net.has(d.debtor)) net.set(d.debtor, net.get(d.debtor) - d.amount); 
+                if (net.has(d.creditor)) net.set(d.creditor, net.get(d.creditor) + d.amount); 
+            }); 
+            
+            // Render Dashboard
+            let dashboardHtml = humanPayers.map(p=>`<div class="p-2 bg-black/20 rounded border border-white/5"><div class="font-bold text-gray-200 text-[10px] mb-1">${p}</div><div class="font-mono text-lg font-bold ${net.get(p)>=0?'text-green-400':'text-red-400'}">${net.get(p)>=0?'+':''}${Math.round(net.get(p))}</div></div>`).join('');
+            
+            // Add Public Fund Display
+            dashboardHtml += `<div class="p-2 bg-matcha/20 rounded border border-matcha/30 col-span-2 flex justify-between items-center"><span class="text-xs font-bold text-matcha">公費已支出</span><span class="font-mono text-lg font-bold text-white">NT$ ${Math.round(publicFundSpent)}</span></div>`;
+            
+            document.getElementById('individual-stats-dashboard').innerHTML = dashboardHtml; 
+            document.getElementById('wallet-total-display').innerText = 'NT$ '+Math.round(total); 
+            
+            // Render Debtors
+            let debtors = [], creditors = []; 
+            net.forEach((v,k) => { if(v<-10) debtors.push({p:k,v}); else if(v>10) creditors.push({p:k,v}); }); 
+            document.getElementById('settlement-summary').innerHTML = debtors.length===0 ? '<div class="text-center opacity-50">目前沒有需要結算的款項</div>' : debtors.map(d=>`<div>${d.p} 需支付公費/他人</div>`).join(''); 
+            
+            const filter = document.getElementById('wallet-filter').value; 
+            const filtered = filter === 'ALL' ? expenses : expenses.filter(e => e.payer === filter); 
+            
+            document.getElementById('expense-list').innerHTML = filtered.map(e=>`<div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})"><div class="absolute left-0 top-0 h-full w-1 ${e.curr=='JPY'?'bg-sakura':'bg-fuji'}"></div><div class="w-12 h-12 bg-gray-50 rounded-full flex-shrink-0 flex items-center justify-center border border-gray-100 mt-1">${e.photo?`<img src="${e.photo}" class="w-full h-full object-cover rounded-full">`:'<i class="fa-solid fa-receipt text-gray-300"></i>'}</div><div class="flex-1"><div class="flex justify-between"><b>${e.note}</b><span class="font-mono text-clay font-bold">NT$ ${Math.round((e.curr=='JPY'?e.amt*rate:e.amt)/(e.ppl||1))}</span></div><div class="text-xs text-gray-400 mt-1 flex justify-between"><span>${e.payer} 付款</span><span class="font-mono">${e.curr} ${e.amt}</span></div></div></div>`).join(''); 
+        }
         
         function openExpenseModal(id=null, pre={}) { 
             currentPhotoBase64=null; 
@@ -695,34 +783,9 @@
 
         document.getElementById('memo-pad').addEventListener('input',(e)=>{ localStorage.setItem('memo',e.target.value); saveData(); });
         document.getElementById('memo-pad').value = memoText;
-        
-        function switchTab(t){
-            document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden'));
-            document.getElementById('view-'+t).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-            document.querySelector(`[data-target="${t}"]`).classList.add('active');
-            
-            const quickExpenseBtn = document.getElementById('quick-expense-btn');
-            if (quickExpenseBtn) {
-                if (t === 'plan') {
-                    quickExpenseBtn.style.display = 'block';
-                } else {
-                    quickExpenseBtn.style.display = 'none';
-                }
-            }
-            window.scrollTo(0,0);
-        }
-        
-        window.onload=function(){ 
-            reloadLocalData(); 
-            renderFlights(); renderGuides(); renderChecklist(); renderShoppingList(); renderPayerOptions(); renderMustEatList(); renderExpenses(); 
-            switchTab('plan'); 
-            
-            if(gistId) {
-                document.getElementById('gist-id-input').value = gistId;
-                document.getElementById('gist-token-input').value = gistToken; // Set Token back if saved
-                updateCloudStatus("已設定");
-            }
+        function switchTab(t){document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden'));document.getElementById('view-'+t).classList.remove('hidden');document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));document.querySelector(`[data-target="${t}"]`).classList.add('active');window.scrollTo(0,0);}
+        window.onload=function(){ reloadLocalData(); renderFlights(); renderGuides(); renderChecklist(); renderShoppingList(); renderPayerOptions(); renderMustEatList(); renderExpenses(); switchTab('plan'); 
+            if(gistId) { document.getElementById('gist-id-input').value = gistId; document.getElementById('gist-token-input').value = gistToken; updateCloudStatus("已設定"); }
         }
     </script>
 </body>
