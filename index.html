@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>一起旅行吧</title>
+    <title>一起旅行吧 </title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -153,7 +153,7 @@
             <div class="bg-[#2c3e50] rounded-2xl p-4 shadow-soft text-white mb-6 relative overflow-hidden mt-4">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full -mr-10 -mt-10"></div>
                 <h4 class="text-sm text-gray-300 font-bold mb-3 flex justify-between items-center relative z-10">
-                    <span class="flex items-center font-serif tracking-wider"><i class="fa-solid fa-chart-simple mr-2"></i>財務總覽 (TWD)</span>
+                    <span class="flex items-center font-serif tracking-wider"><i class="fa-solid fa-chart-simple mr-2"></i>財務總覽 (<button onclick="toggleDisplayCurrency()" id="currency-toggle-btn" class="underline decoration-dashed hover:text-matcha transition font-mono">TWD</button>)</span>
                     <button onclick="renderExpenses()" class="text-xs text-blue-300 hover:text-white"><i class="fa-solid fa-rotate-right"></i></button>
                 </h4>
                 
@@ -266,7 +266,8 @@
         </button>
     </div>
 
-    <div id="ai-chat-modal" class="modal hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
+    <!-- [FIX] 提高 z-index 到 100 以解決被導覽列(z-50)遮擋的問題 -->
+    <div id="ai-chat-modal" class="modal hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center pointer-events-none">
         <div class="fixed inset-0 bg-black/30 backdrop-blur-[2px]" onclick="toggleAIChat()"></div>
         <div class="bg-white w-full max-w-sm h-[60vh] sm:h-[500px] sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col relative z-50 pointer-events-auto transition-transform duration-300 transform translate-y-0">
             <!-- Header -->
@@ -285,7 +286,7 @@
                 </div>
             </div>
             <!-- Input Area -->
-            <div class="p-3 border-t bg-white flex gap-2">
+            <div class="p-3 border-t bg-white flex gap-2 pb-safe"> <!-- pb-safe for iPhone bottom bar -->
                 <input type="text" id="ai-input" placeholder="問我一些問題..." class="flex-1 border rounded-full px-4 py-2 text-sm outline-none focus:border-ai" onkeypress="if(event.key==='Enter') sendAIMessage()">
                 <button onclick="sendAIMessage()" class="w-10 h-10 bg-ai text-white rounded-full flex items-center justify-center hover:bg-purple-600 transition"><i class="fa-solid fa-paper-plane text-xs"></i></button>
             </div>
@@ -395,6 +396,7 @@
         let flights = [], itinerary = [], mustEatList = [], expenses = [], guides = [], todos = [], shoppingList = [], payers = [], manualDebts = [], deposits = [], memoText = "";
         let gistToken = localStorage.getItem('gist_token') || "";
         let gistId = localStorage.getItem('gist_id') || "";
+        let displayCurrency = 'TWD'; // TWD or JPY
         const GIST_FILE_NAME = "travel_data_v2.json";
         window.autoUploadTimer = null; 
 
@@ -644,14 +646,22 @@
             saveData(); renderExpenses(); closeModal('deposit-modal');
         }
 
+        // New Feature: Currency Toggle
+        function toggleDisplayCurrency() {
+            displayCurrency = displayCurrency === 'TWD' ? 'JPY' : 'TWD';
+            const btn = document.getElementById('currency-toggle-btn');
+            btn.innerText = displayCurrency;
+            renderExpenses();
+        }
+
         function renderExpenses() { 
             const rate = parseFloat(document.getElementById('exchange-rate').value); 
             // 1. Calculate Public Fund
             let fundIn = 0;
             deposits.forEach(d => fundIn += d.amount);
             
-            // 2. Calculate Expenses
-            let paid = new Map(payers.map(p=>[p,0])); // Who paid how much (in TWD)
+            // 2. Calculate Expenses (in Base Currency TWD logic first)
+            let paid = new Map(payers.map(p=>[p,0])); // Who paid how much (in TWD base)
             let fundSpent = 0; // How much public fund was used
             let totalSpent = 0;
             
@@ -673,37 +683,13 @@
                 }
             });
 
-            // 3. Deposit Logic: Treat deposits as "User Paid, Public Fund Consumed (negative)"? 
-            // Better: User Paid X, Public Fund OWES User X.
-            // But Public Fund is a shared pot. 
-            // Correct Logic: 
-            // Users have paid: Expenses(Personal) + Deposits(To Fund).
-            // Users should have paid: (Total Expense - Fund Spent) / N. (Assuming Fund is neutral).
-            // Actually, simplest logic: "Public Fund" is just another user who happens to be prepaid.
-            
             deposits.forEach(d => {
-                paid.set(d.payer, (paid.get(d.payer)||0) + d.amount); // User paid into the system
-                paid.set('公費', (paid.get('公費')||0) - d.amount); // Fund "received" money (negative paid?) -> No, treat Fund balance separately.
+                paid.set(d.payer, (paid.get(d.payer)||0) + d.amount); 
+                paid.set('公費', (paid.get('公費')||0) - d.amount);
             });
 
-            // Let's use standard Splitwise logic.
-            // Total Cost of Trip = Sum of all Expenses.
-            // Total Paid by each User = Direct Expense Payments + Deposits.
-            // Fair Share = Total Cost / N (Users).
-            // Wait, "Public Fund" expenses are shared by everyone. "Private" expenses (if we had them) would be specific.
-            // Assuming ALL expenses here are shared.
-            
             const humanPayers = payers.filter(p => p !== '公費');
-            const splitAmount = totalSpent / humanPayers.length; // Everyone's fair share of TOTAL SPEND
-            
-            // Net Balance = Paid - Fair Share.
-            // But we must account for Public Fund. 
-            // The Public Fund pays for some stuff. That money came from Users (Deposits).
-            // So: Paid[User] = DirectExp + Deposit.
-            // FairShare[User] = TotalSpent / N.
-            // Net[User] = Paid[User] - FairShare[User].
-            // If Net is positive, you paid more than share -> get back.
-            // If Net is negative, you owe.
+            const splitAmount = totalSpent / humanPayers.length; 
             
             let net = new Map();
             humanPayers.forEach(p => {
@@ -711,34 +697,60 @@
                 net.set(p, userPaid - splitAmount);
             });
 
-            // Manual Debts (IOUs) adjust the Net
             manualDebts.forEach(d=>{ 
                 if (net.has(d.debtor)) net.set(d.debtor, net.get(d.debtor) - d.amount); 
                 if (net.has(d.creditor)) net.set(d.creditor, net.get(d.creditor) + d.amount); 
             }); 
 
-            // Update UI
-            document.getElementById('public-fund-balance').innerText = `NT$ ${Math.round(fundIn - fundSpent)}`;
-            document.getElementById('wallet-total-display').innerText = 'NT$ '+Math.round(totalSpent);
+            // Update UI with Currency Conversion Logic
+            // If displayCurrency is TWD: use values as is (TWD)
+            // If displayCurrency is JPY: divide values by rate
+            const currencySymbol = displayCurrency === 'TWD' ? 'NT$' : '¥';
             
-            let dashboardHtml = humanPayers.map(p=>`<div class="p-2 bg-black/20 rounded border border-white/5"><div class="font-bold text-gray-200 text-[10px] mb-1">${p}</div><div class="font-mono text-lg font-bold ${net.get(p)>=0?'text-green-400':'text-red-400'}">${net.get(p)>=0?'+':''}${Math.round(net.get(p))}</div></div>`).join('');
+            // Helper to convert and format
+            const fmt = (val) => {
+                const converted = displayCurrency === 'TWD' ? val : (val / rate);
+                return `${currencySymbol} ${Math.round(converted).toLocaleString()}`;
+            };
+            
+            // Helper for +/-
+            const fmtSign = (val) => {
+                const converted = displayCurrency === 'TWD' ? val : (val / rate);
+                const sign = converted >= 0 ? '+' : '';
+                return `${sign}${Math.round(converted).toLocaleString()}`;
+            };
+
+            document.getElementById('public-fund-balance').innerText = fmt(fundIn - fundSpent);
+            document.getElementById('wallet-total-display').innerText = fmt(totalSpent);
+            
+            let dashboardHtml = humanPayers.map(p=>`<div class="p-2 bg-black/20 rounded border border-white/5"><div class="font-bold text-gray-200 text-[10px] mb-1">${p}</div><div class="font-mono text-lg font-bold ${net.get(p)>=0?'text-green-400':'text-red-400'}">${fmtSign(net.get(p))}</div></div>`).join('');
             document.getElementById('individual-stats-dashboard').innerHTML = dashboardHtml;
 
             let debtors = [], creditors = []; 
             net.forEach((v,k) => { if(v<-10) debtors.push({p:k,v}); else if(v>10) creditors.push({p:k,v}); }); 
-            document.getElementById('settlement-summary').innerHTML = debtors.length===0 ? '<div class="text-center opacity-50">帳務平衡 🎉</div>' : debtors.map(d=>`<div>${d.p} 需再支付 <span class="text-red-500 font-bold">${Math.round(Math.abs(d.v))}</span></div>`).join(''); 
+            // Settlement summary logic should probably stay in TWD or be explicit, but user asked for toggling.
+            // Let's use TWD for settlement suggestions to avoid confusion or use current display logic.
+            // Using current display logic for consistency.
+            document.getElementById('settlement-summary').innerHTML = debtors.length===0 ? '<div class="text-center opacity-50">帳務平衡 🎉</div>' : debtors.map(d=>`<div>${d.p} 需再支付 <span class="text-red-500 font-bold">${fmt(Math.abs(d.v))}</span></div>`).join(''); 
             
             // Expense List Rendering
             const filter = document.getElementById('wallet-filter').value; 
             const filtered = filter === 'ALL' ? expenses : expenses.filter(e => e.payer === filter || (e.multiPayers && e.multiPayers[filter])); 
             
             document.getElementById('expense-list').innerHTML = filtered.map(e=>{
-                const displayAmt = Math.round(e.curr=='JPY'?e.amt*rate:e.amt);
+                // List items show their original currency amount, but the converted total on the right
+                // User asked for "Overview" to switch, usually means the totals.
+                // But let's switch the "Cost in base currency" display on the right side of list item too.
+                
+                // Original calculation (TWD)
+                const baseAmtTwd = (e.curr=='JPY' ? e.amt*rate : e.amt);
+                const displayAmt = Math.round(displayCurrency === 'TWD' ? baseAmtTwd : (baseAmtTwd / rate));
+
                 return `<div class="bg-white p-3 rounded-lg shadow-sm border border-gray-100 flex gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})">
                 <div class="absolute left-0 top-0 h-full w-1 ${e.curr=='JPY'?'bg-sakura':'bg-fuji'}"></div>
                 <div class="w-12 h-12 bg-gray-50 rounded-full flex-shrink-0 flex items-center justify-center border border-gray-100 mt-1">${e.photo?`<img src="${e.photo}" class="w-full h-full object-cover rounded-full">`:'<i class="fa-solid fa-receipt text-gray-300"></i>'}</div>
                 <div class="flex-1">
-                    <div class="flex justify-between"><b>${e.note}</b><span class="font-mono text-clay font-bold">NT$ ${displayAmt}</span></div>
+                    <div class="flex justify-between"><b>${e.note}</b><span class="font-mono text-clay font-bold">${currencySymbol} ${displayAmt}</span></div>
                     <div class="text-xs text-gray-400 mt-1 flex justify-between">
                         <span>${e.payer} 付款</span>
                         <span class="font-mono">${e.curr} ${e.amt}</span>
