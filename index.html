@@ -14,12 +14,13 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>一起旅行吧</title>
+    <title>一起旅行吧LCK</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- 引入日系手寫字體 -->
+    <!-- [V35.9] 確保字體載入權重包含 700 (Bold) -->
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- SortableJS -->
@@ -41,7 +42,7 @@
                     },
                     fontFamily: { 
                         'maru': ['"Zen Maru Gothic"', 'sans-serif'], 
-                        'hand': ['"Yomogi"', '"Zen Maru Gothic"', 'cursive'],
+                        'hand': ['"Yomogi"', '"Zen Maru Gothic"', 'cursive'], /* [V35.9] 讓 Zen Maru 作為 Yomogi 的後備，保持圓潤一致 */
                         'serif': ['"Noto Serif TC"', 'serif']
                     },
                     boxShadow: {
@@ -66,9 +67,9 @@
             min-height: 100vh; padding-bottom: calc(80px + var(--sab));
         }
         
-        /* 移除自訂背景相關樣式 */
-
-        .handwritten { font-family: 'Yomogi', cursive; }
+        /* [V35.9] 強制手寫體設定 */
+        .handwritten { font-family: 'Yomogi', 'Zen Maru Gothic', cursive; }
+        
         .modal { transition: opacity 0.3s ease-in-out; } .modal.hidden { opacity: 0; pointer-events: none; } .modal.visible { opacity: 1; pointer-events: auto; }
         .hand-card { border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative; transition: transform 0.2s; background: #fff; }
         .btn-action { border: 2px solid #595857; border-radius: 999px; transition: all 0.2s; }
@@ -105,7 +106,7 @@
         </h1>
         <div class="flex justify-center items-center gap-2 mt-2">
             <p class="text-[10px] text-fuji font-bold tracking-[0.2em] font-serif uppercase handwritten">My Travel Logbook</p>
-            <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200">
+            <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 cursor-pointer" onclick="switchTab('info'); alert('請在資訊頁面檢查 Gist 設定');">
                 <i class="fa-solid fa-code-branch"></i> <span>未連線</span>
             </div>
             <button onclick="forceDownload()" class="text-[10px] bg-gray-100/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 hover:bg-fuji-light hover:text-fuji" title="立即同步">
@@ -248,13 +249,13 @@
                 </button>
             </div>
 
-            <!-- [V35.8] 恢復原本的資訊區塊，移除自訂背景 -->
+            <!-- [V35.9] 恢復原本的資訊區塊，移除自訂背景 -->
             <div class="hand-card p-4 mb-6 border-l-4 border-matcha bg-matcha/5">
                 <h3 class="font-bold text-green-800 mb-2 handwritten text-lg"><i class="fa-brands fa-github mr-2"></i>GitHub Gist 同步</h3>
-                <div class="text-xs text-gray-500 mb-4">資料自動上傳。</div>
+                <div class="text-xs text-gray-500 mb-4 bg-yellow-100 p-2 rounded">若無法同步，請檢查是否已輸入 ID 與 Token。</div>
                 <div class="space-y-3">
                     <input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-sm font-mono bg-white">
-                    <input type="password" id="gist-token-input" placeholder="Token" class="w-full border p-2 rounded text-sm font-mono bg-white">
+                    <input type="password" id="gist-token-input" placeholder="Token (ghp_...)" class="w-full border p-2 rounded text-sm font-mono bg-white">
                     <button onclick="saveGistConfig()" class="w-full bg-matcha text-white px-3 py-2 rounded text-sm font-bold shadow hover:bg-matcha/80"><i class="fa-solid fa-floppy-disk mr-1"></i> 儲存設定</button>
                 </div>
                 <div class="flex gap-2 mt-4 pt-4 border-t border-dashed border-matcha/30">
@@ -539,7 +540,11 @@
             itinerary = itinerary.map(d => ({ ...d, meals: { b: d.meals?.b||{}, l: d.meals?.l||{}, d: d.meals?.d||{} } }));
             expenses = expenses.map(e => { if (e.payer && !e.payers) return { ...e, payers: [e.payer] }; return e; });
         }
-        window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; document.getElementById('public-fund-total').value = publicFundBudget; renderPayerOptions(); }
+        window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; document.getElementById('public-fund-total').value = publicFundBudget; renderPayerOptions(); 
+            // 恢復 Gist 欄位顯示 (如果有)
+            if(gistId) document.getElementById('gist-id-input').value = gistId;
+            if(gistToken) document.getElementById('gist-token-input').value = gistToken;
+        }
         function saveData() {
             localStorage.setItem('flights', JSON.stringify(flights));
             localStorage.setItem('itinerary_v2', JSON.stringify(itinerary));
@@ -559,7 +564,8 @@
         function renderItinerary() {
             const c=document.getElementById('itinerary-container'); c.innerHTML='';
             itinerary.forEach((day)=>{
-                let content=day.content.split('\n').map(l => l.trim()?`<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${l}</span></li>`:'').join('');
+                // [V35.9] 調整字體大小與粗細 (text-lg, font-bold, font-hand)
+                let content=day.content.split('\n').map(l => l.trim()?`<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1 tracking-wide">${l}</span></li>`:'').join('');
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
                 const transPhoto = day.transportation.photo ? `<div class="mt-2 cursor-pointer relative group inline-block" onclick="viewPhoto('${day.transportation.photo}')"><img src="${day.transportation.photo}" class="h-16 w-auto object-contain rounded border border-gray-200 bg-white"><div class="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100 rounded transition"><i class="fa-solid fa-magnifying-glass-plus text-white text-xs drop-shadow-md"></i></div></div>` : '';
                 const trans = day.transportation.content ? `<div class="mt-3 bg-[#f8f9fa] border-l-4 border-gray-300 p-2 pl-3 rounded-r text-sm flex gap-3 shadow-sm items-start"><i class="fa-solid fa-train text-gray-400 mt-1"></i><div><div class="font-bold text-gray-700 font-hand text-base">${day.transportation.time||''} ${day.transportation.content}</div><div class="text-xs text-gray-400">${day.transportation.note||''}</div>${transPhoto}</div></div>` : '';
@@ -569,11 +575,11 @@
                     if (!meal || !meal.name) return '';
                     const conf = {b:{icon:'fa-mug-hot',color:'orange',label:'早餐'},l:{icon:'fa-utensils',color:'green',label:'午餐'},d:{icon:'fa-wine-glass',color:'purple',label:'晚餐'}}[type];
                     const url = meal.url ? meal.url : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(meal.name)}`;
-                    return `<div class="inline-flex items-center text-xs rounded-full border shadow-sm overflow-hidden bg-${conf.color}-50 border-${conf.color}-100 mr-2 mb-2"><button onclick="switchTab('wallet'); openExpenseModal(null, {note: '${conf.label}: ${meal.name}', cat: '飲食'})" class="px-2 py-1.5 hover:bg-${conf.color}-200 text-${conf.color}-600 border-r border-${conf.color}-200"><i class="fa-solid ${conf.icon}"></i></button><a href="${url}" target="_blank" class="px-3 py-1.5 text-${conf.color}-700 hover:bg-${conf.color}-100 hover:underline font-hand block flex items-center">${meal.name}</a></div>`;
+                    return `<div class="inline-flex items-center text-xs rounded-full border shadow-sm overflow-hidden bg-${conf.color}-50 border-${conf.color}-100 mr-2 mb-2"><button onclick="switchTab('wallet'); openExpenseModal(null, {note: '${conf.label}: ${meal.name}', cat: '飲食'})" class="px-2 py-1.5 hover:bg-${conf.color}-200 text-${conf.color}-600 border-r border-${conf.color}-200"><i class="fa-solid ${conf.icon}"></i></button><a href="${url}" target="_blank" class="px-3 py-1.5 text-${conf.color}-700 hover:bg-${conf.color}-100 hover:underline font-hand font-bold block flex items-center">${meal.name}</a></div>`;
                 }).join('');
 
                 const accLink = day.accommodationUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(day.accommodation)}`;
-                const accHtml = day.accommodation ? `<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold group/acc"><i class="fa-solid fa-bed mr-1"></i> <a href="${accLink}" target="_blank" class="hover:underline hover:text-indigo-700">${day.accommodation} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-50 group-hover/acc:opacity-100 ml-1"></i></a></div>` : '';
+                const accHtml = day.accommodation ? `<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs text-indigo-500 font-bold group/acc"><i class="fa-solid fa-bed mr-1"></i> <a href="${accLink}" target="_blank" class="hover:underline hover:text-indigo-700 font-hand text-sm">${day.accommodation} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-50 group-hover/acc:opacity-100 ml-1"></i></a></div>` : '';
 
                 c.innerHTML+=`
                 <div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
@@ -583,8 +589,8 @@
                         <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition"><i class="fa-solid fa-pen"></i></button>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
-                        <!-- [V35.8] 字體優化：從 font-hand 改為 font-maru font-medium -->
-                        <ul class="space-y-3 leading-relaxed text-gray-700 font-maru font-medium text-base">${content}</ul>
+                        <!-- [V35.9] 這裡使用了 font-hand font-bold text-lg，確保手寫體夠大夠粗 -->
+                        <ul class="space-y-3 leading-relaxed text-gray-700 font-hand font-bold text-lg">${content}</ul>
                         ${photosHtml}${trans}${accHtml}
                         ${mealButtons ? `<div class="mt-2 flex flex-wrap">${mealButtons}</div>` : ''}
                     </div>
