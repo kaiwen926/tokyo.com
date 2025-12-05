@@ -14,7 +14,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>一起旅行吧 </title>
+    <title>一起旅行吧</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -134,7 +134,7 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl"></i>每日行程</h3>
             </div>
-            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊餐點名稱導航</p>
+            <p class="text-xs text-gray-400 mb-4 text-center handwritten"><i class="fa-solid fa-circle-info mr-1"></i> 點擊前方圖示記帳 / 點擊餐點或飯店名稱導航</p>
             <div id="itinerary-container" class="space-y-6"></div>
             <button onclick="addNewDay()" class="w-full mt-6 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-xl py-3 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten"><i class="fa-solid fa-plus-circle mr-1"></i> 寫下一頁回憶</button>
         </section>
@@ -203,8 +203,14 @@
                     <h3 class="text-xl font-bold text-pencil handwritten">購物清單</h3>
                     <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded border border-red-100 hover:bg-red-400 hover:text-white transition">+ 新增</button>
                  </div>
+                 <p class="text-[10px] text-gray-400 mb-2 text-center">點擊圖片或圓圈勾選已購，可選擇是否自動記帳</p>
                  <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4"></div>
-                 <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale"></div>
+                 
+                 <!-- Completed List Section -->
+                 <div id="shopping-list-done-container" class="mt-4 border-t border-dashed border-gray-200 pt-2 hidden">
+                     <h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center"><i class="fa-solid fa-check-double mr-1"></i>已購買</h4>
+                     <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale"></div>
+                 </div>
             </div>
             <div class="hand-card p-5 mb-6 bg-[#f0f4f8]">
                 <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
@@ -374,7 +380,19 @@
             <h4 class="font-bold mb-3 text-center text-matcha"><i class="fa-solid fa-piggy-bank"></i> 公費入金</h4>
             <div class="space-y-3">
                  <div><label class="text-xs text-gray-500">誰存錢?</label><select id="dep-payer" class="w-full border p-2 rounded"></select></div>
-                 <div><label class="text-xs text-gray-500">金額 (TWD)</label><input type="number" id="dep-amount" class="w-full border p-2 rounded text-lg font-bold text-right" placeholder="0"></div>
+                 <div class="flex gap-2 items-end">
+                     <div class="flex-1">
+                        <label class="text-xs text-gray-500">金額</label>
+                        <input type="number" id="dep-amount" class="w-full border p-2 rounded text-lg font-bold text-right" placeholder="0">
+                     </div>
+                     <div class="w-20">
+                         <label class="text-xs text-gray-500">幣別</label>
+                         <select id="dep-currency" class="w-full border p-2 rounded text-sm font-bold bg-gray-50">
+                             <option value="TWD">TWD</option>
+                             <option value="JPY">JPY</option>
+                         </select>
+                     </div>
+                 </div>
                  <button onclick="saveDeposit()" class="w-full bg-matcha text-white py-2 rounded font-bold">確認入金</button>
             </div>
         </div>
@@ -481,16 +499,17 @@
                     return `<div class="inline-flex items-center text-xs rounded-full border shadow-sm overflow-hidden bg-${conf.color}-50 border-${conf.color}-100 mr-2 mb-2 group/meal"><button onclick="switchTab('wallet'); openExpenseModal(null, {note: '${conf.label}: ${meal.name}', cat: '飲食'})" class="px-2 py-1.5 hover:bg-${conf.color}-200 text-${conf.color}-600 border-r border-${conf.color}-200 transition"><i class="fa-solid ${conf.icon}"></i></button><a href="${url}" target="_blank" class="px-3 py-1.5 text-${conf.color}-700 hover:bg-${conf.color}-100 hover:underline font-hand block">${meal.name}</a></div>`;
                 }).join('');
 
-                // Accommodation Link Logic
+                // Accommodation Link Logic (Modified: Changed from span to a tag)
                 let accomHtml = '';
                 if(day.accommodation) {
                     const hotelUrl = day.accommodationUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(day.accommodation)}`;
                     accomHtml = `<div class="mt-3 pt-2 border-t border-dashed border-gray-200 text-xs flex items-center justify-between">
-                        <span class="text-indigo-500 font-bold flex items-center gap-2"><i class="fa-solid fa-bed"></i> ${day.accommodation}</span>
+                        <a href="${hotelUrl}" target="_blank" class="text-indigo-500 font-bold flex items-center gap-2 hover:underline hover:text-indigo-600 transition"><i class="fa-solid fa-bed"></i> ${day.accommodation}</a>
                         <a href="${hotelUrl}" target="_blank" class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full hover:bg-indigo-100 transition"><i class="fa-solid fa-location-dot mr-1"></i>導航</a>
                     </div>`;
                 }
 
+                // [UPDATED] Font Weight Change: text-gray-700 -> text-gray-800, text-lg -> text-xl, font-medium -> font-bold
                 c.innerHTML+=`
                 <div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
                     <div class="absolute -left-2.5 top-0 w-5 h-5 rounded-full ${day.highlight?'bg-sakura':'bg-gray-300'} border-4 border-paper shadow-sm"></div>
@@ -500,7 +519,7 @@
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
                         ${day.highlight?`<div class="absolute -top-2 -right-2 text-2xl opacity-50 rotate-12">🌸</div>`:''}
-                        <ul class="text-sm space-y-3 leading-relaxed text-gray-600 font-hand text-lg">${content}</ul>
+                        <ul class="space-y-3 leading-relaxed text-gray-800 font-hand text-xl font-bold">${content}</ul>
                         ${photosHtml}
                         ${accomHtml}
                         ${mealButtons ? `<div class="mt-2 flex flex-wrap">${mealButtons}</div>` : ''}
@@ -585,8 +604,10 @@
                 document.getElementById('btn-delete-expense').classList.remove('hidden');
             } else {
                 ['ex-id','ex-amount','ex-note'].forEach(k=>document.getElementById(k).value='');
+                if(pre.amount) document.getElementById('ex-amount').value=pre.amount; // Allow pre-filled amount
                 if(pre.note) document.getElementById('ex-note').value=pre.note;
                 if(pre.cat) document.getElementById('ex-category').value=pre.cat;
+                if(pre.curr) document.getElementById('ex-currency').value=pre.curr; // Allow pre-filled currency
             }
             openModal('expense-modal');
         }
@@ -631,18 +652,20 @@
             saveData(); renderExpenses(); closeModal('expense-modal');
         }
 
-        // Deposit Logic
+        // Deposit Logic (Modified for currency support)
         function openDepositModal() {
             const sel = document.getElementById('dep-payer');
             sel.innerHTML = payers.filter(p=>p!=='公費').map(p=>`<option value="${p}">${p}</option>`).join('');
             document.getElementById('dep-amount').value = '';
+            document.getElementById('dep-currency').value = 'TWD'; // Default
             openModal('deposit-modal');
         }
         function saveDeposit() {
             const p = document.getElementById('dep-payer').value;
             const a = parseFloat(document.getElementById('dep-amount').value);
+            const c = document.getElementById('dep-currency').value;
             if(!a) return;
-            deposits.push({ id: Date.now(), payer: p, amount: a, date: new Date().toISOString() });
+            deposits.push({ id: Date.now(), payer: p, amount: a, currency: c, date: new Date().toISOString() });
             saveData(); renderExpenses(); closeModal('deposit-modal');
         }
 
@@ -656,9 +679,12 @@
 
         function renderExpenses() { 
             const rate = parseFloat(document.getElementById('exchange-rate').value); 
-            // 1. Calculate Public Fund
+            // 1. Calculate Public Fund (Updated to handle different currencies)
             let fundIn = 0;
-            deposits.forEach(d => fundIn += d.amount);
+            deposits.forEach(d => {
+                const val = (d.currency === 'JPY' ? d.amount * rate : d.amount) || d.amount; // Fallback for old data without currency
+                fundIn += val;
+            });
             
             // 2. Calculate Expenses (in Base Currency TWD logic first)
             let paid = new Map(payers.map(p=>[p,0])); // Who paid how much (in TWD base)
@@ -684,8 +710,9 @@
             });
 
             deposits.forEach(d => {
-                paid.set(d.payer, (paid.get(d.payer)||0) + d.amount); 
-                paid.set('公費', (paid.get('公費')||0) - d.amount);
+                const val = (d.currency === 'JPY' ? d.amount * rate : d.amount) || d.amount;
+                paid.set(d.payer, (paid.get(d.payer)||0) + val); 
+                paid.set('公費', (paid.get('公費')||0) - val);
             });
 
             const humanPayers = payers.filter(p => p !== '公費');
@@ -703,8 +730,6 @@
             }); 
 
             // Update UI with Currency Conversion Logic
-            // If displayCurrency is TWD: use values as is (TWD)
-            // If displayCurrency is JPY: divide values by rate
             const currencySymbol = displayCurrency === 'TWD' ? 'NT$' : '¥';
             
             // Helper to convert and format
@@ -728,9 +753,7 @@
 
             let debtors = [], creditors = []; 
             net.forEach((v,k) => { if(v<-10) debtors.push({p:k,v}); else if(v>10) creditors.push({p:k,v}); }); 
-            // Settlement summary logic should probably stay in TWD or be explicit, but user asked for toggling.
-            // Let's use TWD for settlement suggestions to avoid confusion or use current display logic.
-            // Using current display logic for consistency.
+            
             document.getElementById('settlement-summary').innerHTML = debtors.length===0 ? '<div class="text-center opacity-50">帳務平衡 🎉</div>' : debtors.map(d=>`<div>${d.p} 需再支付 <span class="text-red-500 font-bold">${fmt(Math.abs(d.v))}</span></div>`).join(''); 
             
             // Expense List Rendering
@@ -738,11 +761,6 @@
             const filtered = filter === 'ALL' ? expenses : expenses.filter(e => e.payer === filter || (e.multiPayers && e.multiPayers[filter])); 
             
             document.getElementById('expense-list').innerHTML = filtered.map(e=>{
-                // List items show their original currency amount, but the converted total on the right
-                // User asked for "Overview" to switch, usually means the totals.
-                // But let's switch the "Cost in base currency" display on the right side of list item too.
-                
-                // Original calculation (TWD)
                 const baseAmtTwd = (e.curr=='JPY' ? e.amt*rate : e.amt);
                 const displayAmt = Math.round(displayCurrency === 'TWD' ? baseAmtTwd : (baseAmtTwd / rate));
 
@@ -840,7 +858,50 @@
         function toggleTodo(i){todos[i].done=!todos[i].done; saveData(); renderChecklist();}
         function updateTodo(i,v){todos[i].text=v; saveData();}
         function deleteTodo(i){todos.splice(i,1); saveData(); renderChecklist();}
-        function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ const h=`<div class="p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span></div>`; if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
+        
+        // --- Shopping List Logic (Upgraded) ---
+        function renderShoppingList() { 
+            const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); 
+            const dContainer = document.getElementById('shopping-list-done-container');
+            p.innerHTML=''; d.innerHTML=''; 
+            
+            let hasDone = false;
+            shoppingList.forEach(s=>{ 
+                const h=`<div class="p-2 border shadow-sm rounded bg-white relative ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})">
+                    <button onclick="event.stopPropagation(); toggleShopDone(${s.id})" class="absolute top-2 right-2 w-6 h-6 rounded-full border-2 ${s.done ? 'bg-matcha border-matcha text-white' : 'border-gray-300 hover:border-matcha'} flex items-center justify-center z-10 transition-colors">
+                        <i class="fa-solid fa-check text-xs ${s.done ? '' : 'opacity-0'}"></i>
+                    </button>
+                    ${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}
+                    <b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span>
+                </div>`; 
+                if(s.done) { d.innerHTML+=h; hasDone = true; } else { p.innerHTML+=h; }
+            }); 
+            
+            if(hasDone) dContainer.classList.remove('hidden'); else dContainer.classList.add('hidden');
+        }
+        
+        function toggleShopDone(id) {
+            const item = shoppingList.find(i => i.id === id);
+            if (!item) return;
+            
+            item.done = !item.done;
+            saveData();
+            renderShoppingList();
+
+            if (item.done) {
+                // Ask if user wants to add to expenses
+                if (confirm(`已標記為購買：${item.name}\n是否要順便記一筆帳？`)) {
+                    switchTab('wallet');
+                    openExpenseModal(null, {
+                        note: item.name,
+                        amount: item.price ? (item.price * item.qty) : 0,
+                        cat: '購物',
+                        curr: 'JPY'
+                    });
+                }
+            }
+        }
+
         let currentShopPhoto = null; function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
         function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
         function deleteShoppingItem(){const id=document.getElementById('shop-id').value;if(id&&confirm("Del?")){shoppingList=shoppingList.filter(i=>i.id!=id); saveData(); renderShoppingList(); closeModal('shopping-modal');}}
