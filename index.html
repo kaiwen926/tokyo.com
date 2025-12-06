@@ -159,11 +159,14 @@
         <!-- WALLET VIEW (Grid Layout for Desktop) -->
         <section id="view-wallet" class="view-section hidden relative z-10">
             <div class="flex justify-between items-center mt-6 mb-6">
-                <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">👛</span> 旅費管理</h2>
-                <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-gray-100">
-                    <span class="text-xs text-gray-400 font-mono font-bold">1 JPY ≈</span>
-                    <input type="number" id="exchange-rate" value="0.215" step="0.001" onchange="renderExpenses()" class="w-16 text-center rounded text-sm outline-none border-b border-gray-200 py-1 text-fuji font-bold bg-transparent focus:border-fuji transition">
-                    <span class="text-xs text-gray-400 font-mono font-bold">TWD</span>
+                <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">👛</span> 旅費</h2>
+                <div class="flex items-center gap-1 bg-white px-2 py-1.5 rounded-xl shadow-sm border border-gray-100">
+                    <span class="text-[10px] text-gray-400 font-mono font-bold mr-1">匯率</span>
+                    <span class="text-xs text-fuji font-mono font-bold">1 JPY ≈</span>
+                    <input type="number" id="exchange-rate" value="0.215" step="0.001" onchange="renderExpenses()" class="w-14 text-center rounded text-sm outline-none border-b border-gray-200 py-1 text-fuji font-bold bg-transparent focus:border-fuji transition">
+                    <button onclick="updateExchangeRate()" id="btn-rate-update" class="w-6 h-6 rounded-full bg-gray-50 text-gray-400 hover:text-fuji hover:bg-fuji-light transition flex items-center justify-center ml-1">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                    </button>
                 </div>
             </div>
 
@@ -209,7 +212,12 @@
                         <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold">新增</button>
                      </div>
                      <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4"></div>
-                     <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-40 grayscale"></div>
+                     <div class="flex items-center gap-2 mb-2 opacity-60">
+                         <div class="h-px bg-gray-200 flex-1"></div>
+                         <span class="text-[10px] text-gray-400">已購買</span>
+                         <div class="h-px bg-gray-200 flex-1"></div>
+                     </div>
+                     <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale filter"></div>
                 </div>
 
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
@@ -659,6 +667,32 @@
                 dashboard.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100 relative overflow-hidden flex-shrink-0 cursor-pointer hover:shadow-md transition" onclick="openWalletDetail('${p}')"><div class="flex items-center gap-2 mb-3"><div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">${p[0]}</div><span class="font-bold text-gray-700 text-sm">${p}</span></div><div class="text-xs text-gray-400 mb-1">已代墊總額</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${totalPaidNT.toLocaleString()}</div></div>`;
             });
         }
+        
+        async function updateExchangeRate() {
+            const btn = document.getElementById('btn-rate-update');
+            const icon = btn.querySelector('i');
+            icon.classList.remove('fa-arrows-rotate');
+            icon.classList.add('fa-spinner', 'fa-spin');
+            
+            try {
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+                const data = await res.json();
+                if(data && data.rates && data.rates.TWD) {
+                    const rate = data.rates.TWD;
+                    document.getElementById('exchange-rate').value = rate.toFixed(3);
+                    renderExpenses();
+                    alert(`匯率已更新：1 JPY ≈ ${rate} TWD`);
+                } else {
+                    throw new Error("Invalid data");
+                }
+            } catch(e) {
+                alert("匯率更新失敗，請檢查網路或稍後再試。");
+                console.error(e);
+            } finally {
+                icon.classList.remove('fa-spinner', 'fa-spin');
+                icon.classList.add('fa-arrows-rotate');
+            }
+        }
 
         function openWalletDetail(target) {
             const content = document.getElementById('wallet-detail-content');
@@ -732,8 +766,12 @@
                 if(ex.photo) { currentPhotoBase64 = ex.photo; document.getElementById('ex-photo-preview-mini').src = ex.photo; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); }
                 document.getElementById('btn-delete-expense').classList.remove('hidden');
             } else {
-                document.getElementById('ex-id').value = ''; document.getElementById('ex-amount').value = ''; document.getElementById('ex-note').value = pre.note || '';
+                document.getElementById('ex-id').value = ''; 
+                document.getElementById('ex-amount').value = pre.amt || ''; 
+                document.getElementById('ex-currency').value = pre.curr || 'JPY';
+                document.getElementById('ex-note').value = pre.note || '';
                 selectCategory(pre.cat || '餐飲'); selectPayer('我');
+                if(pre.photo) { currentPhotoBase64 = pre.photo; document.getElementById('ex-photo-preview-mini').src = pre.photo; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); }
             }
             openModal('expense-modal');
         }
@@ -762,7 +800,7 @@
         
         function renderMustEatList() { const c=document.getElementById('must-eat-list'); c.innerHTML=''; const sorted=[...mustEatList].sort((a,b)=>a.location.localeCompare(b.location,'zh-TW')); let cg=''; let gh=''; sorted.forEach(i=>{ if(i.location!==cg){if(cg!==''){gh+='</div>';c.innerHTML+=gh;}cg=i.location;gh=`<div class="mb-4 pt-3"><h4 class="text-lg font-black handwritten text-matcha border-b-2 border-matcha/30 inline-block px-2 mb-2">${cg}</h4><div class="mt-1 space-y-2">`;} const chk=i.items?i.items.filter(x=>x.done).length:0; gh+=`<div id="eat-item-${i.id}" class="bg-white p-3 rounded shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer hover:bg-yellow-50/50" onclick="openMustEatModal('${i.id}')"><div class="flex-1"><div class="font-bold text-gray-700 font-hand text-lg">${i.name}</div><div class="text-xs text-gray-400 mt-1">${i.note||''}</div></div><div class="text-right text-xs font-mono bg-gray-100 px-2 py-1 rounded-full text-gray-500">${chk}/${i.items?.length||0}</div></div>`; }); if(cg!==''){gh+='</div>';c.innerHTML+=gh;} }
         let curEatItems=[]; function openMustEatModal(id=null){ ['eat-id','eat-name','eat-location','eat-note'].forEach(k=>document.getElementById(k).value=''); curEatItems=[]; if(id){const i=mustEatList.find(x=>x.id===id);document.getElementById('eat-id').value=i.id;document.getElementById('eat-name').value=i.name;document.getElementById('eat-location').value=i.location;document.getElementById('eat-note').value=i.note;curEatItems=JSON.parse(JSON.stringify(i.items||[]));} renderFoodItems(); openModal('must-eat-modal'); }
-        function renderFoodItems(){ document.getElementById('must-eat-items-container').innerHTML = curEatItems.map(i=>`<div class="flex items-center justify-between p-2 border-b border-dashed ${i.done?'opacity-50':''}"><div class="flex-1 flex items-center"><input type="checkbox" onchange="togFood('${i.id}')" ${i.done?'checked':''} class="mr-2 accent-matcha"><span class="${i.done?'line-through':''}">${i.foodName}</span></div><div class="flex gap-2 items-center"><span class="text-xs font-mono">¥${i.price}</span><button onclick="delFood('${i.id}')" class="text-gray-300 hover:text-red-400">x</button></div></div>`).join(''); }
+        function renderFoodItems(){ document.getElementById('must-eat-items-container').innerHTML = curEatItems.map(i=>`<div class="flex items-center justify-between p-2 border-b border-dashed ${i.done?'opacity-50':''}"><div class="flex-1 flex items-center"><input type="checkbox" onchange="togFood('${i.id}')" ${i.done?'checked':''} class="mr-2 accent-matcha"><span class="${i.done?'line-through':''} ${i.url ? 'text-blue-500 hover:underline cursor-pointer' : ''}" onclick="${i.url ? `window.open('${i.url}', '_blank'); event.preventDefault();` : ''}">${i.foodName}</span>${i.url ? '<i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1 text-blue-300"></i>' : ''}</div><div class="flex gap-2 items-center"><span class="text-xs font-mono">¥${i.price}</span><button onclick="delFood('${i.id}')" class="text-gray-300 hover:text-red-400">x</button></div></div>`).join(''); }
         function addNewFoodItem(){const n=document.getElementById('new-food-name').value;if(!n)return;curEatItems.push({id:'f'+Date.now(),foodName:n,price:parseFloat(document.getElementById('new-food-price').value)||0,done:false,url:document.getElementById('new-food-url').value});document.getElementById('new-food-name').value='';renderFoodItems();}
         function togFood(id){const i=curEatItems.find(x=>x.id===id);if(i)i.done=!i.done;renderFoodItems();}
         function delFood(id){curEatItems=curEatItems.filter(x=>x.id!==id);renderFoodItems();}
@@ -775,7 +813,30 @@
         function updateTodo(i,v){todos[i].text=v; saveData();}
         function deleteTodo(i){todos.splice(i,1); saveData(); renderChecklist();}
         
-        function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ const h=`<div class="p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span></div>`; if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
+        function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ const h=`<div class="relative p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})"><input type="checkbox" onchange="finishShoppingItem(event, ${s.id})" ${s.done?'checked disabled':''} class="absolute top-2 left-2 z-20 w-5 h-5 accent-red-400 cursor-pointer rounded-full shadow-sm"><div class="pl-8">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs">Qty:${s.qty} ¥${s.price}</span></div></div>`; if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
+        
+        function finishShoppingItem(e, id) {
+            e.stopPropagation();
+            const item = shoppingList.find(i => i.id === id);
+            if (!item) return;
+            item.done = true;
+            saveData();
+            renderShoppingList();
+            
+            const total = (parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1);
+            
+            if(confirm(`已將「${item.name}」標記為購買。\n\n是否要直接記一筆帳？\n(金額: ¥${total})`)) {
+                switchTab('wallet');
+                openExpenseModal(null, {
+                    note: item.name,
+                    cat: '購物',
+                    curr: 'JPY',
+                    amt: total,
+                    photo: item.photo
+                });
+            }
+        }
+
         function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
         function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
         function deleteShoppingItem(){const id=document.getElementById('shop-id').value;if(id&&confirm("Del?")){shoppingList=shoppingList.filter(i=>i.id!=id); saveData(); renderShoppingList(); closeModal('shopping-modal');}}
