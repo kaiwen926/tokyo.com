@@ -215,7 +215,7 @@
                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
                         <h3 class="text-xl font-bold text-pencil handwritten flex items-center gap-2"><i class="fa-solid fa-utensils text-matcha"></i> 必吃清單</h3>
-                        <button onclick="openMustEatModal()" class="text-xs bg-matcha/10 text-green-700 px-3 py-1.5 rounded-lg border border-matcha/30 shadow-sm hover:bg-matcha hover:text-white transition font-bold">新增</button>
+                        <button onclick="openMustEatModal()" class="text-xs bg-matcha/10 text-green-700 px-3 py-1.5 rounded-lg border border-matcha/30 shadow-sm hover:bg-matcha hover:text-white transition font-bold">新增/編輯</button>
                      </div>
                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
@@ -449,8 +449,30 @@
     <!-- Shopping Modal -->
     <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
     
-    <!-- Must Eat Modal -->
-    <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-matcha">🍽️ 編輯必吃</h3><input type="hidden" id="eat-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><input type="text" id="eat-location" placeholder="地點名稱 (例如: 輕井澤)" class="w-full p-2 border-b-2 border-matcha/50 bg-transparent text-center font-bold"><input type="text" id="eat-name" placeholder="主題名稱 (可選)" class="w-full p-2 border rounded bg-gray-50 text-sm"><textarea id="eat-note" placeholder="備註/交通" class="w-full h-16 p-2 border rounded bg-gray-50 text-sm"></textarea></div><h4 class="text-sm font-bold text-gray-600 mb-2">菜單/項目:</h4><div id="must-eat-items-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div><div class="flex flex-col gap-2 mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200"><div class="flex gap-2"><input type="text" id="new-food-name" placeholder="名稱" class="flex-1 p-2 border rounded text-sm outline-matcha"><input type="number" id="new-food-price" placeholder="價格" class="w-20 p-2 border rounded text-sm text-right outline-matcha"></div><div class="flex gap-2 items-center"><input type="url" id="new-food-url" placeholder="網址 (點擊文字開啟)" class="flex-1 p-2 border rounded text-xs outline-matcha"><button onclick="addNewFoodItem()" class="bg-matcha text-white px-3 py-2 rounded-lg hover:bg-green-600 active:scale-95 transition text-sm"><i class="fa-solid fa-plus"></i></button></div></div><div class="flex gap-2 mt-4"><button onclick="deleteMustEatItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hover:bg-red-100">刪除</button><button onclick="saveMustEatItem()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow hover:bg-fuji/80">儲存</button></div></div></div>
+    <!-- Must Eat Modal (New Structure) -->
+    <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-4 text-center text-matcha">🍽️ 編輯必吃地點</h3>
+            <input type="hidden" id="eat-loc-id">
+            <div class="mb-4">
+                <label class="text-xs text-gray-400 block mb-1">地點名稱</label>
+                <input type="text" id="eat-location" placeholder="例如: 輕井澤、築地市場" class="w-full p-2 border-b-2 border-matcha/50 bg-transparent font-bold text-lg focus:outline-none">
+            </div>
+            
+            <label class="text-xs text-gray-400 block mb-2">主題/餐廳列表</label>
+            <div id="eat-themes-container" class="space-y-3 mb-4">
+                <!-- Injected JS -->
+            </div>
+            
+            <button onclick="addThemeRow()" class="w-full py-2 border-2 border-dashed border-matcha/30 text-matcha rounded-lg text-sm font-bold mb-4 hover:bg-matcha/10 transition"><i class="fa-solid fa-plus"></i> 新增主題</button>
+
+            <div class="flex gap-2">
+                <button onclick="deleteMustEatLocation()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hover:bg-red-100">刪除整組</button>
+                <button onclick="saveMustEatLocation()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow hover:bg-fuji/80">儲存</button>
+            </div>
+        </div>
+    </div>
     
     <!-- IOU Modal -->
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
@@ -508,15 +530,58 @@
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
         const RECOVERED_TODOS = [{"text":"護照","done":false}];
 
+        // Data Migration Logic (V36 -> V37)
+        function migrateMustEatList(oldList) {
+            if (!oldList.length) return [];
+            // Check if it's already new format (items have 'themes')
+            if (oldList[0].themes) return oldList;
+
+            console.log("Migrating Must Eat List...");
+            const grouped = {};
+            oldList.forEach(item => {
+                const loc = item.location || "未分類";
+                if (!grouped[loc]) grouped[loc] = [];
+                // Old item: {id, name, location, note, items}
+                // Convert to Theme: {id, name, url, note}
+                // We map old "name" to new theme name. We map old "items"(checklist) to note (as simple text)
+                let noteText = item.note || "";
+                if (item.items && item.items.length) {
+                    noteText += "\n" + item.items.map(i => `- ${i.foodName}`).join("\n");
+                }
+                grouped[loc].push({
+                    id: 'theme_' + Date.now() + Math.random(),
+                    name: item.name,
+                    url: "", // Old main item didn't have URL
+                    note: noteText.trim()
+                });
+            });
+
+            const newList = [];
+            for (const [loc, themes] of Object.entries(grouped)) {
+                newList.push({
+                    id: 'loc_' + Date.now() + Math.random(),
+                    location: loc,
+                    themes: themes
+                });
+            }
+            return newList;
+        }
+
         // Core Functions
         function reloadLocalData() {
             flights = JSON.parse(localStorage.getItem('flights')) || RECOVERED_FLIGHTS;
             itinerary = JSON.parse(localStorage.getItem('itinerary_v2')) || RECOVERED_ITINERARY;
-            mustEatList = JSON.parse(localStorage.getItem('mustEatList')) || [];
+            
+            // Migrate Must Eat List
+            let rawMustEat = JSON.parse(localStorage.getItem('mustEatList')) || [];
+            mustEatList = migrateMustEatList(rawMustEat);
+            
             expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            
+            // Guide Protection: If empty, load default
             guides = JSON.parse(localStorage.getItem('guides')) || [];
-            // Auto-populate guides if empty
             if (guides.length === 0) guides = [...PRELOADED_GUIDES];
+            
             todos = JSON.parse(localStorage.getItem('todos')) || RECOVERED_TODOS;
             shoppingList = JSON.parse(localStorage.getItem('shoppingList_v2')) || [];
             payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
@@ -552,12 +617,24 @@
             .then(res => res.json())
             .then(data => {
                 const cloud = JSON.parse(data.files[GIST_FILE_NAME].content);
-                // Simple sync: overwrite local
+                
+                // --- GUIDE PROTECTION LOGIC ---
+                // If cloud has no guides (empty list), but we have system defaults, prefer defaults or merge?
+                // We assume if cloud list is empty, it might be a fresh/legacy sync. We shouldn't wipe user's view.
+                // However, if user explicitly deleted all, we respect it. 
+                // BUT, user specifically complained about disappearing. So if cloud is [], we inject PRELOADED.
+                let cloudGuides = cloud.guides || [];
+                if (cloudGuides.length === 0) cloudGuides = [...PRELOADED_GUIDES];
+
                 localStorage.setItem('flights',JSON.stringify(cloud.flights || []));
                 localStorage.setItem('itinerary_v2',JSON.stringify(cloud.itinerary || []));
-                localStorage.setItem('mustEatList',JSON.stringify(cloud.mustEatList || []));
+                
+                // Migrate Cloud Must Eat if needed
+                const migratedMustEat = migrateMustEatList(cloud.mustEatList || []);
+                localStorage.setItem('mustEatList',JSON.stringify(migratedMustEat));
+                
                 localStorage.setItem('expenses',JSON.stringify(cloud.expenses || []));
-                localStorage.setItem('guides',JSON.stringify(cloud.guides || []));
+                localStorage.setItem('guides',JSON.stringify(cloudGuides));
                 localStorage.setItem('todos',JSON.stringify(cloud.todos || []));
                 localStorage.setItem('shoppingList_v2',JSON.stringify(cloud.shoppingList || []));
                 localStorage.setItem('payers',JSON.stringify(cloud.payers || []));
@@ -694,7 +771,6 @@
             let payerTotals = {}; payers.forEach(p => payerTotals[p] = { JPY: 0, TWD: 0 });
             expenses.sort((a,b) => b.id - a.id).forEach(e => {
                 const amt = parseFloat(e.amt);
-                // Handle multi-payer (split logic for stats)
                 const exPayers = (e.payer || "").split(',');
                 const splitAmt = amt / (exPayers.length || 1);
                 exPayers.forEach(p => {
@@ -710,7 +786,6 @@
                 list.innerHTML += `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden active:scale-95 transition cursor-pointer hover:bg-gray-50" onclick="openExpenseModal(${e.id})"><div class="w-10 h-10 rounded-full ${catInfo.color} flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid ${catInfo.icon}"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-gray-700 text-sm truncate">${e.note || catInfo.id}</div><div class="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1">付款: ${payerDisplay}</div></div><div class="text-right"><div class="font-bold font-mono text-gray-800">${e.curr} ${amt.toLocaleString()}</div>${e.curr === 'JPY' ? `<div class="text-[10px] text-gray-400">≈ NT$ ${Math.round(amt * rate).toLocaleString()}</div>` : ''}</div></div>`;
             });
 
-            // Dashboard
             const dashboard = document.getElementById('wallet-dashboard-container');
             dashboard.innerHTML = '';
             
@@ -809,7 +884,6 @@
             document.getElementById('btn-delete-expense').classList.add('hidden');
             document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div class="flex flex-col items-center gap-1 cursor-pointer min-w-[50px]" onclick="selectCategory('${c.id}')"><div id="cat-btn-${c.id}" class="w-12 h-12 rounded-full flex items-center justify-center text-lg transition-all border border-transparent ${c.id === (pre.cat || '餐飲') ? `ring-2 ring-offset-1 ring-black ${c.color}` : 'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div><span class="text-[10px] text-gray-500 font-bold">${c.id}</span></div>`).join('');
             
-            // Initial selection logic
             if(id) {
                 const ex = expenses.find(e => e.id == id);
                 document.getElementById('ex-id').value = ex.id; document.getElementById('ex-amount').value = ex.amt; document.getElementById('ex-currency').value = ex.curr; document.getElementById('ex-note').value = ex.note;
@@ -845,7 +919,6 @@
         function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt) { alert("請輸入金額"); return; } const ex={id:id?parseInt(id):Date.now(), cat:window.selectedCat, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:selectedPayers.join(','), photo:currentPhotoBase64, ppl:1}; if(id){const idx=expenses.findIndex(e=>e.id==id);if(idx>-1)expenses[idx]=ex;}else{expenses.push(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
         function deleteExpense(){const id=document.getElementById('ex-id').value;if(id&&confirm("Del?")){expenses=expenses.filter(e=>e.id!=id); saveData(); renderExpenses(); closeModal('expense-modal');}}
         
-        // Member & Avatar
         function openMemberModal(){
             document.getElementById('member-list').innerHTML=payers.map((p,i)=>`<div class="flex justify-between p-2 bg-gray-50 rounded items-center group">
                 <div class="flex items-center gap-2">
@@ -876,15 +949,114 @@
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-coords'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value, d=document.getElementById('guide-desc').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:d, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
         
-        function renderMustEatList() { const c=document.getElementById('must-eat-list'); c.innerHTML=''; const sorted=[...mustEatList].sort((a,b)=>a.location.localeCompare(b.location,'zh-TW')); let cg=''; let gh=''; sorted.forEach(i=>{ if(i.location!==cg){if(cg!==''){gh+='</div>';c.innerHTML+=gh;}cg=i.location;gh=`<div class="mb-4 pt-3"><h4 class="text-lg font-black handwritten text-matcha border-b-2 border-matcha/30 inline-block px-2 mb-2">${cg}</h4><div class="mt-1 space-y-2">`;} const chk=i.items?i.items.filter(x=>x.done).length:0; gh+=`<div id="eat-item-${i.id}" class="bg-white p-3 rounded shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer hover:bg-yellow-50/50" onclick="openMustEatModal('${i.id}')"><div class="flex-1"><div class="font-bold text-gray-700 font-hand text-lg">${i.name}</div><div class="text-xs text-gray-400 mt-1">${i.note||''}</div></div><div class="text-right text-xs font-mono bg-gray-100 px-2 py-1 rounded-full text-gray-500">${chk}/${i.items?.length||0}</div></div>`; }); if(cg!==''){gh+='</div>';c.innerHTML+=gh;} }
-        let curEatItems=[]; function openMustEatModal(id=null){ ['eat-id','eat-name','eat-location','eat-note'].forEach(k=>document.getElementById(k).value=''); curEatItems=[]; if(id){const i=mustEatList.find(x=>x.id===id);document.getElementById('eat-id').value=i.id;document.getElementById('eat-name').value=i.name;document.getElementById('eat-location').value=i.location;document.getElementById('eat-note').value=i.note;curEatItems=JSON.parse(JSON.stringify(i.items||[]));} renderFoodItems(); openModal('must-eat-modal'); }
-        function renderFoodItems(){ document.getElementById('must-eat-items-container').innerHTML = curEatItems.map(i=>`<div class="flex items-center justify-between p-2 border-b border-dashed ${i.done?'opacity-50':''}"><div class="flex-1 flex items-center"><input type="checkbox" onchange="togFood('${i.id}')" ${i.done?'checked':''} class="mr-2 accent-matcha"><span class="${i.done?'line-through':''} ${i.url ? 'text-blue-500 hover:underline cursor-pointer' : ''}" onclick="${i.url ? `window.open('${i.url}', '_blank'); event.preventDefault();` : ''}">${i.foodName}</span>${i.url ? '<i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1 text-blue-300"></i>' : ''}</div><div class="flex gap-2 items-center"><span class="text-xs font-mono">¥${i.price}</span><button onclick="delFood('${i.id}')" class="text-gray-300 hover:text-red-400">x</button></div></div>`).join(''); }
-        function addNewFoodItem(){const n=document.getElementById('new-food-name').value;if(!n)return;curEatItems.push({id:'f'+Date.now(),foodName:n,price:parseFloat(document.getElementById('new-food-price').value)||0,done:false,url:document.getElementById('new-food-url').value});document.getElementById('new-food-name').value='';renderFoodItems();}
-        function togFood(id){const i=curEatItems.find(x=>x.id===id);if(i)i.done=!i.done;renderFoodItems();}
-        function delFood(id){curEatItems=curEatItems.filter(x=>x.id!==id);renderFoodItems();}
-        function saveMustEatItem(){const id=document.getElementById('eat-id').value,n=document.getElementById('eat-name').value,l=document.getElementById('eat-location').value;if(!l)return;const item={id:id||'eat'+Date.now(),name:n,location:l,note:document.getElementById('eat-note').value,items:curEatItems};if(id){const idx=mustEatList.findIndex(x=>x.id===id);if(idx>-1)mustEatList[idx]=item;}else{mustEatList.push(item);}saveData();renderMustEatList();renderItinerary();closeModal('must-eat-modal');}
-        function deleteMustEatItem(){if(document.getElementById('eat-id').value && confirm("Del?")){mustEatList=mustEatList.filter(x=>x.id!==document.getElementById('eat-id').value);saveData();renderMustEatList();renderItinerary();closeModal('must-eat-modal');}}
+        // --- NEW MUST EAT LOGIC (Group by Location -> Multiple Themes) ---
+        function renderMustEatList() {
+            const c = document.getElementById('must-eat-list'); 
+            c.innerHTML = ''; 
+            
+            // New structure: array of locations, each has themes
+            // Check if user has data. If not, maybe empty state.
+            mustEatList.forEach(locItem => {
+                const themesHtml = locItem.themes.map(t => {
+                    const nameHtml = t.url 
+                        ? `<a href="${t.url}" target="_blank" class="font-bold text-gray-700 font-hand text-lg hover:text-blue-500 hover:underline"><i class="fa-solid fa-link text-xs mr-1 opacity-50"></i>${t.name}</a>`
+                        : `<span class="font-bold text-gray-700 font-hand text-lg">${t.name}</span>`;
+                    
+                    return `<div class="bg-white p-3 rounded shadow-sm border border-gray-100 mb-2">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">${nameHtml}</div>
+                        </div>
+                        ${t.note ? `<div class="text-xs text-gray-400 mt-1 whitespace-pre-line">${t.note}</div>` : ''}
+                    </div>`;
+                }).join('');
+
+                c.innerHTML += `<div class="mb-6 group relative">
+                    <button onclick="openMustEatModal('${locItem.id}')" class="absolute top-0 right-0 text-gray-300 hover:text-fuji px-2"><i class="fa-solid fa-pen"></i></button>
+                    <h4 class="text-lg font-black handwritten text-matcha border-b-2 border-matcha/30 inline-block px-2 mb-3">${locItem.location}</h4>
+                    <div class="pl-2 border-l-2 border-matcha/10">
+                        ${themesHtml}
+                    </div>
+                </div>`;
+            });
+        }
+
+        let tempThemes = [];
+        function openMustEatModal(id=null) {
+            document.getElementById('eat-location').value = '';
+            tempThemes = [];
+            document.getElementById('eat-loc-id').value = '';
+            
+            if(id) {
+                const item = mustEatList.find(i => i.id === id);
+                if(item) {
+                    document.getElementById('eat-loc-id').value = item.id;
+                    document.getElementById('eat-location').value = item.location;
+                    // Deep copy themes to allow editing
+                    tempThemes = JSON.parse(JSON.stringify(item.themes));
+                }
+            } else {
+                // New Location
+                tempThemes = [{id: 't'+Date.now(), name: '', url: '', note: ''}];
+            }
+            renderThemeRows();
+            openModal('must-eat-modal');
+        }
+
+        function renderThemeRows() {
+            const container = document.getElementById('eat-themes-container');
+            container.innerHTML = tempThemes.map((t, idx) => `
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group">
+                    <button onclick="removeThemeRow(${idx})" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
+                    <input type="text" placeholder="餐廳/主題名稱" class="w-full bg-transparent border-b border-gray-300 text-sm font-bold mb-2 focus:border-matcha outline-none" value="${t.name}" onchange="updateTheme(${idx}, 'name', this.value)">
+                    <input type="url" placeholder="網址 (連結)" class="w-full bg-white border border-gray-200 rounded text-xs p-1 mb-2 text-blue-500" value="${t.url}" onchange="updateTheme(${idx}, 'url', this.value)">
+                    <textarea placeholder="備註 (必吃餐點...)" class="w-full bg-white border border-gray-200 rounded text-xs p-1 h-12" onchange="updateTheme(${idx}, 'note', this.value)">${t.note}</textarea>
+                </div>
+            `).join('');
+        }
+
+        function addThemeRow() {
+            tempThemes.push({id: 't'+Date.now(), name: '', url: '', note: ''});
+            renderThemeRows();
+        }
         
+        function removeThemeRow(idx) {
+            tempThemes.splice(idx, 1);
+            renderThemeRows();
+        }
+
+        function updateTheme(idx, field, val) {
+            tempThemes[idx][field] = val;
+        }
+
+        function saveMustEatLocation() {
+            const id = document.getElementById('eat-loc-id').value;
+            const location = document.getElementById('eat-location').value;
+            if(!location) return alert("請輸入地點名稱");
+            
+            // Filter out empty themes
+            const finalThemes = tempThemes.filter(t => t.name.trim() !== '');
+
+            if(id) {
+                const idx = mustEatList.findIndex(i => i.id === id);
+                if(idx > -1) mustEatList[idx] = { id, location, themes: finalThemes };
+            } else {
+                mustEatList.push({ id: 'loc_'+Date.now(), location, themes: finalThemes });
+            }
+            saveData();
+            renderMustEatList();
+            closeModal('must-eat-modal');
+        }
+
+        function deleteMustEatLocation() {
+            const id = document.getElementById('eat-loc-id').value;
+            if(id && confirm("確定刪除此地點及所有主題？")) {
+                mustEatList = mustEatList.filter(i => i.id !== id);
+                saveData();
+                renderMustEatList();
+                closeModal('must-eat-modal');
+            }
+        }
+
         // Checklist
         function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
         function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false}); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
@@ -904,15 +1076,12 @@
             if (!item) return;
 
             if(item.done) {
-                // Uncheck (Revert)
                 item.done = false;
                 saveData(); renderShoppingList();
             } else {
-                // Check -> Ask Expense
                 item.done = true;
                 saveData(); renderShoppingList();
                 
-                // Allow "Cancel" to just mark as done without recording
                 if(confirm(`已將「${item.name}」標記購買。\n\n是否記帳？`)) {
                     const total = (parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1);
                     switchTab('wallet');
