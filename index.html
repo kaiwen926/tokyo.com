@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- PWA 設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="旅の記">
@@ -15,10 +16,15 @@
 
     <title>一起旅行吧</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- SortableJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <script>
@@ -101,6 +107,7 @@
 </head>
 <body>
 
+    <!-- HEADER -->
     <header class="pb-2 px-4 text-center sticky top-0 bg-[#f9f7f2]/95 z-40 backdrop-blur-sm transition-all duration-300 relative border-b border-gray-100/50" style="padding-top: max(1.5rem, var(--sat));">
         <h1 class="text-4xl font-black tracking-widest text-ink handwritten relative inline-block mt-2" style="font-weight: 900;">
             <span class="absolute -top-5 -left-8 text-3xl rotate-[-15deg] opacity-80">✈️</span>
@@ -110,23 +117,28 @@
         <div class="flex justify-center items-center gap-3 mt-2">
             <p class="text-[10px] text-fuji font-bold tracking-[0.2em] font-serif uppercase handwritten">My Travel Logbook</p>
             
+            <!-- Cloud Status Badge -->
             <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 cursor-default">
                 <i class="fa-solid fa-code-branch"></i> <span>未連線</span>
             </div>
             
+            <!-- Sync Button -->
             <button onclick="forceDownload()" class="text-[10px] bg-white text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 hover:bg-fuji-light hover:text-fuji hover:border-fuji-light shadow-sm" title="立即同步">
                 <i class="fa-solid fa-rotate-right"></i> <span>同步</span>
             </button>
         </div>
     </header>
 
+    <!-- MAIN CONTAINER -->
     <main id="app" class="px-4 w-full mx-auto min-h-screen max-w-5xl relative pb-24">
         
+        <!-- Deco -->
         <div class="deco-icon top-4 left-4 text-4xl">🌸</div>
         <div class="deco-icon top-20 right-10 text-3xl text-blue-200 rotate-[-20deg]">🍙</div>
         <div class="deco-icon bottom-32 left-8 text-3xl text-green-200">🍡</div>
         <div class="deco-icon top-1/3 right-4 text-5xl text-red-100 rotate-[15deg]">⛩️</div>
 
+        <!-- PLAN VIEW -->
         <section id="view-plan" class="view-section animate-fade relative z-10">
             <div class="flex justify-between items-center mb-6 mt-6">
                 <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-plane-departure mr-2 text-xl text-fuji"></i>航班資訊</h3>
@@ -143,6 +155,7 @@
                 <span><i class="fa-solid fa-book-open text-fuji"></i> 點擊文字看導覽</span>
             </p>
             
+            <!-- Itinerary Container -->
             <div id="itinerary-container" class="space-y-6 md:grid md:grid-cols-2 md:space-y-0 md:gap-6 items-start"></div>
             
             <button onclick="addNewDay()" class="w-full mt-8 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-2xl py-4 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten flex items-center justify-center gap-2 group">
@@ -150,6 +163,7 @@
             </button>
         </section>
 
+        <!-- GUIDE VIEW -->
         <section id="view-guide" class="view-section hidden relative z-10">
             <div class="flex justify-between items-end mb-6 mt-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">🎐</span> 深度導覽</h2>
@@ -158,6 +172,7 @@
             <div id="guide-list" class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6"></div>
         </section>
 
+        <!-- WALLET VIEW -->
         <section id="view-wallet" class="view-section hidden relative z-10">
             <div class="flex justify-between items-center mt-6 mb-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">👛</span> 旅費</h2>
@@ -171,6 +186,7 @@
                 </div>
             </div>
 
+            <!-- Dashboard -->
             <div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar mb-4 md:grid md:grid-cols-4 md:overflow-visible" id="wallet-dashboard-container"></div>
 
             <div class="flex justify-between items-center mb-4 mt-4 px-1">
@@ -183,6 +199,7 @@
 
             <div id="expense-list" class="space-y-3 pb-24 md:grid md:grid-cols-2 md:gap-3 md:space-y-0"></div>
 
+            <!-- FAB -->
             <div class="fixed bottom-24 right-6 md:right-10 z-30">
                 <button onclick="openExpenseModal()" class="bg-ink text-white rounded-full h-14 px-6 shadow-float flex items-center gap-2 hover:scale-105 transition active:scale-95 group border-2 border-white/20">
                     <i class="fa-solid fa-pen-nib text-xl group-hover:rotate-12 transition"></i> <span class="font-bold handwritten tracking-widest text-lg">記一筆</span>
@@ -190,8 +207,10 @@
             </div>
         </section>
 
+        <!-- LISTS VIEW -->
         <section id="view-lists" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Must Eat -->
                 <div class="hand-card p-6 bg-[#fffdf0] relative border-l-8 border-[#fffdf0]">
                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
@@ -201,6 +220,7 @@
                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
                 
+                <!-- Shopping -->
                 <div class="hand-card p-6 bg-white relative border-l-8 border-white">
                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-200 pb-2">
@@ -216,6 +236,7 @@
                      <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale filter"></div>
                 </div>
 
+                <!-- Checklist -->
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
                     <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
                     <ul id="checklist-container" class="space-y-2"></ul>
@@ -233,26 +254,34 @@
             </div>
         </section>
 
+        <!-- INFO VIEW -->
         <section id="view-info" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <!-- VJW Card -->
                 <div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition">
-                    <div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()">
-                        <h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>Visit Japan Web</h3>
-                        <div class="flex gap-2 items-center">
-                            <a href="https://www.vjw.digital.go.jp/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a>
-                            <i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i>
-                        </div>
+                    <div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center">
+                        <h3 class="font-bold text-blue-800 handwritten text-lg"><i class="fa-solid fa-passport mr-2"></i>Visit Japan Web</h3>
+                        <a href="https://www.vjw.digital.go.jp/" target="_blank" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold">前往網站 <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></a>
                     </div>
-                    
-                    <div id="vjw-content" class="transition-all duration-300 overflow-hidden">
-                        <div class="p-4 pb-6">
-                            <div id="vjw-container" class="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 no-scrollbar items-start">
-                                </div>
+                    <div class="p-6 flex flex-col items-center">
+                        <div class="border-2 border-dashed border-blue-200 rounded-2xl p-2 text-center bg-white cursor-pointer hover:bg-blue-50 transition relative group w-48 h-48 flex items-center justify-center shadow-inner">
+                            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="processImage(this, (base64) => { saveVJWImage(base64); })">
+                            <div id="vjw-placeholder" class="text-blue-300">
+                                <i class="fa-solid fa-qrcode text-4xl mb-3"></i>
+                                <p class="text-xs font-bold">點擊上傳 QR Code</p>
+                            </div>
+                            <img id="vjw-image" src="" class="hidden w-full h-full object-contain rounded-xl relative z-20 pointer-events-none">
+                            <div id="vjw-overlay" class="absolute inset-0 bg-black/40 hidden items-center justify-center z-30 pointer-events-none group-hover:flex rounded-xl transition">
+                                 <span class="text-white text-xs font-bold"><i class="fa-solid fa-camera mr-1"></i>更換圖片</span>
+                            </div>
                         </div>
+                        <button id="vjw-view-btn" onclick="viewVJW()" class="hidden mt-4 bg-blue-500 text-white px-6 py-2 rounded-full shadow-lg shadow-blue-500/30 font-bold text-sm hover:bg-blue-600 transition transform active:scale-95"><i class="fa-solid fa-magnifying-glass-plus mr-2"></i>放大檢視</button>
                     </div>
                 </div>
 
+                <!-- Tools & GitHub -->
                 <div class="space-y-6">
+                    <!-- Tools -->
                     <div class="hand-card p-6 flex justify-around items-center">
                         <a href="https://translate.google.com/?sl=ja&tl=zh-TW&op=images" target="_blank" class="flex flex-col items-center text-gray-500 hover:text-fuji transition group">
                             <div class="w-14 h-14 bg-gray-50 group-hover:bg-fuji/10 rounded-2xl flex items-center justify-center mb-2 text-2xl transition"><i class="fa-solid fa-camera"></i></div>
@@ -276,6 +305,7 @@
                         </a>
                     </div>
 
+                    <!-- GitHub Sync -->
                     <details class="group hand-card overflow-hidden border border-gray-200">
                         <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none">
                             <span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span>
@@ -299,6 +329,8 @@
         </section>
     </main>
 
+    <!-- MODALS -->
+    <!-- Flight Modal -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('flight-modal')" class="absolute top-3 right-3 text-gray-400 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
@@ -321,6 +353,7 @@
         </div>
     </div>
 
+    <!-- Day Modal -->
     <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-lg rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
             <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -351,6 +384,7 @@
         </div>
     </div>
 
+    <!-- Lightbox Modal -->
     <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('lightbox-modal')">
         <div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-white/10 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div>
         <div id="lightbox-container" class="zoom-container w-full h-full flex items-center justify-center" onclick="event.stopPropagation()">
@@ -358,6 +392,7 @@
         </div>
     </div>
 
+    <!-- Guide Modal (Updated) -->
     <div id="guide-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card">
             <button onclick="closeModal('guide-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -380,6 +415,7 @@
         </div>
     </div>
 
+    <!-- Expense Modal -->
     <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white">
             <button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -419,6 +455,7 @@
         </div>
     </div>
     
+    <!-- Wallet Detail Modal -->
     <div id="wallet-detail-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('wallet-detail-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -429,8 +466,10 @@
         </div>
     </div>
 
+    <!-- Shopping Modal -->
     <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
     
+    <!-- Must Eat Modal -->
     <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -443,7 +482,8 @@
             
             <label class="text-xs text-gray-400 block mb-2">主題/餐廳列表</label>
             <div id="eat-themes-container" class="space-y-3 mb-4">
-                </div>
+                <!-- Injected JS -->
+            </div>
             
             <button onclick="addThemeRow()" class="w-full py-2 border-2 border-dashed border-matcha/30 text-matcha rounded-lg text-sm font-bold mb-4 hover:bg-matcha/10 transition"><i class="fa-solid fa-plus"></i> 新增主題</button>
 
@@ -454,10 +494,13 @@
         </div>
     </div>
     
+    <!-- IOU Modal -->
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
     
+    <!-- Member Modal -->
     <div id="member-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理成員與頭像</h4><div id="member-list" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('member-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
 
+    <!-- BOTTOM NAV -->
     <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2]/95 border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] backdrop-blur-sm" style="padding-bottom: calc(10px + var(--sab));">
         <div class="flex justify-between items-center w-full mx-auto pb-1 max-w-lg">
             <button onclick="switchTab('plan')" class="nav-item active flex flex-col items-center text-gray-400 transition flex-1" data-target="plan"><i class="fa-solid fa-map text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">行程</span></button>
@@ -468,6 +511,7 @@
         </div>
     </nav>
 
+    <!-- JAVASCRIPT -->
     <script>
         // --- PRELOADED GUIDES ---
         const PRELOADED_GUIDES = [
@@ -481,12 +525,9 @@
         ];
 
         let flights = [], itinerary = [], mustEatList = [], expenses = [], guides = [], todos = [], shoppingList = [], payers = [], manualDebts = [], memoText = "";
-        let payerProfiles = {}; 
+        let payerProfiles = {}; // Name -> Base64
         let publicFundConfig = { initial: 0, currency: 'JPY' };
-        
-        // VJW Data Structure: { isOpen: boolean, items: [{id, name, image}] }
-        let vjwData = { isOpen: true, items: [] };
-        
+        let vjwImage = "";
         let myChart = null; 
 
         let gistToken = localStorage.getItem('gist_token') || "";
@@ -513,16 +554,32 @@
         function migrateMustEatList(oldList) {
             if (!oldList.length) return [];
             if (oldList[0].themes) return oldList;
+
+            console.log("Migrating Must Eat List...");
             const grouped = {};
             oldList.forEach(item => {
                 const loc = item.location || "未分類";
                 if (!grouped[loc]) grouped[loc] = [];
                 let noteText = item.note || "";
-                if (item.items && item.items.length) { noteText += "\n" + item.items.map(i => `- ${i.foodName}`).join("\n"); }
-                grouped[loc].push({ id: 'theme_' + Date.now() + Math.random(), name: item.name, url: "", note: noteText.trim() });
+                if (item.items && item.items.length) {
+                    noteText += "\n" + item.items.map(i => `- ${i.foodName}`).join("\n");
+                }
+                grouped[loc].push({
+                    id: 'theme_' + Date.now() + Math.random(),
+                    name: item.name,
+                    url: "", 
+                    note: noteText.trim()
+                });
             });
+
             const newList = [];
-            for (const [loc, themes] of Object.entries(grouped)) { newList.push({ id: 'loc_' + Date.now() + Math.random(), location: loc, themes: themes }); }
+            for (const [loc, themes] of Object.entries(grouped)) {
+                newList.push({
+                    id: 'loc_' + Date.now() + Math.random(),
+                    location: loc,
+                    themes: themes
+                });
+            }
             return newList;
         }
 
@@ -543,18 +600,7 @@
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             memoText = localStorage.getItem('memo') || "";
             publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig')) || { initial: 0, currency: 'JPY' };
-            
-            // VJW Data Migration (Old single image -> New Array)
-            const oldVjwImg = localStorage.getItem('vjwImage');
-            const storedVjwData = JSON.parse(localStorage.getItem('vjwData'));
-            
-            if (oldVjwImg && !storedVjwData) {
-                // Migrate
-                vjwData = { isOpen: true, items: [{ id: Date.now(), name: '我的 QR Code', image: oldVjwImg }] };
-                localStorage.removeItem('vjwImage'); 
-            } else {
-                vjwData = storedVjwData || { isOpen: true, items: [] };
-            }
+            vjwImage = localStorage.getItem('vjwImage') || "";
         }
 
         function saveData() {
@@ -570,8 +616,7 @@
             localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
             localStorage.setItem('memo', memoText); 
             localStorage.setItem('publicFundConfig', JSON.stringify(publicFundConfig));
-            localStorage.setItem('vjwData', JSON.stringify(vjwData));
-            
+            localStorage.setItem('vjwImage', vjwImage);
             if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(forceUpload, 2000); }
         }
 
@@ -597,10 +642,7 @@
                 localStorage.setItem('manualDebts_v1',JSON.stringify(cloud.manualDebts || []));
                 localStorage.setItem('memo',cloud.memo || "");
                 localStorage.setItem('publicFundConfig', JSON.stringify(cloud.publicFundConfig || {initial: 0, currency: 'JPY'}));
-                // VJW Sync
-                if(cloud.vjwData) {
-                    localStorage.setItem('vjwData', JSON.stringify(cloud.vjwData));
-                }
+                localStorage.setItem('vjwImage', cloud.vjwImage || "");
                 updateCloudStatus("同步成功");
                 window.refreshUI();
             }).catch(e => { console.error(e); updateCloudStatus("下載失敗"); });
@@ -609,7 +651,7 @@
         async function forceUpload() {
             if(!gistId || !gistToken) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, todos, shoppingList, payers, payerProfiles, manualDebts, memo: memoText, publicFundConfig, vjwData, lastUpdate: new Date().toISOString() };
+            const payload = { flights, itinerary, mustEatList, expenses, guides, todos, shoppingList, payers, payerProfiles, manualDebts, memo: memoText, publicFundConfig, vjwImage, lastUpdate: new Date().toISOString() };
             try {
                 await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { [GIST_FILE_NAME]: { content: JSON.stringify(payload) } } }) });
                 updateCloudStatus("上傳成功");
@@ -910,6 +952,7 @@
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; document.getElementById('guide-time').value=g.time||''; document.getElementById('guide-coords').value=g.coords||''; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-coords','guide-time'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value, d=document.getElementById('guide-desc').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:d, time:document.getElementById('guide-time').value, coords:document.getElementById('guide-coords').value, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
         
+        // --- NEW MUST EAT LOGIC (Group by Location -> Multiple Themes) ---
         function renderMustEatList() {
             const c = document.getElementById('must-eat-list'); 
             c.innerHTML = ''; 
@@ -970,20 +1013,47 @@
             `).join('');
         }
 
-        function addThemeRow() { tempThemes.push({id: 't'+Date.now(), name: '', url: '', note: ''}); renderThemeRows(); }
-        function removeThemeRow(idx) { tempThemes.splice(idx, 1); renderThemeRows(); }
-        function updateTheme(idx, field, val) { tempThemes[idx][field] = val; }
-
-        function saveMustEatLocation() {
-            const id = document.getElementById('eat-loc-id').value, location = document.getElementById('eat-location').value;
-            if(!location) return alert("請輸入地點名稱");
-            const finalThemes = tempThemes.filter(t => t.name.trim() !== '');
-            if(id) { const idx = mustEatList.findIndex(i => i.id === id); if(idx > -1) mustEatList[idx] = { id, location, themes: finalThemes }; } 
-            else { mustEatList.push({ id: 'loc_'+Date.now(), location, themes: finalThemes }); }
-            saveData(); renderMustEatList(); closeModal('must-eat-modal');
+        function addThemeRow() {
+            tempThemes.push({id: 't'+Date.now(), name: '', url: '', note: ''});
+            renderThemeRows();
+        }
+        
+        function removeThemeRow(idx) {
+            tempThemes.splice(idx, 1);
+            renderThemeRows();
         }
 
-        function deleteMustEatLocation() { const id = document.getElementById('eat-loc-id').value; if(id && confirm("確定刪除此地點及所有主題？")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); closeModal('must-eat-modal'); } }
+        function updateTheme(idx, field, val) {
+            tempThemes[idx][field] = val;
+        }
+
+        function saveMustEatLocation() {
+            const id = document.getElementById('eat-loc-id').value;
+            const location = document.getElementById('eat-location').value;
+            if(!location) return alert("請輸入地點名稱");
+            
+            const finalThemes = tempThemes.filter(t => t.name.trim() !== '');
+
+            if(id) {
+                const idx = mustEatList.findIndex(i => i.id === id);
+                if(idx > -1) mustEatList[idx] = { id, location, themes: finalThemes };
+            } else {
+                mustEatList.push({ id: 'loc_'+Date.now(), location, themes: finalThemes });
+            }
+            saveData();
+            renderMustEatList();
+            closeModal('must-eat-modal');
+        }
+
+        function deleteMustEatLocation() {
+            const id = document.getElementById('eat-loc-id').value;
+            if(id && confirm("確定刪除此地點及所有主題？")) {
+                mustEatList = mustEatList.filter(i => i.id !== id);
+                saveData();
+                renderMustEatList();
+                closeModal('must-eat-modal');
+            }
+        }
 
         // Checklist
         function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
@@ -1003,8 +1073,25 @@
             const item = shoppingList.find(i => i.id === id);
             if (!item) return;
 
-            if(item.done) { item.done = false; saveData(); renderShoppingList(); } 
-            else { item.done = true; saveData(); renderShoppingList(); if(confirm(`已將「${item.name}」標記購買。\n\n是否記帳？`)) { const total = (parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1); switchTab('wallet'); openExpenseModal(null, { note: item.name, cat: '購物', curr: 'JPY', amt: total, photo: item.photo }); } }
+            if(item.done) {
+                item.done = false;
+                saveData(); renderShoppingList();
+            } else {
+                item.done = true;
+                saveData(); renderShoppingList();
+                
+                if(confirm(`已將「${item.name}」標記購買。\n\n是否記帳？`)) {
+                    const total = (parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1);
+                    switchTab('wallet');
+                    openExpenseModal(null, {
+                        note: item.name,
+                        cat: '購物',
+                        curr: 'JPY',
+                        amt: total,
+                        photo: item.photo
+                    });
+                }
+            }
         }
         function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
         function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
@@ -1015,94 +1102,10 @@
         function saveIOU() { const id = document.getElementById('iou-id').value, creditor = document.getElementById('iou-creditor').value, debtor = document.getElementById('iou-debtor').value, amount = parseFloat(document.getElementById('iou-amount').value), note = document.getElementById('iou-note').value; if (!amount || creditor === debtor) return; const newIOU = { id: id || 'iou' + Date.now(), creditor, debtor, amount, note }; if (id) { const idx = manualDebts.findIndex(i => i.id == id); if (idx > -1) manualDebts[idx] = newIOU; } else { manualDebts.push(newIOU); } saveData(); openIOUModal(); }
         function deleteIOU() { const id = document.getElementById('iou-id').value; if (id && confirm("Del?")) { manualDebts = manualDebts.filter(i => i.id != id); saveData(); openIOUModal(); } }
 
-        // --- NEW VJW LOGIC ---
-        function toggleVJW() {
-            vjwData.isOpen = !vjwData.isOpen;
-            renderVJW();
-            saveData();
-        }
-
-        function renderVJW() {
-            const content = document.getElementById('vjw-content');
-            const arrow = document.getElementById('vjw-arrow');
-            const container = document.getElementById('vjw-container');
-            
-            if(vjwData.isOpen) {
-                content.classList.remove('max-h-0');
-                content.classList.add('max-h-[500px]');
-                arrow.classList.add('rotate-180');
-            } else {
-                content.classList.add('max-h-0');
-                content.classList.remove('max-h-[500px]');
-                arrow.classList.remove('rotate-180');
-            }
-
-            container.innerHTML = vjwData.items.map((item, idx) => `
-                <div class="snap-center shrink-0 w-4/5 md:w-64 bg-white rounded-xl p-3 border border-gray-100 shadow-sm relative group">
-                    <button onclick="deleteVJWItem(${item.id})" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 z-20"><i class="fa-solid fa-times"></i></button>
-                    <input type="text" class="w-full text-center font-bold text-gray-700 bg-transparent border-b border-transparent focus:border-blue-300 outline-none mb-2" value="${item.name}" placeholder="輸入名稱 (如: 爸爸)" onchange="updateVJWItem(${item.id}, 'name', this.value)">
-                    <div class="w-full h-48 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden relative cursor-pointer" onclick="viewPhoto('${item.image}')">
-                        <img src="${item.image}" class="w-full h-full object-contain">
-                         <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition">
-                            <i class="fa-solid fa-camera text-white text-xl"></i>
-                            <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateVJWImage(this, ${item.id})" onclick="event.stopPropagation()">
-                         </div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Add "New" Button
-            container.innerHTML += `
-                <div class="snap-center shrink-0 w-4/5 md:w-64 bg-gray-50 rounded-xl p-3 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-white transition h-64" onclick="addVJWItem()">
-                    <i class="fa-solid fa-plus text-4xl text-gray-300 mb-2"></i>
-                    <span class="text-gray-400 font-bold text-sm">新增 QR Code</span>
-                </div>
-            `;
-        }
-
-        function addVJWItem() {
-            // Create a temp input to select image immediately
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = (e) => {
-                processImage(input, (base64) => {
-                    vjwData.items.push({
-                        id: Date.now(),
-                        name: '',
-                        image: base64
-                    });
-                    // Auto open if closed
-                    if(!vjwData.isOpen) vjwData.isOpen = true;
-                    saveData();
-                    renderVJW();
-                });
-            };
-            input.click();
-        }
-
-        function updateVJWItem(id, key, val) {
-            const item = vjwData.items.find(i => i.id === id);
-            if(item) {
-                item[key] = val;
-                saveData();
-            }
-        }
-
-        function updateVJWImage(input, id) {
-            processImage(input, (base64) => {
-                updateVJWItem(id, 'image', base64);
-                renderVJW();
-            });
-        }
-
-        function deleteVJWItem(id) {
-            if(confirm("確定刪除此 QR Code？")) {
-                vjwData.items = vjwData.items.filter(i => i.id !== id);
-                saveData();
-                renderVJW();
-            }
-        }
+        // VJW
+        function saveVJWImage(base64) { vjwImage = base64; saveData(); renderVJW(); }
+        function renderVJW() { const img = document.getElementById('vjw-image'); const ph = document.getElementById('vjw-placeholder'); const btn = document.getElementById('vjw-view-btn'); if (vjwImage) { img.src = vjwImage; img.classList.remove('hidden'); ph.classList.add('hidden'); btn.classList.remove('hidden'); } else { img.classList.add('hidden'); ph.classList.remove('hidden'); btn.classList.add('hidden'); } }
+        function viewVJW() { if(vjwImage) viewPhoto(vjwImage); }
 
         document.getElementById('memo-pad').addEventListener('input',(e)=>{ memoText = e.target.value; saveData(); });
         document.getElementById('gist-id-input').addEventListener('input', saveData);
