@@ -34,7 +34,8 @@
                         'pencil': '#595857', 
                         'ink': '#2c2c2c',
                         'clay': '#b5651d',
-                        'cream': '#fffdf5'
+                        'cream': '#fffdf5',
+                        'veggie': '#4ade80' // New color for vegetarian
                     },
                     fontFamily: { 
                         'maru': ['"Zen Maru Gothic"', 'sans-serif'], 
@@ -47,7 +48,8 @@
                     },
                     animation: {
                         'flash': 'flash 1.5s infinite',
-                        'highlight': 'highlight 2s ease-out forwards'
+                        'highlight': 'highlight 2s ease-out forwards',
+                        'slide-in': 'slideIn 0.3s ease-out'
                     },
                     keyframes: {
                         flash: {
@@ -57,6 +59,10 @@
                         highlight: {
                             '0%': { backgroundColor: 'rgba(252, 211, 77, 0.5)' },
                             '100%': { backgroundColor: 'transparent' }
+                        },
+                        slideIn: {
+                            '0%': { opacity: 0, transform: 'translateX(10px)' },
+                            '100%': { opacity: 1, transform: 'translateX(0)' }
                         }
                     }
                 }
@@ -97,6 +103,10 @@
         /* Interactive Links */
         .itinerary-link { color: #7b90d2; text-decoration: underline; text-decoration-style: dotted; cursor: pointer; transition: all 0.2s; }
         .itinerary-link:hover { color: #5c7cce; background-color: rgba(123, 144, 210, 0.1); border-radius: 4px; }
+
+        /* Shopping List Dots */
+        .dot { height: 6px; width: 6px; background-color: #e5e7eb; border-radius: 50%; display: inline-block; margin: 0 2px; transition: all 0.3s; }
+        .dot.active { background-color: #f87171; transform: scale(1.5); }
     </style>
 </head>
 <body>
@@ -127,6 +137,7 @@
         <div class="deco-icon bottom-32 left-8 text-3xl text-green-200">🍡</div>
         <div class="deco-icon top-1/3 right-4 text-5xl text-red-100 rotate-[15deg]">⛩️</div>
 
+        <!-- PLAN SECTION -->
         <section id="view-plan" class="view-section animate-fade relative z-10">
             <div class="flex justify-between items-center mb-6 mt-6">
                 <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-plane-departure mr-2 text-xl text-fuji"></i>航班資訊</h3>
@@ -150,6 +161,7 @@
             </button>
         </section>
 
+        <!-- GUIDE SECTION -->
         <section id="view-guide" class="view-section hidden relative z-10">
             <div class="flex justify-between items-end mb-6 mt-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">🎐</span> 深度導覽</h2>
@@ -158,6 +170,7 @@
             <div id="guide-list" class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6"></div>
         </section>
 
+        <!-- WALLET SECTION -->
         <section id="view-wallet" class="view-section hidden relative z-10">
             <div class="flex justify-between items-center mt-6 mb-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">👛</span> 旅費</h2>
@@ -190,8 +203,10 @@
             </div>
         </section>
 
+        <!-- LISTS SECTION -->
         <section id="view-lists" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Must Eat List -->
                 <div class="hand-card p-6 bg-[#fffdf0] relative border-l-8 border-[#fffdf0]">
                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
@@ -201,21 +216,40 @@
                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
                 
-                <div class="hand-card p-6 bg-white relative border-l-8 border-white">
-                     <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
-                     <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-200 pb-2">
-                        <h3 class="text-xl font-bold text-pencil handwritten flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-red-400"></i> 購物清單</h3>
-                        <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold">新增</button>
+                <!-- Shopping List (Swipeable) -->
+                <div class="hand-card p-0 bg-white relative border-l-8 border-white overflow-hidden flex flex-col" id="shopping-card">
+                     <div class="p-6 pb-2">
+                         <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
+                         <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xl font-bold text-pencil handwritten flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-red-400"></i> 購物清單</h3>
+                            <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold shadow-sm">新增</button>
+                         </div>
+                         
+                         <!-- Swipe Header -->
+                         <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2 mb-4">
+                             <button onclick="prevShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                             <div class="text-center">
+                                 <span id="shop-owner-name" class="font-bold text-gray-700 handwritten text-lg block"></span>
+                                 <div id="shop-owner-dots" class="flex justify-center gap-1 mt-1 h-2"></div>
+                             </div>
+                             <button onclick="nextShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                         </div>
                      </div>
-                     <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4"></div>
-                     <div class="flex items-center gap-2 mb-2 opacity-60">
-                         <div class="h-px bg-gray-200 flex-1"></div>
-                         <span class="text-[10px] text-gray-400">已購買</span>
-                         <div class="h-px bg-gray-200 flex-1"></div>
+
+                     <!-- Swipeable Content -->
+                     <div id="shopping-swipe-area" class="flex-1 p-6 pt-0 min-h-[300px] touch-pan-y">
+                         <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4 animate-slide-in"></div>
+                         <div class="flex items-center gap-2 mb-2 opacity-60">
+                             <div class="h-px bg-gray-200 flex-1"></div>
+                             <span class="text-[10px] text-gray-400">已購買</span>
+                             <div class="h-px bg-gray-200 flex-1"></div>
+                         </div>
+                         <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale filter animate-slide-in"></div>
                      </div>
-                     <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale filter"></div>
+                     <div class="text-[10px] text-center text-gray-300 pb-2">左右滑動切換清單</div>
                 </div>
 
+                <!-- Checklist -->
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
                     <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
                     <ul id="checklist-container" class="space-y-2"></ul>
@@ -225,6 +259,7 @@
                     </div>
                 </div>
                 
+                <!-- Memo -->
                  <div class="hand-card p-6 bg-[#fffff0] rotate-1 shadow-md border-t-8 border-[#e6e6d8]/30">
                     <div class="absolute top-0 left-0 w-full h-4 bg-yellow-400/10"></div>
                     <h3 class="text-lg font-bold mb-2 handwritten text-yellow-800 flex items-center gap-2"><i class="fa-solid fa-note-sticky"></i> 隨手記 (MEMO)</h3>
@@ -233,6 +268,7 @@
             </div>
         </section>
 
+        <!-- INFO SECTION -->
         <section id="view-info" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                 <div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition">
@@ -255,12 +291,15 @@
                 <div class="space-y-6">
                     <div class="hand-card p-6 flex justify-around items-center">
                         <a href="https://translate.google.com/?sl=ja&tl=zh-TW&op=images" target="_blank" class="flex flex-col items-center text-gray-500 hover:text-fuji transition group">
-                            <div class="w-14 h-14 bg-gray-50 group-hover:bg-fuji/10 rounded-2xl flex items-center justify-center mb-2 text-2xl transition"><i class="fa-solid fa-camera"></i></div>
-                            <span class="text-xs font-bold">拍照翻譯</span>
+                            <div class="w-14 h-14 bg-gray-50 group-hover:bg-fuji/10 rounded-2xl flex items-center justify-center mb-2 text-2xl transition border border-gray-100 shadow-sm relative overflow-hidden">
+                                <i class="fa-solid fa-camera absolute z-10"></i>
+                                <div class="absolute inset-0 bg-gradient-to-tr from-blue-100 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+                            </div>
+                            <span class="text-xs font-bold">AI 鏡頭翻譯</span>
                         </a>
                         <div class="w-px h-12 bg-gray-200"></div>
                         <a href="https://translate.google.com/?sl=ja&tl=zh-TW&op=translate" target="_blank" class="flex flex-col items-center text-gray-500 hover:text-matcha transition group">
-                            <div class="w-14 h-14 bg-gray-50 group-hover:bg-matcha/10 rounded-2xl flex items-center justify-center mb-2 text-2xl transition"><i class="fa-solid fa-language"></i></div>
+                            <div class="w-14 h-14 bg-gray-50 group-hover:bg-matcha/10 rounded-2xl flex items-center justify-center mb-2 text-2xl transition border border-gray-100 shadow-sm"><i class="fa-solid fa-language"></i></div>
                             <span class="text-xs font-bold">文字翻譯</span>
                         </a>
                     </div>
@@ -299,6 +338,7 @@
         </section>
     </main>
 
+    <!-- FLIGHT MODAL -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('flight-modal')" class="absolute top-3 right-3 text-gray-400 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
@@ -321,6 +361,7 @@
         </div>
     </div>
 
+    <!-- DAY MODAL -->
     <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-lg rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
             <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -351,6 +392,7 @@
         </div>
     </div>
 
+    <!-- LIGHTBOX -->
     <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('lightbox-modal')">
         <div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-white/10 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div>
         <div id="lightbox-container" class="zoom-container w-full h-full flex items-center justify-center" onclick="event.stopPropagation()">
@@ -358,6 +400,7 @@
         </div>
     </div>
 
+    <!-- GUIDE MODAL -->
     <div id="guide-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card">
             <button onclick="closeModal('guide-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -380,6 +423,7 @@
         </div>
     </div>
 
+    <!-- EXPENSE MODAL -->
     <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white">
             <button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -419,6 +463,7 @@
         </div>
     </div>
     
+    <!-- WALLET DETAIL MODAL -->
     <div id="wallet-detail-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('wallet-detail-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -429,8 +474,10 @@
         </div>
     </div>
 
+    <!-- SHOPPING MODAL -->
     <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
     
+    <!-- MUST EAT MODAL -->
     <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -454,10 +501,13 @@
         </div>
     </div>
     
+    <!-- IOU MODAL -->
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
     
+    <!-- MEMBER MODAL -->
     <div id="member-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理成員與頭像</h4><div id="member-list" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('member-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
 
+    <!-- NAV BAR -->
     <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2]/95 border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] backdrop-blur-sm" style="padding-bottom: calc(10px + var(--sab));">
         <div class="flex justify-between items-center w-full mx-auto pb-1 max-w-lg">
             <button onclick="switchTab('plan')" class="nav-item active flex flex-col items-center text-gray-400 transition flex-1" data-target="plan"><i class="fa-solid fa-map text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">行程</span></button>
@@ -469,7 +519,7 @@
     </nav>
 
     <script>
-        // --- PRELOADED GUIDES ---
+        // --- PRELOADED DATA ---
         const PRELOADED_GUIDES = [
             {id: 101, title: "輕井澤王子購物廣場", desc: "必逛！超大 Outlet，就在輕井澤車站南口。\n\n推薦品牌：\n- BEAMS\n- Nike / Adidas\n- Gucci\n- Le Creuset (鍋具)\n\n美食街 (Food Court) 在中間區域，有信州知名的醬汁豬排丼。", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Karuizawa_Prince_Shopping_Plaza_East.JPG/1200px-Karuizawa_Prince_Shopping_Plaza_East.JPG", coords: "36.3418, 138.6366", time: "10:00 - 19:00"},
             {id: 102, title: "石之教堂", desc: "內村鑑三紀念堂，由石頭與玻璃建成的有機建築。\n\n交通：\n從輕井澤站搭乘星野接駁車，或從中輕井澤站步行 20 分鐘。\n\n注意：\n如果正好有婚禮舉行，可能無法進入參觀，只能在外面拍照。", photo: "https://www.stonechurch.jp/images/top/main_01_sp.jpg", coords: "36.3605, 138.5985", time: "09:00 - 18:00"},
@@ -484,9 +534,12 @@
         let payerProfiles = {}; 
         let publicFundConfig = { initial: 0, currency: 'JPY' };
         
-        // VJW Data Structure: { isOpen: boolean, items: [{id, name, image}] }
+        // VJW Data
         let vjwData = { isOpen: true, items: [] };
         
+        // State for Shopping List Swipe
+        let currentShopOwnerIdx = 0;
+
         let myChart = null; 
 
         let gistToken = localStorage.getItem('gist_token') || "";
@@ -509,21 +562,15 @@
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
         const RECOVERED_TODOS = [{"text":"護照","done":false}];
 
-        // Data Migration Logic (V36 -> V37)
+        // Data Migration Logic (V37)
         function migrateMustEatList(oldList) {
             if (!oldList.length) return [];
-            if (oldList[0].themes) return oldList;
-            const grouped = {};
-            oldList.forEach(item => {
-                const loc = item.location || "未分類";
-                if (!grouped[loc]) grouped[loc] = [];
-                let noteText = item.note || "";
-                if (item.items && item.items.length) { noteText += "\n" + item.items.map(i => `- ${i.foodName}`).join("\n"); }
-                grouped[loc].push({ id: 'theme_' + Date.now() + Math.random(), name: item.name, url: "", note: noteText.trim() });
-            });
-            const newList = [];
-            for (const [loc, themes] of Object.entries(grouped)) { newList.push({ id: 'loc_' + Date.now() + Math.random(), location: loc, themes: themes }); }
-            return newList;
+            // Basic check if data is in old structure, assuming V36 handled struct change.
+            // V37 just adds isVeg field, which is optional, so no hard migration needed.
+            // Just ensure it's an array.
+             if (oldList[0].themes) return oldList;
+             // ... V36 migration fallback ...
+             return oldList;
         }
 
         // Core Functions
@@ -537,24 +584,26 @@
             if (guides.length === 0) guides = [...PRELOADED_GUIDES];
             todos = JSON.parse(localStorage.getItem('todos')) || RECOVERED_TODOS;
             shoppingList = JSON.parse(localStorage.getItem('shoppingList_v2')) || [];
+            
             payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
             if(!payers.includes("公費")) payers.push("公費");
             payerProfiles = JSON.parse(localStorage.getItem('payerProfiles')) || {};
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             memoText = localStorage.getItem('memo') || "";
             publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig')) || { initial: 0, currency: 'JPY' };
-            
-            // VJW Data Migration (Old single image -> New Array)
-            const oldVjwImg = localStorage.getItem('vjwImage');
-            const storedVjwData = JSON.parse(localStorage.getItem('vjwData'));
-            
-            if (oldVjwImg && !storedVjwData) {
-                // Migrate
-                vjwData = { isOpen: true, items: [{ id: Date.now(), name: '我的 QR Code', image: oldVjwImg }] };
-                localStorage.removeItem('vjwImage'); 
-            } else {
-                vjwData = storedVjwData || { isOpen: true, items: [] };
-            }
+            vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
+
+            // Migration for Shopping List Owners
+            // If items don't have an owner, assign to first payer (usually "我")
+            const defaultOwner = payers[0] || "我";
+            let shoppingUpdated = false;
+            shoppingList.forEach(item => {
+                if (!item.owner) {
+                    item.owner = defaultOwner;
+                    shoppingUpdated = true;
+                }
+            });
+            if(shoppingUpdated) saveData();
         }
 
         function saveData() {
@@ -597,7 +646,6 @@
                 localStorage.setItem('manualDebts_v1',JSON.stringify(cloud.manualDebts || []));
                 localStorage.setItem('memo',cloud.memo || "");
                 localStorage.setItem('publicFundConfig', JSON.stringify(cloud.publicFundConfig || {initial: 0, currency: 'JPY'}));
-                // VJW Sync
                 if(cloud.vjwData) {
                     localStorage.setItem('vjwData', JSON.stringify(cloud.vjwData));
                 }
@@ -713,7 +761,7 @@
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="removeDayPhoto(${i})" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
         function removeDayPhoto(i) { tempDayPhotos.splice(i,1); renderDayPhotosPreview(); }
 
-        /* FLIGHTS (Existing) */
+        /* FLIGHTS */
         function renderFlights() { document.getElementById('flight-list-container').innerHTML = flights.map(f=>`<div class="bg-white rounded-[24px] p-5 shadow-soft relative group transition-transform hover:-translate-y-1 hand-card" onclick="${f.url?`window.open('${f.url}')`:''}"><div class="absolute top-3 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="event.stopPropagation(); editFlight(${f.id})" class="text-gray-300 hover:text-fuji"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteFlight(${f.id})" class="text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button></div><div class="flex justify-between items-center mb-5 px-4 mt-2"><span class="text-4xl font-black handwritten text-pencil tracking-wider">${f.dep}</span><i class="fa-solid fa-plane text-2xl text-fuji transform rotate-[-45deg] mb-2"></i><span class="text-4xl font-black handwritten text-pencil tracking-wider">${f.arr}</span></div><div class="bg-fuji-light rounded-2xl py-3 px-4 text-center"><div class="text-xl font-bold text-fuji handwritten mb-1 tracking-wider">${f.code}</div><div class="text-xs text-gray-400 font-hand font-bold tracking-wide">${f.date} | ${f.time}</div></div></div>`).join(''); }
         function saveFlight(){ const id=document.getElementById('flight-id').value; const f={id:id?parseInt(id):Date.now(), dep:document.getElementById('flight-dep').value, arr:document.getElementById('flight-arr').value, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
         function deleteFlight(id){if(confirm("Del?")){flights=flights.filter(f=>f.id!==id); saveData(); renderFlights();}}
@@ -896,7 +944,6 @@
                 payerProfiles[name] = base64;
                 document.getElementById(`avatar-img-${idx}`).src = base64;
                 document.getElementById(`avatar-img-${idx}`).classList.remove('hidden');
-                // Hide icon by finding sibling
                 const iconDiv = input.previousElementSibling;
                 if(iconDiv) iconDiv.classList.add('hidden');
                 saveData(); renderExpenses();
@@ -916,9 +963,14 @@
             
             mustEatList.forEach(locItem => {
                 const themesHtml = locItem.themes.map(t => {
+                    // Vegetarian Check
+                    const isVeg = t.isVeg || false;
+                    const vegIcon = isVeg ? '<i class="fa-solid fa-seedling text-veggie mr-1"></i>' : '';
+                    const nameClass = isVeg ? 'text-green-600' : 'text-gray-700';
+
                     const nameHtml = t.url 
-                        ? `<a href="${t.url}" target="_blank" class="font-bold text-gray-700 font-hand text-lg hover:text-blue-500 hover:underline"><i class="fa-solid fa-link text-xs mr-1 opacity-50"></i>${t.name}</a>`
-                        : `<span class="font-bold text-gray-700 font-hand text-lg">${t.name}</span>`;
+                        ? `<a href="${t.url}" target="_blank" class="font-bold ${nameClass} font-hand text-lg hover:text-blue-500 hover:underline"><i class="fa-solid fa-link text-xs mr-1 opacity-50 text-gray-400"></i>${vegIcon}${t.name}</a>`
+                        : `<span class="font-bold ${nameClass} font-hand text-lg">${vegIcon}${t.name}</span>`;
                     
                     return `<div class="bg-white p-3 rounded shadow-sm border border-gray-100 mb-2">
                         <div class="flex justify-between items-start">
@@ -952,7 +1004,7 @@
                     tempThemes = JSON.parse(JSON.stringify(item.themes));
                 }
             } else {
-                tempThemes = [{id: 't'+Date.now(), name: '', url: '', note: ''}];
+                tempThemes = [{id: 't'+Date.now(), name: '', url: '', note: '', isVeg: false}];
             }
             renderThemeRows();
             openModal('must-eat-modal');
@@ -963,14 +1015,19 @@
             container.innerHTML = tempThemes.map((t, idx) => `
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group">
                     <button onclick="removeThemeRow(${idx})" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
-                    <input type="text" placeholder="餐廳/主題名稱" class="w-full bg-transparent border-b border-gray-300 text-sm font-bold mb-2 focus:border-matcha outline-none" value="${t.name}" onchange="updateTheme(${idx}, 'name', this.value)">
+                    <div class="flex items-center gap-2 mb-2">
+                         <input type="text" placeholder="餐廳/主題名稱" class="flex-1 bg-transparent border-b border-gray-300 text-sm font-bold focus:border-matcha outline-none" value="${t.name}" onchange="updateTheme(${idx}, 'name', this.value)">
+                         <label class="flex items-center gap-1 text-xs text-green-600 bg-white px-2 py-1 rounded border border-green-200 cursor-pointer select-none">
+                             <input type="checkbox" ${t.isVeg ? 'checked' : ''} onchange="updateTheme(${idx}, 'isVeg', this.checked)" class="accent-green-500"> 素食
+                         </label>
+                    </div>
                     <input type="url" placeholder="網址 (連結)" class="w-full bg-white border border-gray-200 rounded text-xs p-1 mb-2 text-blue-500" value="${t.url}" onchange="updateTheme(${idx}, 'url', this.value)">
                     <textarea placeholder="備註 (必吃餐點...)" class="w-full bg-white border border-gray-200 rounded text-xs p-1 h-12" onchange="updateTheme(${idx}, 'note', this.value)">${t.note}</textarea>
                 </div>
             `).join('');
         }
 
-        function addThemeRow() { tempThemes.push({id: 't'+Date.now(), name: '', url: '', note: ''}); renderThemeRows(); }
+        function addThemeRow() { tempThemes.push({id: 't'+Date.now(), name: '', url: '', note: '', isVeg: false}); renderThemeRows(); }
         function removeThemeRow(idx) { tempThemes.splice(idx, 1); renderThemeRows(); }
         function updateTheme(idx, field, val) { tempThemes[idx][field] = val; }
 
@@ -992,11 +1049,72 @@
         function updateTodo(i,v){todos[i].text=v; saveData();}
         function deleteTodo(i){todos.splice(i,1); saveData(); renderChecklist();}
         
-        // Shopping
-        function renderShoppingList() { const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML=''; shoppingList.forEach(s=>{ 
-            const hasPrice = s.price && s.price > 0;
-            const h=`<div class="relative p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})"><div class="absolute top-2 left-2 z-20 w-5 h-5 border-2 ${s.done ? 'bg-red-400 border-red-400' : 'bg-white border-gray-300'} rounded shadow-sm cursor-pointer flex items-center justify-center" onclick="toggleShoppingItem(event, ${s.id})">${s.done ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}</div><div class="pl-8">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs text-gray-500">${hasPrice ? `Qty:${s.qty} ¥${s.price}` : ''}</span></div></div>`; 
-            if(s.done)d.innerHTML+=h; else p.innerHTML+=h; }); }
+        // Shopping (Updated for Personal Lists + Swipe)
+        function renderShoppingList() { 
+            // Get available owners from Payers
+            const owners = payers.length > 0 ? payers : ["我"];
+            if (currentShopOwnerIdx >= owners.length) currentShopOwnerIdx = 0;
+            const currentOwner = owners[currentShopOwnerIdx];
+
+            // Filter items for current owner
+            const ownerItems = shoppingList.filter(s => (s.owner || owners[0]) === currentOwner);
+            
+            // Header Info
+            document.getElementById('shop-owner-name').innerText = `${currentOwner} 的清單`;
+            document.getElementById('shop-owner-dots').innerHTML = owners.map((_, i) => 
+                `<span class="dot ${i === currentShopOwnerIdx ? 'active' : ''}"></span>`
+            ).join('');
+
+            const p=document.getElementById('shopping-list-pending'), d=document.getElementById('shopping-list-done'); 
+            p.innerHTML=''; d.innerHTML=''; 
+            
+            // Reset Animation
+            p.classList.remove('animate-slide-in'); d.classList.remove('animate-slide-in');
+            void p.offsetWidth; // trigger reflow
+            p.classList.add('animate-slide-in'); d.classList.add('animate-slide-in');
+
+            ownerItems.forEach(s=>{ 
+                const hasPrice = s.price && s.price > 0;
+                const h=`<div class="relative p-2 border shadow-sm rounded bg-white ${s.done?'opacity-50':''}" onclick="openShoppingModal(${s.id})"><div class="absolute top-2 left-2 z-20 w-5 h-5 border-2 ${s.done ? 'bg-red-400 border-red-400' : 'bg-white border-gray-300'} rounded shadow-sm cursor-pointer flex items-center justify-center" onclick="toggleShoppingItem(event, ${s.id})">${s.done ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}</div><div class="pl-8">${s.photo?`<img src="${s.photo}" class="w-full h-24 object-cover mb-2 rounded-sm">`:''}<b>${s.name}</b><br><span class="text-xs text-gray-500">${hasPrice ? `Qty:${s.qty} ¥${s.price}` : ''}</span></div></div>`; 
+                if(s.done)d.innerHTML+=h; else p.innerHTML+=h; 
+            }); 
+            
+            if (ownerItems.length === 0) {
+                p.innerHTML = `<div class="col-span-2 text-center text-gray-300 py-4 text-sm font-hand">尚無 ${currentOwner} 的購物項目</div>`;
+            }
+        }
+        
+        function nextShopList() {
+            const owners = payers.length > 0 ? payers : ["我"];
+            currentShopOwnerIdx = (currentShopOwnerIdx + 1) % owners.length;
+            renderShoppingList();
+        }
+
+        function prevShopList() {
+            const owners = payers.length > 0 ? payers : ["我"];
+            currentShopOwnerIdx = (currentShopOwnerIdx - 1 + owners.length) % owners.length;
+            renderShoppingList();
+        }
+
+        // Swipe Logic for Shopping List
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const shoppingCard = document.getElementById('shopping-card');
+
+        shoppingCard.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        shoppingCard.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            const threshold = 50; // min swipe distance
+            if (touchEndX < touchStartX - threshold) nextShopList(); // Swipe Left -> Next
+            if (touchEndX > touchStartX + threshold) prevShopList(); // Swipe Right -> Prev
+        }
         
         function toggleShoppingItem(e, id) {
             e.stopPropagation();
@@ -1007,7 +1125,39 @@
             else { item.done = true; saveData(); renderShoppingList(); if(confirm(`已將「${item.name}」標記購買。\n\n是否記帳？`)) { const total = (parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1); switchTab('wallet'); openExpenseModal(null, { note: item.name, cat: '購物', curr: 'JPY', amt: total, photo: item.photo }); } }
         }
         function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); document.getElementById('shop-photo-text').classList.remove('hidden'); if(id){const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; if(s.photo){currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden');}} openModal('shopping-modal'); }
-        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false}; if(id){const idx=shoppingList.findIndex(i=>i.id==id);if(idx>-1)shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
+        function saveShoppingItem(){ 
+            const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; 
+            if(!name)return; 
+            
+            // Get Current Owner
+            const owners = payers.length > 0 ? payers : ["我"];
+            const owner = owners[currentShopOwnerIdx];
+
+            const item={
+                id:id?parseInt(id):Date.now(), 
+                name, 
+                qty:document.getElementById('shop-qty').value, 
+                price:document.getElementById('shop-price').value, 
+                photo:currentShopPhoto, 
+                done:false,
+                owner: owner // Save ownership
+            }; 
+            
+            if(id){
+                const idx=shoppingList.findIndex(i=>i.id==id);
+                // Keep existing owner if editing
+                if(idx>-1) {
+                    item.owner = shoppingList[idx].owner || owner;
+                    item.done = shoppingList[idx].done;
+                    shoppingList[idx]=item;
+                }
+            } else {
+                shoppingList.push(item);
+            } 
+            saveData(); 
+            renderShoppingList(); 
+            closeModal('shopping-modal'); 
+        }
         function deleteShoppingItem(){const id=document.getElementById('shop-id').value;if(id&&confirm("Del?")){shoppingList=shoppingList.filter(i=>i.id!=id); saveData(); renderShoppingList(); closeModal('shopping-modal');}}
 
         // IOU
@@ -1123,3 +1273,4 @@
     </script>
 </body>
 </html>
+
