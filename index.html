@@ -35,7 +35,7 @@
                         'ink': '#2c2c2c',
                         'clay': '#b5651d',
                         'cream': '#fffdf5',
-                        'veggie': '#4ade80' // New color for vegetarian
+                        'veggie': '#4ade80'
                     },
                     fontFamily: { 
                         'maru': ['"Zen Maru Gothic"', 'sans-serif'], 
@@ -629,8 +629,23 @@
             updateCloudStatus("下載中...");
             fetch(`https://api.github.com/gists/${gistId}`, { method: 'GET', headers: { 'Authorization': `token ${gistToken}` } })
             .then(res => res.json())
-            .then(data => {
-                const cloud = JSON.parse(data.files[GIST_FILE_NAME].content);
+            .then(async data => {
+                if (!data.files || !data.files[GIST_FILE_NAME]) {
+                    alert("找不到 travel_data.json，請確認 Gist 檔案名稱正確");
+                    throw new Error("File missing");
+                }
+                
+                let file = data.files[GIST_FILE_NAME];
+                let content = file.content;
+                
+                // CRITICAL FIX: Handle truncated files (Large files with images)
+                if (file.truncated) {
+                    console.log("File is truncated, fetching raw...");
+                    const rawRes = await fetch(file.raw_url);
+                    content = await rawRes.text();
+                }
+
+                const cloud = JSON.parse(content);
                 let cloudGuides = cloud.guides || [];
                 if (cloudGuides.length === 0) cloudGuides = [...PRELOADED_GUIDES];
                 localStorage.setItem('flights',JSON.stringify(cloud.flights || []));
