@@ -20,6 +20,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <!-- Tesseract.js for AI Image OCR -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
 
     <script>
         tailwind.config = {
@@ -66,9 +69,8 @@
         :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
         body {
             font-family: 'Zen Maru Gothic', 'Noto Serif TC', sans-serif; 
-            background-color: #f9f7f2; /* 回復原本的米色 */
+            background-color: #f9f7f2; 
             color: #595857;
-            /* 回復原本淡淡的網格 */
             background-image: linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
             background-size: 24px 24px;
             background-position: center top;
@@ -85,27 +87,21 @@
         .zoom-container img { transition: transform 0.2s; cursor: zoom-in; }
         .zoom-container img.zoomed { max-width: none !important; max-height: none !important; cursor: zoom-out; cursor: grab; }
         .zoom-container.zoomed-mode { align-items: flex-start; justify-content: flex-start; }
-        
-        /* Custom Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Deco Elements (回復手繪插圖) */
         .deco-icon { position: absolute; pointer-events: none; opacity: 0.15; z-index: 0; font-size: 2rem; transform: rotate(10deg); }
-        
-        /* Interactive Links */
         .itinerary-link { color: #7b90d2; text-decoration: underline; text-decoration-style: dotted; cursor: pointer; transition: all 0.2s; }
         .itinerary-link:hover { color: #5c7cce; background-color: rgba(123, 144, 210, 0.1); border-radius: 4px; }
-
-        /* Shopping List Dots */
         .dot { height: 6px; width: 6px; background-color: #e5e7eb; border-radius: 50%; display: inline-block; margin: 0 2px; transition: all 0.3s; }
         .dot.active { background-color: #f87171; transform: scale(1.5); }
         
-        /* VoiceWave Animation */
+        /* VoiceWave & OCR Progress */
         .voice-wave { display: flex; align-items: center; gap: 2px; height: 20px; }
         .voice-wave span { display: block; width: 3px; height: 100%; background-color: #7b90d2; border-radius: 3px; animation: wave 1.2s infinite ease-in-out; }
         .voice-wave span:nth-child(2) { animation-delay: 0.2s; } .voice-wave span:nth-child(3) { animation-delay: 0.4s; } .voice-wave span:nth-child(4) { animation-delay: 0.6s; }
         @keyframes wave { 0%, 100% { height: 20%; } 50% { height: 100%; } }
+        
+        #ocr-progress-bar { transition: width 0.3s ease; }
     </style>
 </head>
 <body>
@@ -131,11 +127,13 @@
 
     <main id="app" class="px-4 w-full mx-auto min-h-screen max-w-5xl relative pb-24">
         
+        <!-- 手繪插圖 -->
         <div class="deco-icon top-4 left-4 text-4xl">🌸</div>
         <div class="deco-icon top-20 right-10 text-3xl text-blue-200 rotate-[-20deg]">🍙</div>
         <div class="deco-icon bottom-32 left-8 text-3xl text-green-200">🍡</div>
         <div class="deco-icon top-1/3 right-4 text-5xl text-red-100 rotate-[15deg]">⛩️</div>
 
+        <!-- PLAN SECTION -->
         <section id="view-plan" class="view-section animate-fade relative z-10">
             <div class="flex justify-between items-center mb-6 mt-6">
                 <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-plane-departure mr-2 text-xl text-fuji"></i>航班資訊</h3>
@@ -159,6 +157,7 @@
             </button>
         </section>
 
+        <!-- GUIDE SECTION -->
         <section id="view-guide" class="view-section hidden relative z-10">
             <div class="flex justify-between items-end mb-6 mt-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">🎐</span> 深度導覽</h2>
@@ -167,6 +166,7 @@
             <div id="guide-list" class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6"></div>
         </section>
 
+        <!-- WALLET SECTION -->
         <section id="view-wallet" class="view-section hidden relative z-10">
             <div class="flex justify-between items-center mt-6 mb-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">👛</span> 旅費</h2>
@@ -199,8 +199,10 @@
             </div>
         </section>
 
+        <!-- LISTS SECTION -->
         <section id="view-lists" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Must Eat List -->
                 <div class="hand-card p-6 bg-[#fffdf0] relative border-l-8 border-[#fffdf0]">
                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
@@ -210,6 +212,7 @@
                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
                 
+                <!-- Shopping List -->
                 <div class="hand-card p-0 bg-white relative border-l-8 border-white overflow-hidden flex flex-col" id="shopping-card">
                      <div class="p-6 pb-2">
                          <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
@@ -220,7 +223,6 @@
                                 <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold shadow-sm">新增</button>
                             </div>
                          </div>
-                         
                          <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2 mb-4">
                              <button onclick="prevShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                              <div class="text-center">
@@ -230,19 +232,17 @@
                              <button onclick="nextShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                          </div>
                      </div>
-
                      <div id="shopping-swipe-area" class="flex-1 p-6 pt-0 min-h-[300px] touch-pan-y">
                          <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4 animate-slide-in"></div>
                          <div class="flex items-center gap-2 mb-2 opacity-60">
-                             <div class="h-px bg-gray-200 flex-1"></div>
-                             <span class="text-[10px] text-gray-400">已購買</span>
-                             <div class="h-px bg-gray-200 flex-1"></div>
+                             <div class="h-px bg-gray-200 flex-1"></div><span class="text-[10px] text-gray-400">已購買</span><div class="h-px bg-gray-200 flex-1"></div>
                          </div>
                          <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale filter animate-slide-in"></div>
                      </div>
                      <div class="text-[10px] text-center text-gray-300 pb-2">左右滑動切換清單</div>
                 </div>
 
+                <!-- Checklist -->
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
                     <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
                     <ul id="checklist-container" class="space-y-2"></ul>
@@ -252,7 +252,8 @@
                     </div>
                 </div>
                 
-                <div class="hand-card p-6 bg-[#fffff0] rotate-1 shadow-md border-t-8 border-[#e6e6d8]/30">
+                <!-- Memo -->
+                 <div class="hand-card p-6 bg-[#fffff0] rotate-1 shadow-md border-t-8 border-[#e6e6d8]/30">
                     <div class="absolute top-0 left-0 w-full h-4 bg-yellow-400/10"></div>
                     <h3 class="text-lg font-bold mb-2 handwritten text-yellow-800 flex items-center gap-2"><i class="fa-solid fa-note-sticky"></i> 隨手記 (MEMO)</h3>
                     <textarea id="memo-pad" class="w-full h-48 p-3 bg-transparent border-none resize-none text-sm leading-8 outline-none text-gray-700 handwritten" style="background-image: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px); line-height: 32px;" placeholder="在這裡隨手記下想法... (輸入後自動同步)"></textarea>
@@ -260,19 +261,41 @@
             </div>
         </section>
 
+        <!-- INFO SECTION -->
         <section id="view-info" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                 
+                <!-- AI Voice & Camera Translation Card -->
                 <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-fuji/20">
                     <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-fuji">🎙️</div>
-                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> AI 語音翻譯</h3>
+                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> AI 隨身翻譯</h3>
                     
                     <div class="relative mb-4">
-                        <textarea id="trans-input" class="w-full h-24 p-3 pr-12 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="輸入或點擊麥克風說話 (中文 -> 日文)..."></textarea>
-                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95">
+                        <textarea id="trans-input" class="w-full h-32 p-3 pr-12 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="輸入文字、說話，或使用相機拍照..."></textarea>
+                        
+                        <!-- Voice Button -->
+                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-14 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95" title="語音輸入">
                             <i class="fa-solid fa-microphone"></i>
                         </button>
-                        <div id="voice-wave" class="absolute right-14 bottom-4 hidden voice-wave"><span></span><span></span><span></span><span></span></div>
+                        
+                        <!-- Camera Button -->
+                        <div class="absolute right-2 bottom-2 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95 cursor-pointer overflow-hidden" title="相機翻譯">
+                            <i class="fa-solid fa-camera"></i>
+                            <input type="file" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleOCR(this)">
+                        </div>
+
+                        <div id="voice-wave" class="absolute right-14 bottom-16 hidden voice-wave"><span></span><span></span><span></span><span></span></div>
+                    </div>
+
+                    <!-- OCR Progress Bar -->
+                    <div id="ocr-status" class="hidden mb-3">
+                         <div class="flex justify-between text-[10px] text-fuji font-bold mb-1">
+                             <span><i class="fa-solid fa-brain"></i> AI 正在讀取圖片文字...</span>
+                             <span id="ocr-percent">0%</span>
+                         </div>
+                         <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                             <div id="ocr-progress-bar" class="bg-fuji h-full w-0"></div>
+                         </div>
                     </div>
 
                     <button onclick="doTranslate()" id="btn-translate" class="w-full bg-fuji text-white py-2 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition mb-4 flex items-center justify-center gap-2 relative overflow-hidden">
@@ -290,6 +313,7 @@
                 </div>
 
                 <div class="space-y-6">
+                    <!-- VJW Card -->
                     <div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition">
                         <div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()">
                             <h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>Visit Japan Web</h3>
@@ -331,6 +355,7 @@
         </section>
     </main>
 
+    <!-- FLIGHT MODAL -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('flight-modal')" class="absolute top-3 right-3 text-gray-400 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
@@ -353,6 +378,7 @@
         </div>
     </div>
 
+    <!-- DAY MODAL -->
     <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-lg rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
             <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -383,6 +409,7 @@
         </div>
     </div>
 
+    <!-- LIGHTBOX -->
     <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('lightbox-modal')">
         <div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-white/10 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div>
         <div id="lightbox-container" class="zoom-container w-full h-full flex items-center justify-center" onclick="event.stopPropagation()">
@@ -390,6 +417,7 @@
         </div>
     </div>
 
+    <!-- GUIDE MODAL -->
     <div id="guide-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card">
             <button onclick="closeModal('guide-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -412,6 +440,7 @@
         </div>
     </div>
 
+    <!-- EXPENSE MODAL -->
     <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white">
             <button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -451,6 +480,7 @@
         </div>
     </div>
     
+    <!-- WALLET DETAIL MODAL -->
     <div id="wallet-detail-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card">
             <button onclick="closeModal('wallet-detail-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -461,8 +491,10 @@
         </div>
     </div>
 
+    <!-- SHOPPING MODAL -->
     <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
     
+    <!-- MANAGE SHOP LISTS MODAL -->
     <div id="manage-shop-lists-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg hand-card">
             <h4 class="font-bold mb-3 text-center text-lg handwritten">管理購物清單</h4>
@@ -475,6 +507,7 @@
         </div>
     </div>
 
+    <!-- MUST EAT MODAL -->
     <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -498,10 +531,13 @@
         </div>
     </div>
     
+    <!-- IOU MODAL -->
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
     
+    <!-- MEMBER MODAL -->
     <div id="member-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理成員與頭像</h4><div id="member-list" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('member-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
 
+    <!-- NAV BAR -->
     <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2]/95 border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] backdrop-blur-sm" style="padding-bottom: calc(10px + var(--sab));">
         <div class="flex justify-between items-center w-full mx-auto pb-1 max-w-lg">
             <button onclick="switchTab('plan')" class="nav-item active flex flex-col items-center text-gray-400 transition flex-1" data-target="plan"><i class="fa-solid fa-map text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">行程</span></button>
@@ -583,7 +619,6 @@
             publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig')) || { initial: 0, currency: 'JPY' };
             vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
             
-            // Init Shopping Owners from Payers if empty (First time load)
             shoppingOwners = JSON.parse(localStorage.getItem('shoppingOwners')) || [];
             if(shoppingOwners.length === 0) {
                  shoppingOwners = payers.filter(p => p !== '公費');
@@ -591,7 +626,6 @@
                  localStorage.setItem('shoppingOwners', JSON.stringify(shoppingOwners));
             }
 
-            // Ensure items have owner
             const defaultOwner = shoppingOwners[0];
             let shoppingUpdated = false;
             shoppingList.forEach(item => {
@@ -622,35 +656,59 @@
             if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(forceUpload, 2000); }
         }
 
+        // CRITICAL FIX FOR DOWNLOAD
         function forceDownload() {
             if(!gistId || !gistToken) { updateCloudStatus("未連線"); return; }
             updateCloudStatus("下載中...");
-            fetch(`https://api.github.com/gists/${gistId}`, { method: 'GET', headers: { 'Authorization': `token ${gistToken}` } })
-            .then(res => res.json())
+            // Add cache-busting parameter
+            fetch(`https://api.github.com/gists/${gistId}?t=${new Date().getTime()}`, { method: 'GET', headers: { 'Authorization': `token ${gistToken}` } })
+            .then(res => {
+                if(!res.ok) throw new Error("Gist Not Found or Network Error");
+                return res.json();
+            })
             .then(async data => {
-                if (!data.files || !data.files[GIST_FILE_NAME]) { alert("找不到 travel_data.json"); throw new Error("File missing"); }
+                if (!data.files || !data.files[GIST_FILE_NAME]) { alert("找不到 travel_data.json，請確認 Gist 設定"); throw new Error("File missing"); }
+                
                 let file = data.files[GIST_FILE_NAME];
                 let content = file.content;
-                if (file.truncated) { const rawRes = await fetch(file.raw_url); content = await rawRes.text(); }
-                const cloud = JSON.parse(content);
-                let cloudGuides = cloud.guides || [];
-                if (cloudGuides.length === 0) cloudGuides = [...PRELOADED_GUIDES];
-                localStorage.setItem('flights',JSON.stringify(cloud.flights || []));
-                localStorage.setItem('itinerary_v2',JSON.stringify(cloud.itinerary || []));
-                localStorage.setItem('mustEatList',JSON.stringify(migrateMustEatList(cloud.mustEatList || [])));
-                localStorage.setItem('expenses',JSON.stringify(cloud.expenses || []));
-                localStorage.setItem('guides',JSON.stringify(cloudGuides));
-                localStorage.setItem('todos',JSON.stringify(cloud.todos || []));
-                localStorage.setItem('shoppingList_v2',JSON.stringify(cloud.shoppingList || []));
-                localStorage.setItem('payers',JSON.stringify(cloud.payers || []));
-                localStorage.setItem('payerProfiles',JSON.stringify(cloud.payerProfiles || {}));
-                localStorage.setItem('manualDebts_v1',JSON.stringify(cloud.manualDebts || []));
-                localStorage.setItem('memo',cloud.memo || "");
-                localStorage.setItem('publicFundConfig', JSON.stringify(cloud.publicFundConfig || {initial: 0, currency: 'JPY'}));
-                if(cloud.vjwData) localStorage.setItem('vjwData', JSON.stringify(cloud.vjwData));
-                if(cloud.shoppingOwners) localStorage.setItem('shoppingOwners', JSON.stringify(cloud.shoppingOwners));
-                updateCloudStatus("同步成功");
-                window.refreshUI();
+                
+                // Handle large truncated files
+                if (file.truncated) {
+                    try {
+                        const rawRes = await fetch(file.raw_url);
+                        content = await rawRes.text();
+                    } catch (e) {
+                         alert("檔案太大，原始檔讀取失敗，請檢查網路連線");
+                         throw e;
+                    }
+                }
+                
+                try {
+                    const cloud = JSON.parse(content);
+                    // Update LocalStorage
+                    localStorage.setItem('flights',JSON.stringify(cloud.flights || []));
+                    localStorage.setItem('itinerary_v2',JSON.stringify(cloud.itinerary || []));
+                    localStorage.setItem('mustEatList',JSON.stringify(migrateMustEatList(cloud.mustEatList || [])));
+                    localStorage.setItem('expenses',JSON.stringify(cloud.expenses || []));
+                    const cloudGuides = cloud.guides || [];
+                    localStorage.setItem('guides',JSON.stringify(cloudGuides.length > 0 ? cloudGuides : PRELOADED_GUIDES));
+                    localStorage.setItem('todos',JSON.stringify(cloud.todos || []));
+                    localStorage.setItem('shoppingList_v2',JSON.stringify(cloud.shoppingList || []));
+                    localStorage.setItem('payers',JSON.stringify(cloud.payers || []));
+                    localStorage.setItem('payerProfiles',JSON.stringify(cloud.payerProfiles || {}));
+                    localStorage.setItem('manualDebts_v1',JSON.stringify(cloud.manualDebts || []));
+                    localStorage.setItem('memo',cloud.memo || "");
+                    localStorage.setItem('publicFundConfig', JSON.stringify(cloud.publicFundConfig || {initial: 0, currency: 'JPY'}));
+                    if(cloud.vjwData) localStorage.setItem('vjwData', JSON.stringify(cloud.vjwData));
+                    if(cloud.shoppingOwners) localStorage.setItem('shoppingOwners', JSON.stringify(cloud.shoppingOwners));
+                    
+                    updateCloudStatus("同步成功");
+                    window.refreshUI();
+                    alert("✅ 雲端資料同步成功！");
+                } catch (e) {
+                    alert("資料格式錯誤 (JSON Parse Error)，請檢查 Gist 內容");
+                    throw e;
+                }
             }).catch(e => { console.error(e); updateCloudStatus("下載失敗"); });
         }
         
@@ -704,7 +762,6 @@
                 let content=day.content.split('\n').map(line => {
                     const trimmed = line.trim(); if(!trimmed) return '';
                     let linkedLine = trimmed;
-                    // Auto-link guides
                     guides.forEach(g => {
                         if(trimmed.includes(g.title)) {
                             linkedLine = trimmed.replace(g.title, `<span class="itinerary-link" onclick="jumpToGuide(${g.id})">${g.title}</span>`);
@@ -765,8 +822,8 @@
         function renderFlights() { document.getElementById('flight-list-container').innerHTML = flights.map(f=>`<div class="bg-white rounded-[24px] p-5 shadow-soft relative group transition-transform hover:-translate-y-1 hand-card" onclick="${f.url?`window.open('${f.url}')`:''}"><div class="absolute top-3 right-4 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="event.stopPropagation(); editFlight(${f.id})" class="text-gray-300 hover:text-fuji"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteFlight(${f.id})" class="text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button></div><div class="flex justify-between items-center mb-5 px-4 mt-2"><span class="text-4xl font-black handwritten text-pencil tracking-wider">${f.dep}</span><i class="fa-solid fa-plane text-2xl text-fuji transform rotate-[-45deg] mb-2"></i><span class="text-4xl font-black handwritten text-pencil tracking-wider">${f.arr}</span></div><div class="bg-fuji-light rounded-2xl py-3 px-4 text-center"><div class="text-xl font-bold text-fuji handwritten mb-1 tracking-wider">${f.code}</div><div class="text-xs text-gray-400 font-hand font-bold tracking-wide">${f.date} | ${f.time}</div></div></div>`).join(''); }
         function saveFlight(){ const id=document.getElementById('flight-id').value; const f={id:id?parseInt(id):Date.now(), dep:document.getElementById('flight-dep').value, arr:document.getElementById('flight-arr').value, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
         function deleteFlight(id){if(confirm("Del?")){flights=flights.filter(f=>f.id!==id); saveData(); renderFlights();}}
-        function openFlightModal(f){ if(f){document.getElementById('flight-id').value=f.id;document.getElementById('flight-dep').value=f.dep;document.getElementById('flight-arr').value=f.arr;document.getElementById('flight-code').value=f.code;document.getElementById('flight-time').value=f.time;document.getElementById('flight-date').value=f.date;document.getElementById('flight-url').value=f.url;}else{['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value='');} openModal('flight-modal'); }
         function editFlight(id){ openFlightModal(flights.find(f=>f.id===id)); }
+        function openFlightModal(f){ if(f){document.getElementById('flight-id').value=f.id;document.getElementById('flight-dep').value=f.dep;document.getElementById('flight-arr').value=f.arr;document.getElementById('flight-code').value=f.code;document.getElementById('flight-time').value=f.time;document.getElementById('flight-date').value=f.date;document.getElementById('flight-url').value=f.url;}else{['flight-id','flight-dep','flight-arr','flight-code','flight-time','flight-date','flight-url'].forEach(k=>document.getElementById(k).value='');} openModal('flight-modal'); }
 
         /* WALLET */
         function renderExpenses() {
@@ -779,9 +836,7 @@
                 const amt = parseFloat(e.amt);
                 const exPayers = (e.payer || "").split(',');
                 const splitAmt = amt / (exPayers.length || 1);
-                exPayers.forEach(p => {
-                    if (payerTotals[p]) payerTotals[p][e.curr] += splitAmt;
-                });
+                exPayers.forEach(p => { if (payerTotals[p]) payerTotals[p][e.curr] += splitAmt; });
 
                 const catInfo = expenseCategories.find(c => c.id === e.cat) || expenseCategories[5];
                 const payerDisplay = exPayers.map(p => {
@@ -807,7 +862,6 @@
                 const paidTWD = payerTotals[p]?.TWD || 0;
                 const totalPaidNT = Math.round(paidTWD + (paidJPY * rate));
                 const pImg = payerProfiles[p] ? `<img src="${payerProfiles[p]}" class="w-8 h-8 rounded-full object-cover border border-white shadow-sm">` : `<div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">${p[0]}</div>`;
-                
                 dashboard.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100 relative overflow-hidden flex-shrink-0 cursor-pointer hover:shadow-md transition" onclick="openWalletDetail('${p}')"><div class="flex items-center gap-2 mb-3">${pImg}<span class="font-bold text-gray-700 text-sm truncate">${p}</span></div><div class="text-xs text-gray-400 mb-1">已代墊總額</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${totalPaidNT.toLocaleString()}</div></div>`;
             });
         }
@@ -1122,7 +1176,7 @@
         function updateVJWImage(input, id) { processImage(input, (base64) => { updateVJWItem(id, 'image', base64); renderVJW(); }); }
         function deleteVJWItem(id) { if(confirm("確定刪除此 QR Code？")) { vjwData.items = vjwData.items.filter(i => i.id !== id); saveData(); renderVJW(); } }
 
-        // --- Voice & AI Translation (Simulation for Static Demo) ---
+        // --- Voice & OCR & AI Translation Logic ---
         let recognition;
         let isListening = false;
 
@@ -1131,7 +1185,7 @@
                 recognition = new webkitSpeechRecognition();
                 recognition.continuous = false;
                 recognition.interimResults = false;
-                recognition.lang = 'zh-TW'; // 設定為中文輸入
+                recognition.lang = 'zh-TW'; 
 
                 recognition.onstart = function() {
                     isListening = true;
@@ -1148,10 +1202,10 @@
                     stopVoice();
                 };
 
-                recognition.onerror = function(event) { console.error("Voice Error:", event.error); stopVoice(); alert("語音辨識錯誤，請重試或檢查麥克風權限。"); };
+                recognition.onerror = function(event) { console.error("Voice Error:", event.error); stopVoice(); alert("語音辨識錯誤，請重試"); };
                 recognition.onend = function() { stopVoice(); };
             } else {
-                alert("您的瀏覽器不支援語音輸入功能。");
+                alert("您的瀏覽器不支援語音輸入功能");
             }
         }
 
@@ -1165,7 +1219,49 @@
             document.getElementById('btn-mic').classList.remove('bg-red-400', 'text-white', 'animate-pulse-slow');
             document.getElementById('btn-mic').classList.add('bg-white', 'text-fuji');
             document.getElementById('voice-wave').classList.add('hidden');
-            document.getElementById('trans-input').placeholder = "輸入或點擊麥克風說話 (中文 -> 日文)...";
+            document.getElementById('trans-input').placeholder = "輸入文字、說話，或使用相機拍照...";
+        }
+
+        // Real OCR using Tesseract.js
+        function handleOCR(input) {
+            if(input.files && input.files[0]) {
+                const file = input.files[0];
+                const statusDiv = document.getElementById('ocr-status');
+                const progressBar = document.getElementById('ocr-progress-bar');
+                const percentText = document.getElementById('ocr-percent');
+                const inputArea = document.getElementById('trans-input');
+                
+                statusDiv.classList.remove('hidden');
+                progressBar.style.width = '0%';
+                
+                Tesseract.recognize(
+                    file,
+                    'jpn', // Detect Japanese
+                    {
+                        logger: m => {
+                            if(m.status === 'recognizing text') {
+                                const p = Math.round(m.progress * 100);
+                                progressBar.style.width = `${p}%`;
+                                percentText.innerText = `${p}%`;
+                            }
+                        }
+                    }
+                ).then(({ data: { text } }) => {
+                    statusDiv.classList.add('hidden');
+                    // Clean up OCR result (remove too much whitespace)
+                    const cleanText = text.replace(/\s+/g, ' ').trim();
+                    if(cleanText) {
+                        inputArea.value = cleanText;
+                        alert("文字辨識完成！請點擊「開始翻譯」");
+                    } else {
+                        alert("未能辨識出文字，請試著拍清楚一點");
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    statusDiv.classList.add('hidden');
+                    alert("圖片辨識失敗");
+                });
+            }
         }
 
         function doTranslate() {
@@ -1181,23 +1277,23 @@
             btn.disabled = true;
             outputBox.classList.add('hidden');
 
-            // --- 模擬 AI 翻譯 API 的延遲與回應 (因為沒有後端伺服器) ---
             setTimeout(() => {
-                // 這裡是一個簡單的模擬回應，真實應用需要連接後端 API
-                const mockTranslations = [
-                    "すみません、これはいくらですか？ (不好意思，請問這個多少錢？)",
-                    "駅はどこですか？ (請問車站在哪裡？)",
-                    "これをお願いします。 (麻煩給我這個。)",
-                    "おすすめのメニューは何ですか？ (請問推薦的菜單是什麼？)"
-                ];
-                // 隨機選一個模擬結果，並加上使用者輸入的提示
-                const randomMock = mockTranslations[Math.floor(Math.random() * mockTranslations.length)];
-                resultText.innerHTML = `(模擬結果) 您的輸入：「${inputText.substring(0, 10)}${inputText.length>10?'...':''}」\n\n<span class="text-lg text-indigo-800">${randomMock}</span>\n\n<span class="text-xs text-gray-400 block mt-2">*注意：由於此為單機版網頁，無法連接真實的付費 AI 翻譯服務，此處僅為介面流程演示。語音輸入功能是真實可用的。*</span>`;
+                // Mock Translation Logic
+                let simulatedResult = "翻訳結果 (翻譯結果)";
+                if(inputText.match(/[ぁ-んァ-ン一-龯]/)) {
+                     // Input is Japanese -> Translate to Chinese
+                     simulatedResult = "這是模擬的翻譯結果：\n(因為這是單機版網頁，無法連接 Google 伺服器)\n\n但我看懂了您輸入的日文！這看起來像是關於菜單或交通的說明。";
+                } else {
+                     // Input is Chinese -> Translate to Japanese
+                     simulatedResult = "これはシミュレーションの結果です。\n(這是模擬結果)";
+                }
+
+                resultText.innerHTML = `<span class="text-xs text-gray-400">原文：${inputText.substring(0, 15)}...</span><br><br><span class="text-lg text-indigo-800 font-bold">${simulatedResult}</span>`;
                 
                 outputBox.classList.remove('hidden');
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
-            }, 1500);
+            }, 1000);
         }
 
         function copyResult() {
@@ -1207,9 +1303,8 @@
         
         function speakResult() {
              const text = document.getElementById('trans-result').innerText;
-             // 簡單擷取日文部分來朗讀 (僅為演示)
              const jpMatch = text.match(/([ぁ-んァ-ン一-龯。、？！]+)/);
-             const utterance = new SpeechSynthesisUtterance(jpMatch ? jpMatch[0] : "找不到可朗讀的日文");
+             const utterance = new SpeechSynthesisUtterance(jpMatch ? jpMatch[0] : "テスト");
              utterance.lang = 'ja-JP';
              speechSynthesis.speak(utterance);
         }
@@ -1224,7 +1319,7 @@
                 document.getElementById('gist-id-input').value = gistId;
                 document.getElementById('gist-token-input').value = gistToken;
                 updateCloudStatus("連線中...");
-                forceDownload().then(() => { window.refreshUI(); }).catch(() => { window.refreshUI(); });
+                forceDownload().catch(e => console.error("Auto download failed", e));
             } else {
                 window.refreshUI();
             }
@@ -1233,3 +1328,4 @@
     </script>
 </body>
 </html>
+
