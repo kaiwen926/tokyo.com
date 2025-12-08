@@ -10,18 +10,16 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f9f7f2">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
-
-    <title>旅の記 V10 (完整版)</title>
+    <title>旅の記 V11 (完全體)</title>
     
-    <!-- Libraries -->
+    <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: {
@@ -60,6 +58,7 @@
         }
     </script>
 
+    <!-- Custom CSS (V7 Style) -->
     <style>
         :root { --sat: env(safe-area-inset-top); --sab: env(safe-area-inset-bottom); }
         
@@ -111,26 +110,40 @@
         .voice-wave span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes wave { 0%, 100% { height: 20%; } 50% { height: 100%; } }
         
-        /* Weather Badge Style */
+        /* Weather Badge Style (V9) */
         .weather-badge { 
             display: inline-flex; 
             align-items: center; 
             justify-content: center; 
-            width: 36px; 
-            height: 36px; 
+            width: 32px; 
+            height: 32px; 
             border-radius: 50%; 
             background: #fff; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
-            font-size: 1.4rem; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            font-size: 1.2rem; 
             transition: transform 0.2s; 
             text-decoration: none;
-            border: 1px solid #f0f0f0;
+            border: 1px solid #eee;
+            margin-left: 8px;
         }
-        .weather-badge:hover { transform: scale(1.15); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .weather-badge:hover { transform: scale(1.1); }
         
-        /* Drag Handle */
-        .drag-handle { cursor: grab; touch-action: none; }
-        .drag-handle:active { cursor: grabbing; }
+        /* Drag Handle Style (V10) */
+        .drag-handle { 
+            cursor: grab; 
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 100%;
+            background-color: rgba(0,0,0,0.02);
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 10;
+        }
+        .drag-handle:active { cursor: grabbing; background-color: rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
@@ -157,7 +170,7 @@
 
     <main id="app" class="px-4 w-full mx-auto min-h-screen max-w-5xl relative pb-24">
         
-        <!-- V7 Visual Decorations -->
+        <!-- V7 Decorations -->
         <div class="deco-icon top-4 left-4 text-4xl">🌸</div>
         <div class="deco-icon top-20 right-10 text-3xl text-blue-200 rotate-[-20deg]">🍙</div>
         <div class="deco-icon bottom-32 left-8 text-3xl text-green-200">🍡</div>
@@ -183,14 +196,14 @@
             </button>
         </section>
 
-        <!-- GUIDE SECTION -->
+        <!-- GUIDE SECTION (V10 Enhanced) -->
         <section id="view-guide" class="view-section hidden relative z-10">
             <div class="flex justify-between items-end mb-6 mt-6">
                 <h2 class="text-2xl font-bold text-pencil handwritten flex items-center gap-2"><span class="text-3xl">🎐</span> 深度導覽</h2>
                 <button onclick="openGuideModal()" class="text-sm bg-matcha/20 text-green-800 px-4 py-1.5 rounded-full border border-matcha/50 hover:bg-matcha hover:text-white transition font-bold shadow-sm"><i class="fa-solid fa-plus mr-1"></i>新增景點</button>
             </div>
             
-            <!-- Guide List with Drag & Drop -->
+            <!-- Guide List with Drag Handle -->
             <div id="guide-list" class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6"></div>
             
             <p class="text-center text-xs text-gray-300 mt-6 handwritten">
@@ -241,7 +254,7 @@
                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
                 
-                <!-- Shopping List -->
+                <!-- Shopping List (V7 Sliding Effect) -->
                 <div class="hand-card p-0 bg-white relative border-l-8 border-white overflow-hidden flex flex-col" id="shopping-card">
                      <div class="p-6 pb-2">
                          <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
@@ -350,8 +363,8 @@
         </section>
     </main>
 
-    <!-- MODALS START -->
-    
+    <!-- MODALS -->
+
     <!-- FLIGHT MODAL -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-3xl p-6 shadow-2xl relative hand-card">
@@ -375,7 +388,7 @@
         </div>
     </div>
 
-    <!-- DAY MODAL -->
+    <!-- DAY MODAL (V9 Weather Search) -->
     <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-lg rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
             <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -393,7 +406,7 @@
                  </select>
             </div>
             
-            <!-- Weather Search Button -->
+            <!-- Weather Search Button (V9) -->
             <button onclick="searchDayWeather()" class="w-full bg-blue-50 text-blue-500 text-xs py-2 rounded-lg mb-4 font-bold border border-blue-100 hover:bg-blue-100 transition shadow-sm">
                 <i class="fa-solid fa-magnifying-glass mr-1"></i> 搜尋當日天氣
             </button>
@@ -435,7 +448,7 @@
         </div>
     </div>
 
-    <!-- GUIDE MODAL -->
+    <!-- GUIDE MODAL (V8 Fields) -->
     <div id="guide-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card">
             <button onclick="closeModal('guide-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -485,7 +498,24 @@
     </div>
 
     <!-- MUST EAT MODAL -->
-    <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-matcha">🍽️ 編輯必吃地點</h3><input type="hidden" id="eat-loc-id"><div class="mb-4"><label class="text-xs text-gray-400 block mb-1">地點名稱</label><input type="text" id="eat-location" placeholder="例如: 輕井澤" class="w-full p-2 border-b-2 border-matcha/50 bg-transparent font-bold text-lg focus:outline-none"></div><label class="text-xs text-gray-400 block mb-2">主題/餐廳列表</label><div id="eat-themes-container" class="space-y-3 mb-4"></div><button onclick="addThemeRow()" class="w-full py-2 border-2 border-dashed border-matcha/30 text-matcha rounded-lg text-sm font-bold mb-4 hover:bg-matcha/10 transition"><i class="fa-solid fa-plus"></i> 新增主題</button><div class="flex gap-2"><button onclick="deleteMustEatLocation()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hover:bg-red-100">刪除整組</button><button onclick="saveMustEatLocation()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow hover:bg-fuji/80">儲存</button></div></div></div>
+    <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-4 text-center text-matcha">🍽️ 編輯必吃地點</h3>
+            <input type="hidden" id="eat-loc-id">
+            <div class="mb-4">
+                <label class="text-xs text-gray-400 block mb-1">地點名稱</label>
+                <input type="text" id="eat-location" placeholder="例如: 輕井澤" class="w-full p-2 border-b-2 border-matcha/50 bg-transparent font-bold text-lg focus:outline-none">
+            </div>
+            <label class="text-xs text-gray-400 block mb-2">主題/餐廳列表</label>
+            <div id="eat-themes-container" class="space-y-3 mb-4"></div>
+            <button onclick="addThemeRow()" class="w-full py-2 border-2 border-dashed border-matcha/30 text-matcha rounded-lg text-sm font-bold mb-4 hover:bg-matcha/10 transition"><i class="fa-solid fa-plus"></i> 新增主題</button>
+            <div class="flex gap-2">
+                <button onclick="deleteMustEatLocation()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hover:bg-red-100">刪除整組</button>
+                <button onclick="saveMustEatLocation()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow hover:bg-fuji/80">儲存</button>
+            </div>
+        </div>
+    </div>
 
     <!-- SHOPPING & OTHERS -->
     <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
@@ -506,7 +536,7 @@
     </nav>
 
     <script>
-        // --- PRELOADED DATA ---
+        // --- DATA & CONFIG ---
         const PRELOADED_GUIDES = [
             {id: 101, title: "輕井澤王子 Outlet", price: "免費", desc: "必逛！車站南口直達。\n\n美食：\n- 明治亭醬汁豬排丼\n- 築地晴海壽司\n- 久世福商店 (果醬/仙貝)\n\n品牌：Gucci, Nike, BEAMS, Le Creuset。", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Karuizawa_Prince_Shopping_Plaza_East.JPG/1200px-Karuizawa_Prince_Shopping_Plaza_East.JPG", time: "10:00 - 19:00"},
             {id: 102, title: "石之教堂", price: "免費", desc: "內村鑑三紀念堂。將石頭與玻璃完美結合的有機建築。\n光影非常美，適合拍照。\n\n交通：搭乘星野接駁車。\n注意：若有婚禮進行則無法入內。", photo: "https://www.stonechurch.jp/images/top/main_01_sp.jpg", time: "09:00 - 18:00"},
@@ -654,7 +684,7 @@
         }
         function openGoogleTranslate() { const txt = document.getElementById('trans-input').value; window.open(`https://translate.google.com/?sl=zh-TW&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
 
-        // --- ITINERARY (With Weather & Smart Search) ---
+        // --- ITINERARY (With V9 Weather Search) ---
         function searchDayWeather() {
             const date = document.getElementById('day-date-edit').value;
             const loc = document.getElementById('day-accommodation-edit').value || "Japan";
@@ -667,7 +697,7 @@
             itinerary.forEach((day)=>{
                 let content=day.content.split('\n').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join('');
                 
-                // 3D Weather Badge with Link
+                // 3D Weather Badge with Link (V9)
                 const wIcon = WEATHER_MAP[day.weather] || '';
                 const wHtml = wIcon ? `<a href="https://tenki.jp/" target="_blank" class="weather-badge ml-2" title="查看天氣">${wIcon}</a>` : '';
 
@@ -689,6 +719,7 @@
                 </div>`;
             });
         }
+        
         function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-weather-edit').value=d.weather||""; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo; document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); ['b','l','d'].forEach(t=>{document.getElementById('meal-'+t+'-name').value=d.meals?.[t]?.name||''}); openModal('day-modal'); }
         function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.weather=document.getElementById('day-weather-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals={b:{name:document.getElementById('meal-b-name').value},l:{name:document.getElementById('meal-l-name').value},d:{name:document.getElementById('meal-d-name').value}}; saveData(); renderItinerary(); closeModal('day-modal'); }
         function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",weather:""}); saveData(); renderItinerary();}
@@ -696,21 +727,23 @@
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="tempDayPhotos.splice(${i},1);renderDayPhotosPreview()" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
 
-        // --- GUIDE (With Fixed Drag & Edit) ---
+        // --- GUIDE (V10 Fixed Drag & Edit) ---
         function renderGuides(){
             const l=document.getElementById('guide-list');l.innerHTML='';
-            if(window.guideSortable) window.guideSortable.destroy(); // Destroy previous instance
+            if(window.guideSortable) window.guideSortable.destroy(); 
             
             guides.forEach(g=>{
                 l.innerHTML+=`<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group">
-                    <div class="drag-handle absolute top-0 left-0 h-full w-8 bg-black/5 flex items-center justify-center z-20 cursor-grab hover:bg-black/10 transition-colors"><i class="fa-solid fa-grip-vertical text-gray-400"></i></div>
+                    <!-- Drag Handle V10 -->
+                    <div class="drag-handle absolute top-0 left-0 h-full w-10 bg-black/5 flex items-center justify-center z-20 cursor-grab hover:bg-black/10 transition-colors"><i class="fa-solid fa-grip-vertical text-gray-400"></i></div>
                     
-                    <!-- EDIT BUTTON with stopPropagation and high z-index -->
+                    <!-- EDIT BUTTON with V10 fix -->
                     <button onclick="event.stopPropagation(); openGuideModal(${g.id})" class="absolute top-2 right-2 z-50 bg-white shadow-md rounded-full w-9 h-9 flex items-center justify-center hover:bg-fuji hover:text-white transition transform active:scale-95"><i class="fa-solid fa-pen text-sm"></i></button>
                     
-                    ${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover ml-8" style="width:calc(100% - 2rem)" onclick="viewPhoto('${g.photo}')">`:''} 
-                    <div class="p-4 pl-12">
+                    ${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover ml-10" style="width:calc(100% - 2.5rem)" onclick="viewPhoto('${g.photo}')">`:''} 
+                    <div class="p-4 pl-14">
                         <h3 class="font-bold text-lg font-hand text-xl">${g.title}</h3>
+                        <!-- V8 Price Fields -->
                         <div class="flex gap-2 mb-2 mt-1">
                             ${g.price ? `<span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded"><i class="fa-solid fa-tag"></i> ${g.price}</span>` : ''}
                             ${g.time ? `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded"><i class="fa-regular fa-clock"></i> ${g.time}</span>` : ''}
@@ -719,7 +752,6 @@
                     </div></div>`;
             });
             
-            // Re-initialize Sortable
             window.guideSortable = new Sortable(l, {
                 handle: '.drag-handle',
                 animation: 150,
@@ -733,7 +765,7 @@
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; document.getElementById('guide-price').value=g.price||""; document.getElementById('guide-time').value=g.time||""; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-price','guide-time'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:document.getElementById('guide-desc').value, price:document.getElementById('guide-price').value, time:document.getElementById('guide-time').value, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
 
-        // --- MUST EAT (FIXED) ---
+        // --- MUST EAT (V8 Logic) ---
         function renderMustEatList() {
             const c = document.getElementById('must-eat-list'); c.innerHTML = '';
             mustEatList.forEach(locItem => {
