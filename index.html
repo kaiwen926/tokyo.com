@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>旅の記 V15 (完全體修復版)</title>
+    <title>一起旅行吧</title>
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -77,6 +77,7 @@
         .drag-handle { cursor: grab; touch-action: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 100%; background-color: rgba(0,0,0,0.02); position: absolute; left: 0; top: 0; z-index: 10; border-right: 1px solid rgba(0,0,0,0.03); }
         .drag-handle:active { cursor: grabbing; background-color: rgba(0,0,0,0.05); }
         .meal-clickable:active { background-color: #f3f4f6; border-radius: 4px; }
+        .guide-link { color: #bccc9a; font-weight: bold; text-decoration: underline; text-decoration-style: dotted; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -116,7 +117,7 @@
             
             <!-- Hint -->
             <p class="text-xs text-gray-400 mb-6 text-center handwritten flex justify-center items-center gap-4 bg-white/60 py-2 rounded-full mx-auto max-w-xs backdrop-blur-sm shadow-sm">
-                <span><i class="fa-solid fa-utensils text-orange-400"></i> 點擊餐點可記帳/開啟連結</span>
+                <span><i class="fa-solid fa-utensils text-orange-400"></i> 點擊<i class="fa-solid fa-utensils"></i>記帳，點文字跳轉</span>
             </p>
 
             <div id="itinerary-container" class="space-y-6 md:grid md:grid-cols-2 md:space-y-0 md:gap-6 items-start"></div>
@@ -146,7 +147,40 @@
                     <button onclick="updateExchangeRate()" id="btn-rate-update" class="w-6 h-6 rounded-full bg-gray-50 text-gray-400 hover:text-fuji hover:bg-fuji-light transition flex items-center justify-center ml-1"><i class="fa-solid fa-arrows-rotate text-xs"></i></button>
                 </div>
             </div>
+
+            <!-- Public Fund Card -->
+            <div class="bg-gradient-to-r from-gray-800 to-gray-700 text-white rounded-2xl p-4 shadow-lg mb-6 relative overflow-hidden">
+                <div class="absolute right-[-20px] top-[-20px] text-8xl opacity-10 rotate-12"><i class="fa-solid fa-scale-balanced"></i></div>
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-bold text-lg"><i class="fa-solid fa-users-line mr-2"></i>公費總覽</h3>
+                    <button onclick="openPublicFundModal()" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full backdrop-blur-sm transition"><i class="fa-solid fa-gear"></i> 設定</button>
+                </div>
+                <div class="flex justify-between items-end">
+                    <div>
+                        <div class="text-xs text-gray-300 mb-1">公費剩餘</div>
+                        <div class="text-3xl font-mono font-bold tracking-tight" id="pf-remaining">¥0</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-300 mb-1">總預算</div>
+                        <div class="font-mono font-bold" id="pf-total">¥0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto Charts Section (New) -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-4 transition-all" id="wallet-charts-section">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-sm font-bold text-gray-600 flex items-center gap-1"><i class="fa-solid fa-chart-pie text-fuji"></i> 自動分析圖表</h4>
+                    <span class="text-[10px] text-gray-400">即時更新 (多選分帳自動計算)</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="h-32 relative flex items-center justify-center"><canvas id="inlineCategoryChart"></canvas></div>
+                    <div class="h-32 relative flex items-center justify-center"><canvas id="inlineMemberChart"></canvas></div>
+                </div>
+            </div>
+            
             <div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar mb-4 md:grid md:grid-cols-4 md:overflow-visible" id="wallet-dashboard-container"></div>
+            
             <div class="flex justify-between items-center mb-4 mt-4 px-1">
                 <h4 class="text-sm font-bold text-gray-400 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> 最近支出</h4>
                 <div class="flex gap-2">
@@ -165,6 +199,7 @@
         <!-- LISTS SECTION -->
         <section id="view-lists" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Must Eat -->
                 <div class="hand-card p-6 bg-[#fffdf0] relative border-l-8 border-[#fffdf0]">
                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
@@ -173,6 +208,8 @@
                      </div>
                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
+
+                <!-- Shopping -->
                 <div class="hand-card p-0 bg-white relative border-l-8 border-white overflow-hidden flex flex-col" id="shopping-card">
                      <div class="p-6 pb-2">
                          <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
@@ -183,7 +220,7 @@
                                 <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold shadow-sm">新增</button>
                             </div>
                          </div>
-                         <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2 mb-4">
+                         <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2 mb-2">
                              <button onclick="prevShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                              <div class="text-center">
                                  <span id="shop-owner-name" class="font-bold text-gray-700 handwritten text-lg block"></span>
@@ -193,14 +230,11 @@
                          </div>
                      </div>
                      <div id="shopping-swipe-area" class="flex-1 p-6 pt-0 min-h-[300px] touch-pan-y">
-                         <div id="shopping-list-pending" class="grid grid-cols-2 gap-3 mb-4 animate-slide-in"></div>
-                         <div class="flex items-center gap-2 mb-2 opacity-60">
-                             <div class="h-px bg-gray-200 flex-1"></div><span class="text-[10px] text-gray-400">已購買</span><div class="h-px bg-gray-200 flex-1"></div>
-                         </div>
-                         <div id="shopping-list-done" class="grid grid-cols-2 gap-3 opacity-60 grayscale filter animate-slide-in"></div>
+                         <!-- Categories Render Here -->
+                         <div id="shopping-list-container" class="space-y-4 animate-slide-in"></div>
                      </div>
-                     <div class="text-[10px] text-center text-gray-300 pb-2">左右滑動切換清單</div>
                 </div>
+                
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
                     <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
                     <ul id="checklist-container" class="space-y-2"></ul>
@@ -350,13 +384,31 @@
                 </div>
             </div>
             
-            <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用反斜線 '\' 分隔每項活動)"></textarea>
+            <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用反斜線 '\' 分隔每項活動，若內容包含'深度導覽'的標題，會自動產生連結)"></textarea>
             
             <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm">
-                <h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排 (直接輸入文字可記帳，貼連結可跳轉)</h4>
-                <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-mug-hot text-orange-300 w-5"></i><input type="text" id="meal-b-name" placeholder="早餐" class="flex-1 text-sm font-bold bg-transparent"></div></div>
-                <div class="border-b pb-2"><div class="flex gap-2 mb-1"><i class="fa-solid fa-utensils text-green-400 w-5"></i><input type="text" id="meal-l-name" placeholder="午餐" class="flex-1 text-sm font-bold bg-transparent"></div></div>
-                <div><div class="flex gap-2 mb-1"><i class="fa-solid fa-wine-glass text-purple-400 w-5"></i><input type="text" id="meal-d-name" placeholder="晚餐" class="flex-1 text-sm font-bold bg-transparent"></div></div>
+                <h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排 (輸入連結可跳轉)</h4>
+                <div class="border-b pb-2">
+                    <div class="flex gap-2 mb-1 items-center">
+                        <i class="fa-solid fa-mug-hot text-orange-300 w-5"></i>
+                        <input type="text" id="meal-b-name" placeholder="早餐名稱" class="flex-1 text-sm font-bold bg-transparent border-b border-gray-100">
+                    </div>
+                    <input type="url" id="meal-b-link" placeholder="早餐連結 (Google Maps/Tabelog...)" class="w-full text-xs text-fuji bg-gray-50 p-1 rounded">
+                </div>
+                <div class="border-b pb-2">
+                    <div class="flex gap-2 mb-1 items-center">
+                        <i class="fa-solid fa-utensils text-green-400 w-5"></i>
+                        <input type="text" id="meal-l-name" placeholder="午餐名稱" class="flex-1 text-sm font-bold bg-transparent border-b border-gray-100">
+                    </div>
+                    <input type="url" id="meal-l-link" placeholder="午餐連結" class="w-full text-xs text-fuji bg-gray-50 p-1 rounded">
+                </div>
+                <div>
+                    <div class="flex gap-2 mb-1 items-center">
+                        <i class="fa-solid fa-wine-glass text-purple-400 w-5"></i>
+                        <input type="text" id="meal-d-name" placeholder="晚餐名稱" class="flex-1 text-sm font-bold bg-transparent border-b border-gray-100">
+                    </div>
+                    <input type="url" id="meal-d-link" placeholder="晚餐連結" class="w-full text-xs text-fuji bg-gray-50 p-1 rounded">
+                </div>
             </div>
             
             <textarea id="day-note-edit" class="w-full h-20 p-2 border border-yellow-200 bg-yellow-50 rounded text-sm mb-4 handwritten" placeholder="每日備註..."></textarea>
@@ -386,15 +438,48 @@
         </div>
     </div>
 
-    <!-- OTHER MODALS -->
-    <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white"><button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-xl font-bold mb-6 text-center text-gray-700 tracking-wide">新增紀錄</h3><input type="hidden" id="ex-id"><div class="flex justify-between mb-6 overflow-x-auto pb-2 no-scrollbar gap-2" id="expense-categories"></div><div class="flex items-center justify-center gap-2 mb-6"><select id="ex-currency" class="bg-gray-100 text-gray-600 font-bold rounded-lg px-2 py-1 outline-none text-sm border-none"><option value="JPY">JPY</option><option value="TWD">TWD</option></select><input type="number" id="ex-amount" placeholder="0" class="text-4xl font-bold text-center w-40 outline-none bg-transparent border-b-2 border-gray-100 focus:border-sakura text-gray-700" inputmode="numeric"></div><div class="mb-6"><label class="block text-xs text-gray-400 mb-2 font-bold ml-1">付款人</label><div id="ex-payer-container" class="flex flex-wrap gap-2"></div></div><div class="mb-4"><input type="text" id="ex-note" placeholder="備註說明..." class="w-full bg-gray-50 rounded-xl p-3 text-sm outline-none border border-gray-100"></div><div class="flex gap-3 items-center mb-6"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 relative overflow-hidden cursor-pointer hover:bg-gray-200"><i class="fa-solid fa-camera"></i><input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('ex-photo-preview-mini').src = base64; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); })"><img id="ex-photo-preview-mini" class="hidden absolute inset-0 w-full h-full object-cover"></div><span class="text-xs text-gray-400">收據</span></div><div class="flex gap-3"><button onclick="deleteExpense()" id="btn-delete-expense" class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 hidden"><i class="fa-solid fa-trash-can"></i></button><button onclick="saveExpense()" class="flex-1 bg-ink text-white py-3 rounded-full font-bold shadow-lg">確認儲存</button></div></div></div>
+    <!-- EXPENSE MODAL -->
+    <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white"><button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-xl font-bold mb-6 text-center text-gray-700 tracking-wide">新增紀錄</h3><input type="hidden" id="ex-id"><div class="flex justify-between mb-6 overflow-x-auto pb-2 no-scrollbar gap-2" id="expense-categories"></div><div class="flex items-center justify-center gap-2 mb-6"><select id="ex-currency" class="bg-gray-100 text-gray-600 font-bold rounded-lg px-2 py-1 outline-none text-sm border-none"><option value="JPY">JPY</option><option value="TWD">TWD</option></select><input type="number" id="ex-amount" placeholder="0" class="text-4xl font-bold text-center w-40 outline-none bg-transparent border-b-2 border-gray-100 focus:border-sakura text-gray-700" inputmode="numeric"></div><div class="mb-6"><label class="block text-xs text-gray-400 mb-2 font-bold ml-1">付款人 (多選自動分攤)</label><div id="ex-payer-container" class="flex flex-wrap gap-2"></div></div><div class="mb-4"><input type="text" id="ex-note" placeholder="備註說明..." class="w-full bg-gray-50 rounded-xl p-3 text-sm outline-none border border-gray-100"></div><div class="flex gap-3 items-center mb-6"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 relative overflow-hidden cursor-pointer hover:bg-gray-200"><i class="fa-solid fa-camera"></i><input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('ex-photo-preview-mini').src = base64; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); })"><img id="ex-photo-preview-mini" class="hidden absolute inset-0 w-full h-full object-cover"></div><span class="text-xs text-gray-400">收據</span></div><div class="flex gap-3"><button onclick="deleteExpense()" id="btn-delete-expense" class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 hidden"><i class="fa-solid fa-trash-can"></i></button><button onclick="saveExpense()" class="flex-1 bg-ink text-white py-3 rounded-full font-bold shadow-lg">確認儲存</button></div></div></div>
+
+    <!-- PUBLIC FUND MODALS -->
+    <div id="pf-settings-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg hand-card">
+            <h4 class="font-bold mb-3 text-center text-lg handwritten">公費設定</h4>
+            <div class="mb-4">
+                <label class="text-xs text-gray-400 block mb-1">公費總金額 (JPY)</label>
+                <input type="number" id="pf-total-input" class="w-full border p-2 rounded text-lg font-bold font-mono outline-none focus:border-matcha text-center">
+            </div>
+            <button onclick="savePublicFundSettings()" class="w-full bg-gray-800 text-white py-2 rounded-lg text-sm font-bold shadow">儲存</button>
+            <button onclick="closeModal('pf-settings-modal')" class="w-full mt-2 bg-gray-100 text-gray-500 py-2 rounded-lg text-sm">取消</button>
+        </div>
+    </div>
+
+    <!-- SHOPPING MODAL -->
+    <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="mb-3"><label class="text-xs text-gray-400">分類 (可直接輸入)</label><input type="text" id="shop-category" list="cat-options" placeholder="例: 藥妝, Outlet, 超商..." class="w-full border rounded p-2 text-sm bg-white"><datalist id="cat-options"><option value="藥妝"><option value="Outlet"><option value="便利商店"><option value="伴手禮"><option value="電器"><option value="服飾"></datalist></div><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
+
+    <!-- SHOPPING CONFIRM MODAL -->
+    <div id="shop-confirm-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl relative hand-card text-center">
+            <div class="text-4xl mb-2">🛍️</div>
+            <h3 class="font-bold text-lg mb-2 text-gray-800">購買確認</h3>
+            <p class="text-gray-500 text-sm mb-6">這筆消費是否要加入記帳？</p>
+            <input type="hidden" id="confirm-shop-id">
+            <div class="space-y-3">
+                <button onclick="confirmShopAction('expense')" class="w-full bg-ink text-white py-3 rounded-xl font-bold shadow-lg text-sm">是，加入記帳 (並標記已買)</button>
+                <button onclick="confirmShopAction('cancel')" class="w-full bg-white border border-gray-200 text-gray-500 py-3 rounded-xl font-bold text-sm hover:bg-gray-50">否，取消 (保留在清單)</button>
+                <div class="pt-2">
+                    <button onclick="confirmShopAction('done_only')" class="text-xs text-gray-400 hover:text-gray-600 underline">純標記已買 (不記帳)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Modals -->
     <div id="must-eat-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('must-eat-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-matcha">🍽️ 編輯必吃地點</h3><input type="hidden" id="eat-loc-id"><div class="mb-4"><label class="text-xs text-gray-400 block mb-1">地點名稱</label><input type="text" id="eat-location" placeholder="例如: 輕井澤、築地市場" class="w-full p-2 border-b-2 border-matcha/50 bg-transparent font-bold text-lg focus:outline-none"></div><label class="text-xs text-gray-400 block mb-2">主題/餐廳列表</label><div id="eat-themes-container" class="space-y-3 mb-4"></div><button onclick="addThemeRow()" class="w-full py-2 border-2 border-dashed border-matcha/30 text-matcha rounded-lg text-sm font-bold mb-4 hover:bg-matcha/10 transition"><i class="fa-solid fa-plus"></i> 新增主題</button><div class="flex gap-2"><button onclick="deleteMustEatLocation()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hover:bg-red-100">刪除整組</button><button onclick="saveMustEatLocation()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow hover:bg-fuji/80">儲存</button></div></div></div>
-    <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
     <div id="manage-shop-lists-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg hand-card"><h4 class="font-bold mb-3 text-center text-lg handwritten">管理購物清單</h4><div id="shop-lists-container" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2 border-t pt-3"><input type="text" id="new-shop-list-name" placeholder="輸入名稱 (如: 媽媽)" class="flex-1 border p-2 text-sm rounded bg-gray-50 outline-none focus:border-red-300"><button onclick="addShopList()" class="bg-red-400 text-white px-3 rounded text-sm font-bold shadow-sm">新增</button></div><button onclick="closeModal('manage-shop-lists-modal')" class="w-full mt-3 bg-gray-100 text-gray-500 py-2 rounded-lg text-sm hover:bg-gray-200 transition">完成</button></div></div>
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
     <div id="member-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理成員與頭像</h4><div id="member-list" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('member-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
     <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('lightbox-modal')"><div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-white/10 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div><div id="lightbox-container" class="zoom-container w-full h-full flex items-center justify-center" onclick="event.stopPropagation()"><img id="lightbox-image" src="" class="max-w-full max-h-full object-contain shadow-2xl rounded" onclick="toggleZoom(this)"></div></div>
-    <div id="wallet-detail-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card"><button onclick="closeModal('wallet-detail-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button><div id="wallet-detail-content"></div><div class="mt-4 relative h-48 w-full flex justify-center items-center"><canvas id="expenseChart"></canvas></div></div></div>
 
     <!-- NAV BAR -->
     <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2]/95 border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] backdrop-blur-sm" style="padding-bottom: calc(10px + var(--sab));">
@@ -421,19 +506,19 @@
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
 
         let flights=[], itinerary=[], mustEatList=[], expenses=[], guides=[], shoppingList=[], payers=[], payerProfiles={}, manualDebts=[], memoText="", todos=[], shoppingOwners=["我的清單"];
-        let vjwData={isOpen:true,items:[]}, publicFundConfig={initial:0,currency:'JPY'};
-        let currentShopOwnerIdx=0, myChart=null, gistId="", gistToken="";
+        let vjwData={isOpen:true,items:[]}, publicFundConfig={total:0,currency:'JPY'};
+        let currentShopOwnerIdx=0, inlineCategoryChart=null, inlineMemberChart=null, gistId="", gistToken="";
         let tempThemes=[], currentPhotoBase64=null, currentGuidePhoto=null, currentShopPhoto=null, currentTransPhoto=null, tempDayPhotos=[], selectedPayers=[], selectedCat='餐飲';
 
         // --- CORE ---
         function reloadLocalData() {
             flights = JSON.parse(localStorage.getItem('flights')) || [];
-            itinerary = JSON.parse(localStorage.getItem('itinerary_v2')) || [];
+            itinerary = JSON.parse(localStorage.getItem('itinerary_v3')) || [];
             mustEatList = JSON.parse(localStorage.getItem('mustEatList')) || [];
             expenses = JSON.parse(localStorage.getItem('expenses')) || [];
             guides = JSON.parse(localStorage.getItem('guides')) || [];
             if (guides.length === 0) guides = [...PRELOADED_GUIDES];
-            shoppingList = JSON.parse(localStorage.getItem('shoppingList_v2')) || [];
+            shoppingList = JSON.parse(localStorage.getItem('shoppingList_v3')) || [];
             shoppingOwners = JSON.parse(localStorage.getItem('shoppingOwners')) || ["我的清單"];
             payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
             if(!payers.includes("公費")) payers.push("公費");
@@ -441,25 +526,25 @@
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             todos = JSON.parse(localStorage.getItem('todos')) || [];
             memoText = localStorage.getItem('memo') || "";
-            publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig')) || { initial: 0, currency: 'JPY' };
+            publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig_v2')) || { total: 0, currency: 'JPY' };
             vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
             gistId = localStorage.getItem('gist_id') || ""; gistToken = localStorage.getItem('gist_token') || "";
             mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
         }
         function saveData() {
             localStorage.setItem('flights', JSON.stringify(flights));
-            localStorage.setItem('itinerary_v2', JSON.stringify(itinerary));
+            localStorage.setItem('itinerary_v3', JSON.stringify(itinerary));
             localStorage.setItem('mustEatList', JSON.stringify(mustEatList));
             localStorage.setItem('expenses', JSON.stringify(expenses));
             localStorage.setItem('guides', JSON.stringify(guides));
-            localStorage.setItem('shoppingList_v2', JSON.stringify(shoppingList));
+            localStorage.setItem('shoppingList_v3', JSON.stringify(shoppingList));
             localStorage.setItem('shoppingOwners', JSON.stringify(shoppingOwners));
             localStorage.setItem('payers', JSON.stringify(payers));
             localStorage.setItem('payerProfiles', JSON.stringify(payerProfiles));
             localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
             localStorage.setItem('todos', JSON.stringify(todos));
             localStorage.setItem('memo', memoText); 
-            localStorage.setItem('publicFundConfig', JSON.stringify(publicFundConfig));
+            localStorage.setItem('publicFundConfig_v2', JSON.stringify(publicFundConfig));
             localStorage.setItem('vjwData', JSON.stringify(vjwData));
             if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(forceUpload, 2000); }
         }
@@ -474,11 +559,11 @@
                 if(d.files["travel_data.json"].truncated) { const r=await fetch(d.files["travel_data.json"].raw_url); content=await r.text(); }
                 const c = JSON.parse(content);
                 localStorage.setItem('flights',JSON.stringify(c.flights||[]));
-                localStorage.setItem('itinerary_v2',JSON.stringify(c.itinerary||[]));
-                localStorage.setItem('mustEatList',JSON.stringify(c.mustEatList||[]));
+                localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
                 localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
                 localStorage.setItem('guides',JSON.stringify(c.guides||[]));
-                localStorage.setItem('shoppingList_v2',JSON.stringify(c.shoppingList||[]));
+                localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
+                localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
                 localStorage.setItem('memo',c.memo||"");
                 updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
             }).catch(()=>updateCloudStatus("下載失敗"));
@@ -486,7 +571,7 @@
         async function forceUpload() {
             if(!gistId) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, memo: memoText, lastUpdate: new Date() };
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, lastUpdate: new Date() };
             try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
         }
         function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
@@ -502,7 +587,7 @@
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-        // --- TRANSLATE & VOICE (V8/9) ---
+        // --- TRANSLATE & VOICE ---
         function toggleVoiceInput() {
             if (!('webkitSpeechRecognition' in window)) return alert("不支援語音");
             const recognition = new webkitSpeechRecognition(); recognition.lang = 'zh-TW';
@@ -513,7 +598,7 @@
         }
         function openGoogleTranslate() { const txt = document.getElementById('trans-input').value; window.open(`https://translate.google.com/?sl=zh-TW&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
 
-        // --- ITINERARY (With V9 Weather, V12 Restored Display, V14 Interaction) ---
+        // --- ITINERARY ---
         function searchDayWeather() {
             const date = document.getElementById('day-date-edit').value;
             const loc = document.getElementById('day-accommodation-edit').value || "Japan";
@@ -521,18 +606,38 @@
             window.open(`https://www.google.com/search?q=${loc}+weather+${date}`, '_blank');
         }
 
-        // New Helper: Check if string is URL
         function checkUrl(str) {
             if(!str) return null;
             if(str.startsWith('http') || str.startsWith('www')) return str;
             return null;
         }
 
-        // New Helper: Quick Expense Trigger
         function quickExpense(note, cat) {
             document.getElementById('ex-note').value = note;
             selectedCat = cat;
             openExpenseModal();
+        }
+
+        function jumpToGuide(title) {
+            switchTab('guide');
+            const g = guides.find(i => i.title === title);
+            if(g) {
+                setTimeout(() => {
+                   document.getElementById(`guide-${g.id}`).scrollIntoView({behavior: "smooth", block: "center"});
+                   document.getElementById(`guide-${g.id}`).classList.add('animate-highlight');
+                }, 300);
+            }
+        }
+        
+        function linkifyContent(text) {
+             let html = text.replace(/\n/g, '<br>');
+             guides.forEach(g => {
+                 if (g.title.length > 1) { 
+                     const regex = new RegExp(`(${g.title})`, 'g');
+                     html = html.replace(regex, `<span class="guide-link" onclick="jumpToGuide('$1')">$1</span>`);
+                 }
+             });
+             return html.split('<br>').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join('');
         }
 
         function renderItinerary() {
@@ -540,23 +645,12 @@
             c.innerHTML = '';
             
             itinerary.forEach((day) => {
-                let content = day.content.split('\n').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join('');
-                
-                // Weather Badge
+                let contentHtml = linkifyContent(day.content);
                 const wIcon = WEATHER_MAP[day.weather] || '';
                 const wHtml = wIcon ? `<a href="https://tenki.jp/" target="_blank" class="weather-badge ml-2" title="查看天氣">${wIcon}</a>` : '';
-                
-                // Photos
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
-
-                // --- V13/V14 RESTORED & ENHANCED SECTIONS ---
-                
-                // Accommodation (Smart Link)
-                // Logic: check if dedicated URL exists, OR if the text itself is a URL
                 const accLink = day.accommodationUrl || checkUrl(day.accommodation);
                 const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 flex items-center gap-2 border-t pt-3 border-dashed border-gray-200"><i class="fa-solid fa-bed text-fuji"></i> ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold">${day.accommodation}</a>` : `<span class="font-bold">${day.accommodation}</span>`}</div>` : '';
-
-                // Transportation (With Clickable Ticket Photo)
                 const transHtml = (day.transportation && (day.transportation.content || day.transportation.photo)) ? 
                     `<div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm">
                         <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
@@ -568,18 +662,14 @@
                         ${day.transportation.photo ? `<div class="mt-2 ml-6"><button onclick="viewPhoto('${day.transportation.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1 rounded shadow-sm hover:bg-blue-50 transition flex items-center gap-1"><i class="fa-solid fa-ticket"></i> 查看車票/時刻表</button></div>` : ''}
                     </div>` : '';
 
-                // Meals (Smart Clickable)
-                // Logic: check URL. If URL -> Link. If Text -> Quick Expense.
                 const renderMealItem = (type, icon, color) => {
                     const m = day.meals?.[type];
                     if(!m || !m.name) return '';
-                    const url = checkUrl(m.name);
-                    
-                    if(url) {
-                         return `<a href="${url}" target="_blank" class="flex items-center gap-1 meal-clickable hover:bg-gray-100 p-1 rounded transition"><i class="fa-solid ${icon} ${color}"></i> <span class="text-fuji underline decoration-dotted">連結/菜單</span></a>`;
-                    } else {
-                        return `<div onclick="quickExpense('${m.name}', '餐飲')" class="flex items-center gap-1 meal-clickable cursor-pointer hover:bg-gray-100 p-1 rounded transition" title="點擊記帳"><i class="fa-solid ${icon} ${color}"></i> ${m.name}</div>`;
-                    }
+                    const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1">${m.name}</a>` : `<span class="ml-1">${m.name}</span>`;
+                    return `<div class="flex items-center gap-1 meal-clickable p-1 rounded transition">
+                                <i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition" onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i> 
+                                ${linkPart}
+                            </div>`;
                 };
 
                 const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
@@ -589,7 +679,6 @@
                         ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
                     </div>` : '';
                 
-                // Day Note
                 const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
 
                 c.innerHTML += `<div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
@@ -602,7 +691,7 @@
                         <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition p-2"><i class="fa-solid fa-pen"></i></button>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
-                        <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${content}</ul>
+                        <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>
                         ${photosHtml}
                         ${accHtml}
                         ${transHtml}
@@ -613,21 +702,21 @@
             });
         }
         
-        function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-weather-edit').value=d.weather||""; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo; if(currentTransPhoto){ document.getElementById('trans-photo-preview').src = currentTransPhoto; document.getElementById('trans-photo-preview').classList.remove('hidden'); document.getElementById('trans-photo-text').classList.add('hidden'); } else { clearTransPhoto(); } document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); ['b','l','d'].forEach(t=>{document.getElementById('meal-'+t+'-name').value=d.meals?.[t]?.name||''}); openModal('day-modal'); }
-        function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.weather=document.getElementById('day-weather-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals={b:{name:document.getElementById('meal-b-name').value},l:{name:document.getElementById('meal-l-name').value},d:{name:document.getElementById('meal-d-name').value}}; saveData(); renderItinerary(); closeModal('day-modal'); }
+        function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-weather-edit').value=d.weather||""; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-trans-content').value=d.transportation?.content||''; document.getElementById('day-trans-note').value=d.transportation?.note||''; document.getElementById('day-trans-time').value=d.transportation?.time||''; currentTransPhoto=d.transportation?.photo; if(currentTransPhoto){ document.getElementById('trans-photo-preview').src = currentTransPhoto; document.getElementById('trans-photo-preview').classList.remove('hidden'); document.getElementById('trans-photo-text').classList.add('hidden'); } else { clearTransPhoto(); } document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); ['b','l','d'].forEach(t=>{document.getElementById('meal-'+t+'-name').value=d.meals?.[t]?.name||''; document.getElementById('meal-'+t+'-link').value=d.meals?.[t]?.link||''}); openModal('day-modal'); }
+        function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.weather=document.getElementById('day-weather-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.transportation={content:document.getElementById('day-trans-content').value, note:document.getElementById('day-trans-note').value, time:document.getElementById('day-trans-time').value, photo:currentTransPhoto}; i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals={b:{name:document.getElementById('meal-b-name').value, link:document.getElementById('meal-b-link').value},l:{name:document.getElementById('meal-l-name').value, link:document.getElementById('meal-l-link').value},d:{name:document.getElementById('meal-d-name').value, link:document.getElementById('meal-d-link').value}}; saveData(); renderItinerary(); closeModal('day-modal'); }
         function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",weather:""}); saveData(); renderItinerary();}
         function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); saveData(); renderItinerary(); closeModal('day-modal');}}
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="tempDayPhotos.splice(${i},1);renderDayPhotosPreview()" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
         function clearTransPhoto() { currentTransPhoto = null; document.getElementById('trans-photo-preview').src = ''; document.getElementById('trans-photo-preview').classList.add('hidden'); document.getElementById('trans-photo-text').classList.remove('hidden'); }
 
-        // --- GUIDE (V10 Fixed Drag Handle) ---
+        // --- GUIDE ---
         function renderGuides(){
             const l=document.getElementById('guide-list'); l.innerHTML='';
             if(window.guideSortable) window.guideSortable.destroy(); 
             
             guides.forEach(g=>{
-                l.innerHTML+=`<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group">
+                l.innerHTML+=`<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group transition-colors duration-500">
                     <div class="drag-handle absolute top-0 left-0 h-full w-10 bg-black/5 flex items-center justify-center z-20 cursor-grab hover:bg-black/10 transition-colors"><i class="fa-solid fa-grip-vertical text-gray-400"></i></div>
                     <button onclick="event.stopPropagation(); openGuideModal(${g.id})" class="absolute top-2 right-2 z-50 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-white"><i class="fa-solid fa-pen text-gray-500"></i></button>
                     ${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover ml-10" style="width:calc(100% - 2.5rem)" onclick="viewPhoto('${g.photo}')">`:''} 
@@ -640,21 +729,205 @@
                         <p class="text-sm whitespace-pre-line text-gray-600 leading-relaxed">${g.desc}</p>
                     </div></div>`;
             });
-            
-            window.guideSortable = new Sortable(l, {
-                handle: '.drag-handle',
-                animation: 150,
-                onEnd: function (evt) {
-                    const item = guides.splice(evt.oldIndex, 1)[0];
-                    guides.splice(evt.newIndex, 0, item);
-                    saveData();
-                },
-            });
+            window.guideSortable = new Sortable(l, { handle: '.drag-handle', animation: 150, onEnd: function (evt) { const item = guides.splice(evt.oldIndex, 1)[0]; guides.splice(evt.newIndex, 0, item); saveData(); } });
         }
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; document.getElementById('guide-price').value=g.price||""; document.getElementById('guide-time').value=g.time||""; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-price','guide-time'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:document.getElementById('guide-desc').value, price:document.getElementById('guide-price').value, time:document.getElementById('guide-time').value, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
 
-        // --- MUST EAT (V8 Logic) ---
+        // --- FLIGHTS ---
+        function renderFlights() { document.getElementById('flight-list-container').innerHTML = flights.map(f=>`<div class="bg-white rounded-[24px] p-5 shadow-soft relative hand-card"><button onclick="editFlight(${f.id})" class="absolute top-3 right-3 text-gray-300"><i class="fa-solid fa-pen"></i></button><div class="flex justify-between items-center mb-4"><span class="text-4xl font-black handwritten text-pencil">${f.dep}</span><i class="fa-solid fa-plane text-fuji rotate-[-45deg]"></i><span class="text-4xl font-black handwritten text-pencil">${f.arr}</span></div><div class="bg-fuji-light rounded-2xl py-2 px-4 text-center"><div class="font-bold text-fuji">${f.code}</div><div class="text-xs text-gray-400">${f.date} ${f.time}</div></div></div>`).join(''); }
+        function saveFlight(){ const id=document.getElementById('flight-id').value; const f={id:id?parseInt(id):Date.now(), dep:document.getElementById('flight-dep').value, arr:document.getElementById('flight-arr').value, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
+        function editFlight(id){ const f=flights.find(i=>i.id==id); if(f){document.getElementById('flight-id').value=f.id;document.getElementById('flight-dep').value=f.dep;document.getElementById('flight-arr').value=f.arr;document.getElementById('flight-code').value=f.code;document.getElementById('flight-date').value=f.date;document.getElementById('flight-time').value=f.time;document.getElementById('flight-url').value=f.url;openModal('flight-modal');} }
+        function openFlightModal(){ ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); openModal('flight-modal'); }
+
+        // --- WALLET & CHARTS ---
+        function renderExpenses() {
+            const list = document.getElementById('expense-list'); list.innerHTML = '';
+            const rate = parseFloat(document.getElementById('exchange-rate').value);
+            const pfTotal = publicFundConfig.total || 0;
+            let pfSpent = 0;
+
+            expenses.sort((a,b) => b.id - a.id).forEach(e => {
+                const cat = expenseCategories.find(c => c.id === e.cat) || expenseCategories[5];
+                const amt = parseFloat(e.amt);
+                if (e.payer === '公費') pfSpent += (e.curr === 'JPY' ? amt : amt / rate);
+
+                list.innerHTML += `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})"><div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid ${cat.icon}"></i></div><div class="flex-1"><div class="font-bold text-gray-700 text-sm truncate">${e.note || cat.id}</div><div class="text-[10px] text-gray-400">${e.payer}</div></div><div class="text-right"><div class="font-bold font-mono text-gray-800">${e.curr} ${amt.toLocaleString()}</div>${e.curr === 'JPY' ? `<div class="text-[10px] text-gray-400">≈ NT$ ${Math.round(amt * rate).toLocaleString()}</div>` : ''}</div></div>`;
+            });
+            
+            const pfRemaining = pfTotal - pfSpent;
+            document.getElementById('pf-total').innerText = `¥${pfTotal.toLocaleString()}`;
+            document.getElementById('pf-remaining').innerText = `¥${Math.round(pfRemaining).toLocaleString()}`;
+            document.getElementById('pf-remaining').className = `text-3xl font-mono font-bold tracking-tight ${pfRemaining < 0 ? 'text-red-300' : 'text-white'}`;
+
+            const dash = document.getElementById('wallet-dashboard-container'); dash.innerHTML = '';
+            payers.forEach(p => {
+                if (p === '公費') return;
+                let total = 0;
+                expenses.forEach(e => { if((e.payer||"").includes(p)) { const share = (e.curr==='JPY'?e.amt*rate:e.amt) / e.payer.split(',').length; total += share; } });
+                dash.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100"><div class="font-bold text-gray-700 text-sm mb-1">${p}</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${Math.round(total).toLocaleString()}</div></div>`;
+            });
+            
+            updateInlineCharts(rate);
+        }
+        
+        function updateInlineCharts(rate) {
+            // 1. Category Breakdown
+            const catData = {};
+            expenses.forEach(e => {
+                const amt = e.curr === 'JPY' ? e.amt * rate : e.amt;
+                catData[e.cat] = (catData[e.cat] || 0) + amt;
+            });
+            
+            const ctxCat = document.getElementById('inlineCategoryChart').getContext('2d');
+            if(inlineCategoryChart) inlineCategoryChart.destroy();
+            inlineCategoryChart = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(catData),
+                    datasets: [{ data: Object.values(catData), backgroundColor: ['#f8c3cd', '#bccc9a', '#7b90d2', '#b5651d', '#eff6ff', '#e5e7eb'], borderWidth: 0 }]
+                },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // 2. Member Spending
+            const memberData = {};
+            payers.forEach(p => memberData[p] = 0);
+            expenses.forEach(e => {
+                const payList = (e.payer || "").split(',');
+                const amtPerPerson = (e.curr === 'JPY' ? e.amt * rate : e.amt) / payList.length;
+                payList.forEach(p => { if(memberData[p] !== undefined) memberData[p] += amtPerPerson; });
+            });
+            
+            const ctxMem = document.getElementById('inlineMemberChart').getContext('2d');
+            if(inlineMemberChart) inlineMemberChart.destroy();
+            inlineMemberChart = new Chart(ctxMem, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(memberData),
+                    datasets: [{ label: 'NT$ 支出', data: Object.values(memberData), backgroundColor: '#7b90d2', borderRadius: 4 }]
+                },
+                options: { maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }, plugins: { legend: { display: false } } }
+            });
+        }
+        
+        function openPublicFundModal() { document.getElementById('pf-total-input').value = publicFundConfig.total || 0; openModal('pf-settings-modal'); }
+        function savePublicFundSettings() { publicFundConfig.total = parseFloat(document.getElementById('pf-total-input').value) || 0; saveData(); renderExpenses(); closeModal('pf-settings-modal'); }
+
+        function openExpenseModal(id=null) { 
+            document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
+            document.getElementById('ex-payer-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join('');
+            document.getElementById('btn-delete-expense').classList.add('hidden');
+            if(id) { const ex = expenses.find(e => e.id == id); document.getElementById('ex-id').value = ex.id; document.getElementById('ex-amount').value = ex.amt; document.getElementById('ex-currency').value = ex.curr; document.getElementById('ex-note').value = ex.note; selectedCat = ex.cat; selectedPayers = (ex.payer || "").split(','); document.getElementById('btn-delete-expense').classList.remove('hidden'); if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} }
+            else if (!id && !document.getElementById('ex-note').value) { document.getElementById('ex-id').value = ''; document.getElementById('ex-amount').value = ''; document.getElementById('ex-note').value = ''; selectedPayers = ['我']; }
+            openModal('expense-modal');
+        }
+        function togglePayer(p) { if(selectedPayers.includes(p)) selectedPayers=selectedPayers.filter(x=>x!==p); else selectedPayers.push(p); if(selectedPayers.length===0)selectedPayers=[p]; openExpenseModal(document.getElementById('ex-id').value||null); }
+        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt) return; const ex={id:id?parseInt(id):Date.now(), cat:selectedCat, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:selectedPayers.join(','), photo:currentPhotoBase64}; if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
+        function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }
+
+        // --- SHOPPING (V18 ENHANCED) ---
+        function renderShoppingList() {
+            const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; 
+            const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner);
+            const container = document.getElementById('shopping-list-container');
+            container.innerHTML = '';
+
+            const grouped = {};
+            items.forEach(item => {
+                const cat = item.category || '未分類';
+                if(!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(item);
+            });
+
+            Object.keys(grouped).sort().forEach(cat => {
+                const catItems = grouped[cat];
+                const doneItems = catItems.filter(i => i.done);
+                const pendingItems = catItems.filter(i => !i.done);
+                
+                let html = `<div class="bg-gray-50/50 rounded-xl p-3 border border-gray-100">
+                    <h5 class="font-bold text-gray-400 text-xs mb-2 flex items-center gap-1"><i class="fa-solid fa-tag"></i> ${cat}</h5>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        ${pendingItems.map(s => renderShopItem(s, false)).join('')}
+                    </div>`;
+                
+                if (doneItems.length > 0) {
+                     html += `<div class="border-t border-gray-200/50 pt-2 opacity-60 grayscale filter">
+                        ${doneItems.map(s => renderShopItem(s, true)).join('')}
+                     </div>`;
+                }
+                html += `</div>`;
+                container.innerHTML += html;
+            });
+            document.getElementById('shop-owner-name').innerText = owner;
+        }
+
+        function renderShopItem(s, isDone) {
+            return `<div class="relative p-2 border shadow-sm rounded bg-white flex items-start gap-2" onclick="openShoppingModal(${s.id})">
+                <div class="mt-1 w-5 h-5 border-2 rounded flex-shrink-0 cursor-pointer ${isDone?'bg-red-400 border-red-400':''}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})"></div>
+                <div class="min-w-0">
+                    <div class="font-bold truncate text-sm">${s.name}</div>
+                    <div class="text-[10px] text-gray-400">¥${s.price} x ${s.qty}</div>
+                </div>
+            </div>`;
+        }
+
+        function triggerShopAction(id, isDone) {
+            if(isDone) {
+                const s = shoppingList.find(i=>i.id===id);
+                s.done = false;
+                saveData(); renderShoppingList();
+            } else {
+                document.getElementById('confirm-shop-id').value = id;
+                openModal('shop-confirm-modal');
+            }
+        }
+
+        function confirmShopAction(action) {
+            const id = parseInt(document.getElementById('confirm-shop-id').value);
+            const s = shoppingList.find(i=>i.id===id);
+            if(!s) return;
+
+            if (action === 'expense') {
+                closeModal('shop-confirm-modal');
+                // Linkage: Category appended to note
+                const categoryNote = s.category ? ` (${s.category})` : '';
+                document.getElementById('ex-note').value = s.name + categoryNote;
+                document.getElementById('ex-amount').value = s.price * s.qty;
+                selectedCat = '購物';
+                selectedPayers = ['我'];
+                openExpenseModal();
+                s.done = true;
+                saveData(); renderShoppingList();
+            } else if (action === 'done_only') {
+                s.done = true;
+                saveData(); renderShoppingList();
+                closeModal('shop-confirm-modal');
+            } else if (action === 'cancel') {
+                closeModal('shop-confirm-modal');
+            }
+        }
+
+        function openShoppingModal(id=null){ 
+            ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); 
+            document.getElementById('shop-qty').value=1;
+            currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); 
+            if(id){
+                const s=shoppingList.find(i=>i.id===id);
+                document.getElementById('shop-id').value=s.id;document.getElementById('shop-name').value=s.name;document.getElementById('shop-qty').value=s.qty;document.getElementById('shop-price').value=s.price;document.getElementById('shop-category').value=s.category||'';
+                if(s.photo){currentShopPhoto=s.photo;document.getElementById('shop-photo-preview').src=s.photo;document.getElementById('shop-photo-preview').classList.remove('hidden')}
+            } 
+            openModal('shopping-modal'); 
+        }
+        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:document.getElementById('shop-category').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){const idx=shoppingList.findIndex(i=>i.id==id);item.done=shoppingList[idx].done;shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
+        function deleteShoppingItem(){ if(confirm("Del?")){shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value);saveData();renderShoppingList();closeModal('shopping-modal');} }
+        function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
+        function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
+        
+        function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map(n=>`<div class="bg-gray-50 p-2 border rounded text-sm">${n}</div>`).join(''); openModal('manage-shop-lists-modal'); }
+        function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){shoppingOwners.push(n);saveData();openShopOwnerModal();renderShoppingList();} }
+
+        // --- OTHER LISTS ---
         function renderMustEatList() {
             const c = document.getElementById('must-eat-list'); c.innerHTML = '';
             mustEatList.forEach(locItem => {
@@ -689,61 +962,6 @@
         }
         function deleteMustEatLocation() { const id = document.getElementById('eat-loc-id').value; if(id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); closeModal('must-eat-modal'); } }
 
-        // --- FLIGHTS & WALLET & SHOPPING & VJW ---
-        function renderFlights() { document.getElementById('flight-list-container').innerHTML = flights.map(f=>`<div class="bg-white rounded-[24px] p-5 shadow-soft relative hand-card"><button onclick="editFlight(${f.id})" class="absolute top-3 right-3 text-gray-300"><i class="fa-solid fa-pen"></i></button><div class="flex justify-between items-center mb-4"><span class="text-4xl font-black handwritten text-pencil">${f.dep}</span><i class="fa-solid fa-plane text-fuji rotate-[-45deg]"></i><span class="text-4xl font-black handwritten text-pencil">${f.arr}</span></div><div class="bg-fuji-light rounded-2xl py-2 px-4 text-center"><div class="font-bold text-fuji">${f.code}</div><div class="text-xs text-gray-400">${f.date} ${f.time}</div></div></div>`).join(''); }
-        function saveFlight(){ const id=document.getElementById('flight-id').value; const f={id:id?parseInt(id):Date.now(), dep:document.getElementById('flight-dep').value, arr:document.getElementById('flight-arr').value, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
-        function editFlight(id){ const f=flights.find(i=>i.id==id); if(f){document.getElementById('flight-id').value=f.id;document.getElementById('flight-dep').value=f.dep;document.getElementById('flight-arr').value=f.arr;document.getElementById('flight-code').value=f.code;document.getElementById('flight-date').value=f.date;document.getElementById('flight-time').value=f.time;document.getElementById('flight-url').value=f.url;openModal('flight-modal');} }
-        function openFlightModal(){ ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); openModal('flight-modal'); }
-
-        function renderExpenses() {
-            const list = document.getElementById('expense-list'); list.innerHTML = '';
-            const rate = parseFloat(document.getElementById('exchange-rate').value);
-            expenses.sort((a,b) => b.id - a.id).forEach(e => {
-                const cat = expenseCategories.find(c => c.id === e.cat) || expenseCategories[5];
-                const amt = parseFloat(e.amt);
-                list.innerHTML += `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})"><div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid ${cat.icon}"></i></div><div class="flex-1"><div class="font-bold text-gray-700 text-sm truncate">${e.note || cat.id}</div><div class="text-[10px] text-gray-400">${e.payer}</div></div><div class="text-right"><div class="font-bold font-mono text-gray-800">${e.curr} ${amt.toLocaleString()}</div>${e.curr === 'JPY' ? `<div class="text-[10px] text-gray-400">≈ NT$ ${Math.round(amt * rate).toLocaleString()}</div>` : ''}</div></div>`;
-            });
-            const dash = document.getElementById('wallet-dashboard-container'); dash.innerHTML = '';
-            payers.forEach(p => {
-                let total = 0;
-                expenses.forEach(e => { if((e.payer||"").includes(p)) { const share = (e.curr==='JPY'?e.amt*rate:e.amt) / e.payer.split(',').length; total += share; } });
-                dash.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100"><div class="font-bold text-gray-700 text-sm mb-1">${p}</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${Math.round(total).toLocaleString()}</div></div>`;
-            });
-        }
-        function openExpenseModal(id=null) { 
-            document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
-            document.getElementById('ex-payer-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join('');
-            document.getElementById('btn-delete-expense').classList.add('hidden');
-            if(id) { const ex = expenses.find(e => e.id == id); document.getElementById('ex-id').value = ex.id; document.getElementById('ex-amount').value = ex.amt; document.getElementById('ex-currency').value = ex.curr; document.getElementById('ex-note').value = ex.note; selectedCat = ex.cat; selectedPayers = (ex.payer || "").split(','); document.getElementById('btn-delete-expense').classList.remove('hidden'); if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} }
-            else if (!id && !document.getElementById('ex-note').value) { 
-                // Only clear if we are NOT coming from quickExpense (which sets note first)
-                document.getElementById('ex-id').value = ''; document.getElementById('ex-amount').value = ''; document.getElementById('ex-note').value = ''; selectedPayers = ['我']; 
-            }
-            openModal('expense-modal');
-        }
-        function togglePayer(p) { if(selectedPayers.includes(p)) selectedPayers=selectedPayers.filter(x=>x!==p); else selectedPayers.push(p); if(selectedPayers.length===0)selectedPayers=[p]; openExpenseModal(document.getElementById('ex-id').value||null); }
-        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt) return; const ex={id:id?parseInt(id):Date.now(), cat:selectedCat, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:selectedPayers.join(','), photo:currentPhotoBase64}; if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
-        function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }
-
-        function renderShoppingList() {
-            const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; 
-            const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner);
-            const p = document.getElementById('shopping-list-pending'), d = document.getElementById('shopping-list-done'); p.innerHTML=''; d.innerHTML='';
-            items.forEach(s => {
-                const h = `<div class="relative p-2 border shadow-sm rounded bg-white" onclick="openShoppingModal(${s.id})"><div class="absolute top-2 left-2 w-5 h-5 border-2 rounded ${s.done?'bg-red-400 border-red-400':''}" onclick="event.stopPropagation();toggleShop(${s.id})"></div><div class="pl-8"><div class="font-bold">${s.name}</div><div class="text-xs text-gray-400">¥${s.price} x ${s.qty}</div></div></div>`;
-                if(s.done) d.innerHTML+=h; else p.innerHTML+=h;
-            });
-            document.getElementById('shop-owner-name').innerText = owner;
-        }
-        function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price'].forEach(k=>document.getElementById(k).value=''); currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); if(id){const s=shoppingList.find(i=>i.id===id);document.getElementById('shop-id').value=s.id;document.getElementById('shop-name').value=s.name;document.getElementById('shop-qty').value=s.qty;document.getElementById('shop-price').value=s.price;if(s.photo){currentShopPhoto=s.photo;document.getElementById('shop-photo-preview').src=s.photo;document.getElementById('shop-photo-preview').classList.remove('hidden')}} openModal('shopping-modal'); }
-        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){const idx=shoppingList.findIndex(i=>i.id==id);item.done=shoppingList[idx].done;shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
-        function toggleShop(id) { const s=shoppingList.find(i=>i.id===id); s.done=!s.done; if(s.done && confirm("記帳?")) { expenses.push({id:Date.now(),cat:'購物',note:s.name,curr:'JPY',amt:s.price*s.qty,payer:'我'}); renderExpenses(); } saveData(); renderShoppingList(); }
-        function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
-        function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
-        
-        function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map(n=>`<div class="bg-gray-50 p-2 border rounded text-sm">${n}</div>`).join(''); openModal('manage-shop-lists-modal'); }
-        function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){shoppingOwners.push(n);saveData();openShopOwnerModal();renderShoppingList();} }
-        function deleteShoppingItem(){ if(confirm("Del?")){shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value);saveData();renderShoppingList();closeModal('shopping-modal');} }
         function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
         function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false}); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
         function toggleTodo(i){todos[i].done=!todos[i].done; saveData(); renderChecklist();}
