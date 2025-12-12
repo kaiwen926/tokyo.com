@@ -157,7 +157,7 @@
                 </div>
                 <div class="flex justify-between items-end">
                     <div>
-                        <div class="text-xs text-gray-300 mb-1">公費剩餘</div>
+                        <div class="text-xs text-gray-300 mb-1">公費剩餘 (JPY)</div>
                         <div class="text-3xl font-mono font-bold tracking-tight" id="pf-remaining">¥0</div>
                     </div>
                     <div class="text-right">
@@ -167,11 +167,11 @@
                 </div>
             </div>
 
-            <!-- Auto Charts Section (New) -->
+            <!-- Auto Charts Section -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-4 transition-all" id="wallet-charts-section">
                 <div class="flex justify-between items-center mb-2">
                     <h4 class="text-sm font-bold text-gray-600 flex items-center gap-1"><i class="fa-solid fa-chart-pie text-fuji"></i> 自動分析圖表</h4>
-                    <span class="text-[10px] text-gray-400">即時更新 (多選分帳自動計算)</span>
+                    <span class="text-[10px] text-gray-400">依成員消費額統計</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="h-32 relative flex items-center justify-center"><canvas id="inlineCategoryChart"></canvas></div>
@@ -179,6 +179,11 @@
                 </div>
             </div>
             
+            <div class="flex justify-between items-center mb-2">
+                 <h4 class="text-sm font-bold text-gray-400 flex items-center gap-2"><i class="fa-solid fa-calculator"></i> 費用分析</h4>
+                 <button onclick="calculateSettlement()" class="text-xs bg-ink text-white px-3 py-1.5 rounded-lg shadow hover:bg-gray-700 transition font-bold"><i class="fa-solid fa-money-bill-transfer mr-1"></i>結算建議</button>
+            </div>
+
             <div class="flex overflow-x-auto gap-4 pb-4 no-scrollbar mb-4 md:grid md:grid-cols-4 md:overflow-visible" id="wallet-dashboard-container"></div>
             
             <div class="flex justify-between items-center mb-4 mt-4 px-1">
@@ -303,6 +308,85 @@
             </div>
         </section>
     </main>
+
+    <!-- EXPENSE MODAL (Revamped) -->
+    <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white">
+            <button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-xl font-bold mb-6 text-center text-gray-700 tracking-wide">記一筆</h3>
+            <input type="hidden" id="ex-id">
+            
+            <!-- Amount -->
+            <div class="flex items-center justify-center gap-2 mb-6">
+                <select id="ex-currency" class="bg-gray-100 text-gray-600 font-bold rounded-lg px-2 py-1 outline-none text-sm border-none">
+                    <option value="JPY">JPY</option>
+                    <option value="TWD">TWD</option>
+                </select>
+                <input type="number" id="ex-amount" placeholder="0" class="text-4xl font-bold text-center w-40 outline-none bg-transparent border-b-2 border-gray-100 focus:border-sakura text-gray-700" inputmode="numeric">
+            </div>
+
+            <!-- Category -->
+            <div class="flex justify-between mb-4 overflow-x-auto pb-2 no-scrollbar gap-2" id="expense-categories"></div>
+
+            <!-- Payer (Who paid) -->
+            <div class="mb-4 bg-fuji-light/30 p-3 rounded-xl border border-fuji/10">
+                <label class="block text-xs text-fuji mb-1 font-bold ml-1"><i class="fa-solid fa-hand-holding-dollar mr-1"></i>墊付人 (誰先出錢)</label>
+                <div class="relative">
+                    <input type="text" id="ex-paid-by" list="payer-options" class="w-full bg-white rounded-lg p-2 text-sm font-bold text-gray-700 border border-fuji/20 focus:border-fuji outline-none" placeholder="輸入名字或從清單選...">
+                    <datalist id="payer-options"></datalist>
+                </div>
+            </div>
+
+            <!-- Splitters (Shared by) -->
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-xs text-gray-400 font-bold ml-1">分攤人 (平分費用)</label>
+                    <button onclick="toggleAllPayers()" class="text-[10px] text-fuji bg-fuji-light px-2 py-0.5 rounded font-bold">全選/全取消</button>
+                </div>
+                <div id="ex-split-container" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="mb-4">
+                <input type="text" id="ex-note" placeholder="備註說明..." class="w-full bg-gray-50 rounded-xl p-3 text-sm outline-none border border-gray-100">
+            </div>
+
+            <div class="flex gap-3 items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 relative overflow-hidden cursor-pointer hover:bg-gray-200">
+                    <i class="fa-solid fa-camera"></i>
+                    <input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('ex-photo-preview-mini').src = base64; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); })">
+                    <img id="ex-photo-preview-mini" class="hidden absolute inset-0 w-full h-full object-cover">
+                </div>
+                <span class="text-xs text-gray-400">收據</span>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="deleteExpense()" id="btn-delete-expense" class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 hidden"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="saveExpense()" class="flex-1 bg-ink text-white py-3 rounded-full font-bold shadow-lg">確認儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTLEMENT MODAL -->
+    <div id="settlement-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl relative hand-card max-h-[85vh] overflow-y-auto">
+            <button onclick="closeModal('settlement-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-xl font-bold mb-4 text-center handwritten text-ink">結算建議書</h3>
+            
+            <div class="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-100">
+                <h4 class="font-bold text-blue-800 text-sm mb-2"><i class="fa-solid fa-money-bill-transfer"></i> 建議轉帳路徑</h4>
+                <div id="settlement-plan" class="space-y-3 text-sm"></div>
+            </div>
+
+            <h4 class="font-bold text-gray-600 text-sm mb-2">收支平衡表 (NT$)</h4>
+            <div class="h-48 relative flex items-center justify-center mb-4">
+                <canvas id="settlementChart"></canvas>
+            </div>
+            
+            <div id="settlement-details" class="space-y-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg"></div>
+            
+            <button onclick="closeModal('settlement-modal')" class="w-full mt-4 bg-ink text-white py-3 rounded-xl font-bold">了解</button>
+        </div>
+    </div>
 
     <!-- FLIGHT MODAL -->
     <div id="flight-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
@@ -438,9 +522,6 @@
         </div>
     </div>
 
-    <!-- EXPENSE MODAL -->
-    <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white"><button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-xl font-bold mb-6 text-center text-gray-700 tracking-wide">新增紀錄</h3><input type="hidden" id="ex-id"><div class="flex justify-between mb-6 overflow-x-auto pb-2 no-scrollbar gap-2" id="expense-categories"></div><div class="flex items-center justify-center gap-2 mb-6"><select id="ex-currency" class="bg-gray-100 text-gray-600 font-bold rounded-lg px-2 py-1 outline-none text-sm border-none"><option value="JPY">JPY</option><option value="TWD">TWD</option></select><input type="number" id="ex-amount" placeholder="0" class="text-4xl font-bold text-center w-40 outline-none bg-transparent border-b-2 border-gray-100 focus:border-sakura text-gray-700" inputmode="numeric"></div><div class="mb-6"><label class="block text-xs text-gray-400 mb-2 font-bold ml-1">付款人 (多選自動分攤)</label><div id="ex-payer-container" class="flex flex-wrap gap-2"></div></div><div class="mb-4"><input type="text" id="ex-note" placeholder="備註說明..." class="w-full bg-gray-50 rounded-xl p-3 text-sm outline-none border border-gray-100"></div><div class="flex gap-3 items-center mb-6"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 relative overflow-hidden cursor-pointer hover:bg-gray-200"><i class="fa-solid fa-camera"></i><input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('ex-photo-preview-mini').src = base64; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); })"><img id="ex-photo-preview-mini" class="hidden absolute inset-0 w-full h-full object-cover"></div><span class="text-xs text-gray-400">收據</span></div><div class="flex gap-3"><button onclick="deleteExpense()" id="btn-delete-expense" class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 hidden"><i class="fa-solid fa-trash-can"></i></button><button onclick="saveExpense()" class="flex-1 bg-ink text-white py-3 rounded-full font-bold shadow-lg">確認儲存</button></div></div></div>
-
     <!-- PUBLIC FUND MODALS -->
     <div id="pf-settings-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg hand-card">
@@ -507,7 +588,7 @@
 
         let flights=[], itinerary=[], mustEatList=[], expenses=[], guides=[], shoppingList=[], payers=[], payerProfiles={}, manualDebts=[], memoText="", todos=[], shoppingOwners=["我的清單"];
         let vjwData={isOpen:true,items:[]}, publicFundConfig={total:0,currency:'JPY'};
-        let currentShopOwnerIdx=0, inlineCategoryChart=null, inlineMemberChart=null, gistId="", gistToken="";
+        let currentShopOwnerIdx=0, inlineCategoryChart=null, inlineMemberChart=null, settlementChart=null, gistId="", gistToken="";
         let tempThemes=[], currentPhotoBase64=null, currentGuidePhoto=null, currentShopPhoto=null, currentTransPhoto=null, tempDayPhotos=[], selectedPayers=[], selectedCat='餐飲';
 
         // --- CORE ---
@@ -530,6 +611,14 @@
             vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
             gistId = localStorage.getItem('gist_id') || ""; gistToken = localStorage.getItem('gist_token') || "";
             mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
+            
+            // Migration for expenses to support paidBy/splitBy
+            expenses.forEach(e => {
+                if (!e.splitBy) {
+                    e.splitBy = (e.payer || "").split(',').filter(x=>x);
+                    e.paidBy = e.splitBy[0] || "我"; // Default to first person or me
+                }
+            });
         }
         function saveData() {
             localStorage.setItem('flights', JSON.stringify(flights));
@@ -623,8 +712,8 @@
             const g = guides.find(i => i.title === title);
             if(g) {
                 setTimeout(() => {
-                   document.getElementById(`guide-${g.id}`).scrollIntoView({behavior: "smooth", block: "center"});
-                   document.getElementById(`guide-${g.id}`).classList.add('animate-highlight');
+                    document.getElementById(`guide-${g.id}`).scrollIntoView({behavior: "smooth", block: "center"});
+                    document.getElementById(`guide-${g.id}`).classList.add('animate-highlight');
                 }, 300);
             }
         }
@@ -740,7 +829,7 @@
         function editFlight(id){ const f=flights.find(i=>i.id==id); if(f){document.getElementById('flight-id').value=f.id;document.getElementById('flight-dep').value=f.dep;document.getElementById('flight-arr').value=f.arr;document.getElementById('flight-code').value=f.code;document.getElementById('flight-date').value=f.date;document.getElementById('flight-time').value=f.time;document.getElementById('flight-url').value=f.url;openModal('flight-modal');} }
         function openFlightModal(){ ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); openModal('flight-modal'); }
 
-        // --- WALLET & CHARTS ---
+        // --- WALLET & CHARTS & SETTLEMENT ---
         function renderExpenses() {
             const list = document.getElementById('expense-list'); list.innerHTML = '';
             const rate = parseFloat(document.getElementById('exchange-rate').value);
@@ -750,9 +839,22 @@
             expenses.sort((a,b) => b.id - a.id).forEach(e => {
                 const cat = expenseCategories.find(c => c.id === e.cat) || expenseCategories[5];
                 const amt = parseFloat(e.amt);
-                if (e.payer === '公費') pfSpent += (e.curr === 'JPY' ? amt : amt / rate);
+                const paidBy = e.paidBy || e.payer.split(',')[0]; // fallback
+                if (paidBy === '公費') pfSpent += (e.curr === 'JPY' ? amt : amt / rate);
 
-                list.innerHTML += `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})"><div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid ${cat.icon}"></i></div><div class="flex-1"><div class="font-bold text-gray-700 text-sm truncate">${e.note || cat.id}</div><div class="text-[10px] text-gray-400">${e.payer}</div></div><div class="text-right"><div class="font-bold font-mono text-gray-800">${e.curr} ${amt.toLocaleString()}</div>${e.curr === 'JPY' ? `<div class="text-[10px] text-gray-400">≈ NT$ ${Math.round(amt * rate).toLocaleString()}</div>` : ''}</div></div>`;
+                const splitDisplay = e.splitBy && e.splitBy.length > 0 ? e.splitBy.join(', ') : (e.payer||"");
+
+                list.innerHTML += `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})">
+                    <div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid ${cat.icon}"></i></div>
+                    <div class="flex-1">
+                        <div class="font-bold text-gray-700 text-sm truncate">${e.note || cat.id}</div>
+                        <div class="text-[10px] text-gray-400"><span class="font-bold text-fuji">${paidBy}</span> 先付 <i class="fa-solid fa-caret-right text-gray-300"></i> ${splitDisplay}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold font-mono text-gray-800">${e.curr} ${amt.toLocaleString()}</div>
+                        ${e.curr === 'JPY' ? `<div class="text-[10px] text-gray-400">≈ NT$ ${Math.round(amt * rate).toLocaleString()}</div>` : ''}
+                    </div>
+                </div>`;
             });
             
             const pfRemaining = pfTotal - pfSpent;
@@ -761,11 +863,18 @@
             document.getElementById('pf-remaining').className = `text-3xl font-mono font-bold tracking-tight ${pfRemaining < 0 ? 'text-red-300' : 'text-white'}`;
 
             const dash = document.getElementById('wallet-dashboard-container'); dash.innerHTML = '';
+            
+            // Calc total consumption per person (not who paid)
             payers.forEach(p => {
                 if (p === '公費') return;
-                let total = 0;
-                expenses.forEach(e => { if((e.payer||"").includes(p)) { const share = (e.curr==='JPY'?e.amt*rate:e.amt) / e.payer.split(',').length; total += share; } });
-                dash.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100"><div class="font-bold text-gray-700 text-sm mb-1">${p}</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${Math.round(total).toLocaleString()}</div></div>`;
+                let totalConsumed = 0;
+                expenses.forEach(e => { 
+                    if(e.splitBy && e.splitBy.includes(p)) {
+                         const amt = (e.curr==='JPY' ? e.amt*rate : e.amt);
+                         totalConsumed += amt / e.splitBy.length;
+                    }
+                });
+                dash.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100"><div class="font-bold text-gray-700 text-sm mb-1">${p} 消費</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${Math.round(totalConsumed).toLocaleString()}</div></div>`;
             });
             
             updateInlineCharts(rate);
@@ -790,13 +899,15 @@
                 options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // 2. Member Spending
+            // 2. Member Consumption (Spending share)
             const memberData = {};
             payers.forEach(p => memberData[p] = 0);
             expenses.forEach(e => {
-                const payList = (e.payer || "").split(',');
-                const amtPerPerson = (e.curr === 'JPY' ? e.amt * rate : e.amt) / payList.length;
-                payList.forEach(p => { if(memberData[p] !== undefined) memberData[p] += amtPerPerson; });
+                const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
+                if(e.splitBy && e.splitBy.length > 0) {
+                     const share = amt / e.splitBy.length;
+                     e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; });
+                }
             });
             
             const ctxMem = document.getElementById('inlineMemberChart').getContext('2d');
@@ -805,25 +916,176 @@
                 type: 'bar',
                 data: {
                     labels: Object.keys(memberData),
-                    datasets: [{ label: 'NT$ 支出', data: Object.values(memberData), backgroundColor: '#7b90d2', borderRadius: 4 }]
+                    datasets: [{ label: 'NT$ 消費', data: Object.values(memberData), backgroundColor: '#7b90d2', borderRadius: 4 }]
                 },
                 options: { maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }, plugins: { legend: { display: false } } }
             });
         }
         
+        // --- SETTLEMENT LOGIC ---
+        function calculateSettlement() {
+            const rate = parseFloat(document.getElementById('exchange-rate').value);
+            const balances = {};
+            payers.forEach(p => balances[p] = 0);
+
+            // Calculate Net Balance: (Amount Paid) - (Fair Share Consumed)
+            expenses.forEach(e => {
+                const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
+                const payer = e.paidBy || "我";
+                const consumers = e.splitBy || [];
+                
+                if (balances[payer] !== undefined) balances[payer] += amt; // Payer gets credit
+                
+                if (consumers.length > 0) {
+                    const share = amt / consumers.length;
+                    consumers.forEach(c => {
+                        if (balances[c] !== undefined) balances[c] -= share; // Consumer gets debit
+                    });
+                }
+            });
+
+            // Manual Debts (IOUs)
+            manualDebts.forEach(d => {
+                if (balances[d.creditor] !== undefined) balances[d.creditor] += parseFloat(d.amount);
+                if (balances[d.debtor] !== undefined) balances[d.debtor] -= parseFloat(d.amount);
+            });
+
+            // Exclude "Public Fund" from personal settlement suggestions (usually it's a sunk cost or managed separately)
+            // But if "Public Fund" has a negative balance (someone paid for public fund), or positive (public fund paid for private), it gets complex.
+            // Simplified: Ignore "Public Fund" balance for P2P transfers unless needed.
+            
+            // Generate Transfers
+            let debtors = [];
+            let creditors = [];
+            
+            Object.keys(balances).forEach(p => {
+                if(p === '公費') return; // Skip public fund in P2P logic
+                if (balances[p] < -1) debtors.push({ name: p, amount: balances[p] }); // Tolerance of 1 dollar
+                else if (balances[p] > 1) creditors.push({ name: p, amount: balances[p] });
+            });
+
+            debtors.sort((a, b) => a.amount - b.amount); // Ascending (most negative first)
+            creditors.sort((a, b) => b.amount - a.amount); // Descending (most positive first)
+
+            let planHtml = '';
+            let i = 0, j = 0;
+            while (i < debtors.length && j < creditors.length) {
+                let debt = Math.abs(debtors[i].amount);
+                let credit = creditors[j].amount;
+                let transfer = Math.min(debt, credit);
+                
+                planHtml += `<div class="flex justify-between border-b border-blue-200 pb-1 mb-1 last:border-0"><span class="font-bold text-gray-700">${debtors[i].name}</span> <span class="text-gray-400 text-xs mx-1">給</span> <span class="font-bold text-gray-700">${creditors[j].name}</span> <span class="font-mono font-bold text-blue-600">NT$${Math.round(transfer)}</span></div>`;
+                
+                debtors[i].amount += transfer;
+                creditors[j].amount -= transfer;
+                
+                if (Math.abs(debtors[i].amount) < 1) i++;
+                if (creditors[j].amount < 1) j++;
+            }
+            
+            if (!planHtml) planHtml = '<div class="text-center text-gray-400">目前帳目平衡，無需轉帳。</div>';
+            
+            document.getElementById('settlement-plan').innerHTML = planHtml;
+            document.getElementById('settlement-details').innerHTML = Object.entries(balances).map(([k,v]) => `<div>${k}: ${v>=0?'+':''}${Math.round(v)}</div>`).join('');
+
+            // Chart
+            const ctxSet = document.getElementById('settlementChart').getContext('2d');
+            if(settlementChart) settlementChart.destroy();
+            settlementChart = new Chart(ctxSet, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(balances),
+                    datasets: [{ 
+                        label: '淨餘額 (NT$)', 
+                        data: Object.values(balances), 
+                        backgroundColor: Object.values(balances).map(v => v >= 0 ? '#bccc9a' : '#f8c3cd'),
+                        borderRadius: 4 
+                    }]
+                },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
+            });
+
+            openModal('settlement-modal');
+        }
+
         function openPublicFundModal() { document.getElementById('pf-total-input').value = publicFundConfig.total || 0; openModal('pf-settings-modal'); }
         function savePublicFundSettings() { publicFundConfig.total = parseFloat(document.getElementById('pf-total-input').value) || 0; saveData(); renderExpenses(); closeModal('pf-settings-modal'); }
 
         function openExpenseModal(id=null) { 
+            // Render Categories
             document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
-            document.getElementById('ex-payer-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join('');
+            
+            // Render Payers Options for Datalist
+            document.getElementById('payer-options').innerHTML = payers.map(p => `<option value="${p}">`).join('');
+            
+            // Render Split Buttons
+            renderSplitButtons();
+
             document.getElementById('btn-delete-expense').classList.add('hidden');
-            if(id) { const ex = expenses.find(e => e.id == id); document.getElementById('ex-id').value = ex.id; document.getElementById('ex-amount').value = ex.amt; document.getElementById('ex-currency').value = ex.curr; document.getElementById('ex-note').value = ex.note; selectedCat = ex.cat; selectedPayers = (ex.payer || "").split(','); document.getElementById('btn-delete-expense').classList.remove('hidden'); if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} }
-            else if (!id && !document.getElementById('ex-note').value) { document.getElementById('ex-id').value = ''; document.getElementById('ex-amount').value = ''; document.getElementById('ex-note').value = ''; selectedPayers = ['我']; }
+            
+            if(id) { 
+                const ex = expenses.find(e => e.id == id); 
+                document.getElementById('ex-id').value = ex.id; 
+                document.getElementById('ex-amount').value = ex.amt; 
+                document.getElementById('ex-currency').value = ex.curr; 
+                document.getElementById('ex-note').value = ex.note; 
+                document.getElementById('ex-paid-by').value = ex.paidBy || "我";
+                selectedCat = ex.cat; 
+                selectedPayers = ex.splitBy || []; 
+                document.getElementById('btn-delete-expense').classList.remove('hidden'); 
+                if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} 
+            }
+            else if (!id && !document.getElementById('ex-note').value) { 
+                document.getElementById('ex-id').value = ''; 
+                document.getElementById('ex-amount').value = ''; 
+                document.getElementById('ex-note').value = ''; 
+                document.getElementById('ex-paid-by').value = "我";
+                selectedPayers = payers.filter(p => p !== '公費'); // Default split: everyone except public fund
+            }
+            
+            renderSplitButtons(); // Re-render to show selection
             openModal('expense-modal');
         }
-        function togglePayer(p) { if(selectedPayers.includes(p)) selectedPayers=selectedPayers.filter(x=>x!==p); else selectedPayers.push(p); if(selectedPayers.length===0)selectedPayers=[p]; openExpenseModal(document.getElementById('ex-id').value||null); }
-        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt) return; const ex={id:id?parseInt(id):Date.now(), cat:selectedCat, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, payer:selectedPayers.join(','), photo:currentPhotoBase64}; if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
+
+        function renderSplitButtons() {
+            document.getElementById('ex-split-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join('');
+        }
+        
+        function togglePayer(p) { if(selectedPayers.includes(p)) selectedPayers=selectedPayers.filter(x=>x!==p); else selectedPayers.push(p); renderSplitButtons(); }
+        function toggleAllPayers() {
+            const allHumanPayers = payers.filter(p => p !== '公費');
+            if (selectedPayers.length === allHumanPayers.length) selectedPayers = [];
+            else selectedPayers = [...allHumanPayers];
+            renderSplitButtons();
+        }
+
+        function saveExpense() { 
+            const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); 
+            if(!amt) return; 
+            
+            // Handle Payer Input (If new name typed, add to payers)
+            let paidBy = document.getElementById('ex-paid-by').value.trim();
+            if(!paidBy) paidBy = "我";
+            if(!payers.includes(paidBy)) {
+                payers.push(paidBy); // Auto add new member
+                // Refresh splitter list in background logic, will show up next time
+            }
+
+            const ex = {
+                id:id?parseInt(id):Date.now(), 
+                cat:selectedCat, 
+                note:document.getElementById('ex-note').value, 
+                curr:document.getElementById('ex-currency').value, 
+                amt, 
+                paidBy: paidBy,
+                splitBy: selectedPayers.length > 0 ? selectedPayers : [paidBy], // If no splitters, assume personal expense
+                payer: selectedPayers.join(','), // Legacy support
+                photo: currentPhotoBase64
+            }; 
+            
+            if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} 
+            saveData(); renderExpenses(); closeModal('expense-modal'); 
+        }
         function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }
 
         // --- SHOPPING (V18 ENHANCED) ---
@@ -890,13 +1152,12 @@
 
             if (action === 'expense') {
                 closeModal('shop-confirm-modal');
-                // Linkage: Category appended to note
                 const categoryNote = s.category ? ` (${s.category})` : '';
                 document.getElementById('ex-note').value = s.name + categoryNote;
                 document.getElementById('ex-amount').value = s.price * s.qty;
                 selectedCat = '購物';
-                selectedPayers = ['我'];
-                openExpenseModal();
+                selectedPayers = ['我']; // Default split for shopping usually self, or change in modal
+                openExpenseModal(); // Let user confirm payer/split
                 s.done = true;
                 saveData(); renderShoppingList();
             } else if (action === 'done_only') {
