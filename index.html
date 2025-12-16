@@ -1011,41 +1011,53 @@
         function openPublicFundModal() { document.getElementById('pf-total-input').value = publicFundConfig.total || 0; openModal('pf-settings-modal'); }
         function savePublicFundSettings() { publicFundConfig.total = parseFloat(document.getElementById('pf-total-input').value) || 0; saveData(); renderExpenses(); closeModal('pf-settings-modal'); }
 
-        function openExpenseModal(id=null) { 
-            // Render Categories
-            document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
-            
-            // Render Payers Options for Datalist
-            document.getElementById('payer-options').innerHTML = payers.map(p => `<option value="${p}">`).join('');
-            
-            // Render Split Buttons
-            renderSplitButtons();
+        function openExpenseModal(id=null) {
+    // 1. 渲染類別圖示
+    document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => 
+        `<div onclick="selectedCat='${c.id}'; renderCatSelect()" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition transform active:scale-95 ${selectedCat===c.id ? 'ring-2 ring-offset-1 ring-black '+c.color : 'bg-gray-50 text-gray-300'}"><i class="fa-solid ${c.icon}"></i></div>`
+    ).join('');
+    
+    // 2. 確保墊付人選單已填入選項 (修復選單空白問題)
+    const payerSelect = document.getElementById('ex-payer-select');
+    payerSelect.innerHTML = state.payers.map(p => `<option value="${p}">${p}</option>`).join('');
 
-            document.getElementById('btn-delete-expense').classList.add('hidden');
-            
-            if(id) { 
-                const ex = expenses.find(e => e.id == id); 
-                document.getElementById('ex-id').value = ex.id; 
-                document.getElementById('ex-amount').value = ex.amt; 
-                document.getElementById('ex-currency').value = ex.curr; 
-                document.getElementById('ex-note').value = ex.note; 
-                document.getElementById('ex-paid-by').value = ex.paidBy || "我";
-                selectedCat = ex.cat; 
-                selectedPayers = ex.splitBy || []; 
-                document.getElementById('btn-delete-expense').classList.remove('hidden'); 
-                if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} 
-            }
-            else if (!id && !document.getElementById('ex-note').value) { 
-                document.getElementById('ex-id').value = ''; 
-                document.getElementById('ex-amount').value = ''; 
-                document.getElementById('ex-note').value = ''; 
-                document.getElementById('ex-paid-by').value = "我";
-                selectedPayers = payers.filter(p => p !== '公費'); // Default split: everyone except public fund
-            }
-            
-            renderSplitButtons(); // Re-render to show selection
-            openModal('expense-modal');
+    // 3. 判斷是「編輯」還是「新增」
+    if (id) {
+        // --- 編輯模式 ---
+        const ex = state.expenses.find(e => e.id === id);
+        if (ex) {
+            document.getElementById('ex-id').value = ex.id;
+            document.getElementById('ex-amount').value = ex.amt;
+            document.getElementById('ex-currency').value = ex.curr;
+            document.getElementById('ex-note').value = ex.note;
+            selectedCat = ex.cat;
+            payerSelect.value = ex.paidBy; // 設定選單值
+            selectedSplitters = [...ex.splitWith];
+            // 載入照片邏輯 (若有)
+            currentPhotoBase64 = ex.photo;
+            document.getElementById('ex-photo-msg').innerText = ex.photo ? '已有照片' : '';
+            document.getElementById('btn-delete-expense').classList.remove('hidden');
         }
+    } else {
+        // --- 新增模式 (修復：點擊記一筆時強制清空) ---
+        document.getElementById('ex-id').value = '';
+        document.getElementById('ex-amount').value = '';
+        document.getElementById('ex-note').value = '';
+        document.getElementById('ex-currency').value = 'JPY';
+        selectedCat = '餐飲'; // 預設分類
+        payerSelect.value = '我'; // 預設墊付人
+        selectedSplitters = state.payers.filter(p => p !== '公費'); // 預設全員分攤
+        
+        currentPhotoBase64 = null;
+        document.getElementById('ex-photo-msg').innerText = '';
+        document.getElementById('btn-delete-expense').classList.add('hidden');
+    }
+    
+    // 4. 刷新畫面選取狀態
+    renderCatSelect();
+    renderSplitters();
+    openModal('expense-modal');
+}
 
         function renderSplitButtons() {
             document.getElementById('ex-split-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join('');
