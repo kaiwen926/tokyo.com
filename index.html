@@ -309,7 +309,7 @@
         </section>
     </main>
 
-    <!-- EXPENSE MODAL (Revamped) -->
+    <!-- EXPENSE MODAL (Revamped Fixed) -->
     <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#fffdf9] w-full max-w-sm rounded-[32px] p-6 shadow-2xl relative hand-card border border-white">
             <button onclick="closeModal('expense-modal')" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
@@ -328,12 +328,12 @@
             <!-- Category -->
             <div class="flex justify-between mb-4 overflow-x-auto pb-2 no-scrollbar gap-2" id="expense-categories"></div>
 
-            <!-- Payer (Who paid) -->
+            <!-- Payer (Who paid) - FIXED: Dropdown -->
             <div class="mb-4 bg-fuji-light/30 p-3 rounded-xl border border-fuji/10">
                 <label class="block text-xs text-fuji mb-1 font-bold ml-1"><i class="fa-solid fa-hand-holding-dollar mr-1"></i>墊付人 (誰先出錢)</label>
                 <div class="relative">
-                    <input type="text" id="ex-paid-by" list="payer-options" class="w-full bg-white rounded-lg p-2 text-sm font-bold text-gray-700 border border-fuji/20 focus:border-fuji outline-none" placeholder="輸入名字或從清單選...">
-                    <datalist id="payer-options"></datalist>
+                    <select id="ex-paid-by" class="w-full bg-white rounded-lg p-2 text-sm font-bold text-gray-700 border border-fuji/20 focus:border-fuji outline-none appearance-none"></select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"><i class="fa-solid fa-chevron-down text-xs"></i></div>
                 </div>
             </div>
 
@@ -535,8 +535,44 @@
         </div>
     </div>
 
-    <!-- SHOPPING MODAL -->
-    <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card"><button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="font-bold mb-3 text-center">購物項目</h3><input type="hidden" id="shop-id"><input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold"><div class="mb-3"><label class="text-xs text-gray-400">分類 (可直接輸入)</label><input type="text" id="shop-category" list="cat-options" placeholder="例: 藥妝, Outlet, 超商..." class="w-full border rounded p-2 text-sm bg-white"><datalist id="cat-options"><option value="藥妝"><option value="Outlet"><option value="便利商店"><option value="伴手禮"><option value="電器"><option value="服飾"></datalist></div><div class="flex gap-2 mb-3"><div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div><div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div></div><div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white"><input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })"><div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div><img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded"></div><div class="flex gap-2"><button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button><button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div></div>
+    <!-- SHOPPING MODAL (FIXED TAGS) -->
+    <div id="shopping-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card">
+            <button onclick="closeModal('shopping-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="font-bold mb-3 text-center">購物項目</h3>
+            <input type="hidden" id="shop-id">
+            <input type="text" id="shop-name" placeholder="商品名稱" class="w-full mb-3 border-b bg-transparent p-2 font-bold">
+            
+            <div class="mb-3">
+                <label class="text-xs text-gray-400">分類 (可直接輸入)</label>
+                <input type="text" id="shop-category" placeholder="例: 藥妝, Outlet, 超商..." class="w-full border rounded p-2 text-sm bg-white mb-2">
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setShopCat('藥妝')" class="text-xs bg-pink-50 text-pink-500 px-2 py-1 rounded-full border border-pink-100">藥妝</button>
+                    <button onclick="setShopCat('Outlet')" class="text-xs bg-blue-50 text-blue-500 px-2 py-1 rounded-full border border-blue-100">Outlet</button>
+                    <button onclick="setShopCat('便利商店')" class="text-xs bg-green-50 text-green-500 px-2 py-1 rounded-full border border-green-100">便利商店</button>
+                    <button onclick="setShopCat('伴手禮')" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full border border-red-100">伴手禮</button>
+                    <button onclick="setShopCat('電器')" class="text-xs bg-gray-50 text-gray-500 px-2 py-1 rounded-full border border-gray-100">電器</button>
+                    <button onclick="setShopCat('服飾')" class="text-xs bg-purple-50 text-purple-500 px-2 py-1 rounded-full border border-purple-100">服飾</button>
+                </div>
+            </div>
+
+            <div class="flex gap-2 mb-3">
+                <div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div>
+                <div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div>
+            </div>
+            
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white">
+                <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })">
+                <div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div>
+                <img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded">
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button>
+                <button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button>
+            </div>
+        </div>
+    </div>
 
     <!-- SHOPPING CONFIRM MODAL -->
     <div id="shop-confirm-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
@@ -951,8 +987,6 @@
             });
 
             // Exclude "Public Fund" from personal settlement suggestions (usually it's a sunk cost or managed separately)
-            // But if "Public Fund" has a negative balance (someone paid for public fund), or positive (public fund paid for private), it gets complex.
-            // Simplified: Ignore "Public Fund" balance for P2P transfers unless needed.
             
             // Generate Transfers
             let debtors = [];
@@ -1015,12 +1049,10 @@
             // Render Categories
             document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
             
-            // Render Payers Options for Datalist
-            document.getElementById('payer-options').innerHTML = payers.map(p => `<option value="${p}">`).join('');
+            // Render Payers Options for Dropdown (FIXED)
+            const payerSelect = document.getElementById('ex-paid-by');
+            payerSelect.innerHTML = payers.map(p => `<option value="${p}">${p}</option>`).join('');
             
-            // Render Split Buttons
-            renderSplitButtons();
-
             document.getElementById('btn-delete-expense').classList.add('hidden');
             
             if(id) { 
@@ -1029,22 +1061,37 @@
                 document.getElementById('ex-amount').value = ex.amt; 
                 document.getElementById('ex-currency').value = ex.curr; 
                 document.getElementById('ex-note').value = ex.note; 
-                document.getElementById('ex-paid-by').value = ex.paidBy || "我";
+                
+                // Select value for dropdown
+                payerSelect.value = ex.paidBy || "我";
+
                 selectedCat = ex.cat; 
                 selectedPayers = ex.splitBy || []; 
                 document.getElementById('btn-delete-expense').classList.remove('hidden'); 
                 if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} 
             }
-            else if (!id && !document.getElementById('ex-note').value) { 
+            else { 
+                // FORCE RESET for new entry (FIXED)
                 document.getElementById('ex-id').value = ''; 
                 document.getElementById('ex-amount').value = ''; 
                 document.getElementById('ex-note').value = ''; 
-                document.getElementById('ex-paid-by').value = "我";
-                selectedPayers = payers.filter(p => p !== '公費'); // Default split: everyone except public fund
+                document.getElementById('ex-currency').value = 'JPY';
+                
+                payerSelect.value = "我";
+                if (!payers.includes("我") && payers.length > 0) payerSelect.value = payers[0];
+
+                selectedPayers = payers.filter(p => p !== '公費'); 
+                selectedCat = '餐飲'; // Reset category default
+                currentPhotoBase64 = null;
+                document.getElementById('ex-photo-preview-mini').src = "";
+                document.getElementById('ex-photo-preview-mini').classList.add('hidden');
+                
+                // Re-render categories to show correct selection
+                document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
             }
             
-            renderSplitButtons(); // Re-render to show selection
-            openModal('expense-modal');
+            renderSplitButtons(); 
+            openModal('expense-modal'); 
         }
 
         function renderSplitButtons() {
@@ -1063,13 +1110,8 @@
             const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); 
             if(!amt) return; 
             
-            // Handle Payer Input (If new name typed, add to payers)
-            let paidBy = document.getElementById('ex-paid-by').value.trim();
-            if(!paidBy) paidBy = "我";
-            if(!payers.includes(paidBy)) {
-                payers.push(paidBy); // Auto add new member
-                // Refresh splitter list in background logic, will show up next time
-            }
+            // Handle Payer Input from Dropdown
+            let paidBy = document.getElementById('ex-paid-by').value;
 
             const ex = {
                 id:id?parseInt(id):Date.now(), 
@@ -1184,6 +1226,7 @@
         function deleteShoppingItem(){ if(confirm("Del?")){shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value);saveData();renderShoppingList();closeModal('shopping-modal');} }
         function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
         function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
+        function setShopCat(val) { document.getElementById('shop-category').value = val; }
         
         function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map(n=>`<div class="bg-gray-50 p-2 border rounded text-sm">${n}</div>`).join(''); openModal('manage-shop-lists-modal'); }
         function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){shoppingOwners.push(n);saveData();openShopOwnerModal();renderShoppingList();} }
@@ -1247,3 +1290,4 @@
     </script>
 </body>
 </html>
+
