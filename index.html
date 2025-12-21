@@ -266,14 +266,26 @@
                 <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-fuji/20">
                     <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-fuji">🎙️</div>
                     <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> AI 隨身翻譯 (Gemini/ChatGPT)</h3>
-                    <div class="relative mb-4">
+               <div class="relative mb-4">
                         <textarea id="trans-input" class="w-full h-32 p-3 pr-12 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="點麥克風說話，或直接輸入文字..."></textarea>
-                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95" title="語音輸入"><i class="fa-solid fa-microphone"></i></button>
-                        <div id="voice-wave" class="absolute right-14 bottom-4 hidden voice-wave"><span></span><span></span><span></span><span></span></div>
+                        
+                                  <div id="trans-photo-overlay" class="hidden absolute inset-0 bg-[#f9f7f2] rounded-xl z-20 flex flex-col items-center justify-center p-2 border border-matcha/30">
+                             <img id="trans-photo-img" src="" class="max-h-full max-w-full object-contain rounded shadow-sm cursor-zoom-in" onclick="viewPhoto(this.src)">
+                             <button onclick="closeTransPhoto()" class="absolute top-2 right-2 bg-white/80 rounded-full w-8 h-8 text-gray-500 shadow hover:text-red-500 transition z-30"><i class="fa-solid fa-times"></i></button>
+                             <div class="absolute bottom-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm pointer-events-none"><i class="fa-solid fa-image"></i> 圖片預覽模式</div>
+                        </div>
+
+                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95 z-10" title="語音輸入"><i class="fa-solid fa-microphone"></i></button>
+                        <div id="voice-wave" class="absolute right-14 bottom-4 hidden voice-wave z-10"><span></span><span></span><span></span><span></span></div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="openGoogleTranslate()" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> 文字翻譯</button>
-                        <a href="https://chatgpt.com/" target="_blank" class="bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2"><i class="fa-solid fa-robot"></i> ChatGPT</a>
+                  
+                        <div class="relative bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2 cursor-pointer overflow-hidden group">
+                            <i class="fa-solid fa-camera group-hover:scale-110 transition"></i> 拍照/圖片
+                            <!-- 隱藏的檔案輸入框 -->
+                            <input type="file" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="handlePhotoTranslate(this)">
+                        </div>
                     </div>
                 </div>
 
@@ -807,7 +819,21 @@
             recognition.start();
         }
         function openGoogleTranslate() { const txt = document.getElementById('trans-input').value; window.open(`https://translate.google.com/?sl=zh-TW&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
-        
+        // --- 新增功能: 相機翻譯預覽 ---
+        function handlePhotoTranslate(input) {
+            // 使用既有的 processImage 函式來處理圖片壓縮與轉碼
+            processImage(input, (base64) => {
+                document.getElementById('trans-photo-img').src = base64;
+                document.getElementById('trans-photo-overlay').classList.remove('hidden');
+                // 清空 input 讓同一張圖可以重複選取
+                input.value = ''; 
+            });
+        }
+
+        function closeTransPhoto() {
+            document.getElementById('trans-photo-overlay').classList.add('hidden');
+            document.getElementById('trans-photo-img').src = "";
+        }
         // --- NEW: Speak Function ---
         function speak(text) {
             window.speechSynthesis.cancel();
