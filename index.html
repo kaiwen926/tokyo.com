@@ -21,7 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
@@ -263,51 +263,56 @@
         <section id="view-info" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                 <!-- AI & Translate -->
-                <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-fuji/20">
+       <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-fuji/20">
                     <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-fuji">🎙️</div>
-                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> AI 隨身翻譯 (Gemini/ChatGPT)</h3>
-               <div class="relative mb-4">
-                        <textarea id="trans-input" class="w-full h-32 p-3 pr-12 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="點麥克風說話，或直接輸入文字..."></textarea>
-                        
-                                  <div id="trans-photo-overlay" class="hidden absolute inset-0 bg-[#f9f7f2] rounded-xl z-20 flex flex-col items-center justify-center p-2 border border-matcha/30">
-                             <img id="trans-photo-img" src="" class="max-h-full max-w-full object-contain rounded shadow-sm cursor-zoom-in" onclick="viewPhoto(this.src)">
-                             <button onclick="closeTransPhoto()" class="absolute top-2 right-2 bg-white/80 rounded-full w-8 h-8 text-gray-500 shadow hover:text-red-500 transition z-30"><i class="fa-solid fa-times"></i></button>
-                             <div class="absolute bottom-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm pointer-events-none"><i class="fa-solid fa-image"></i> 圖片預覽模式</div>
-                        </div>
-
-                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95 z-10" title="語音輸入"><i class="fa-solid fa-microphone"></i></button>
-                        <div id="voice-wave" class="absolute right-14 bottom-4 hidden voice-wave z-10"><span></span><span></span><span></span><span></span></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="openGoogleTranslate()" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> 文字翻譯</button>
-                  
-                        <div class="relative bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2 cursor-pointer overflow-hidden group">
-                            <i class="fa-solid fa-camera group-hover:scale-110 transition"></i> 拍照/圖片
-                            <!-- 隱藏的檔案輸入框 -->
-                            <input type="file" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="handlePhotoTranslate(this)">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Phrase Book (Survival Cards) -->
-                <div class="hand-card p-6 border-l-8 border-sakura/20">
-                    <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-comment-dots"></i> 生存日語字卡</h3>
+                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> 隨身翻譯</h3>
                     
-                    <!-- Categories -->
-                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-3">
-                        <button onclick="renderPhrases('food')" class="phrase-btn active whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-sakura hover:text-white hover:border-sakura transition" data-cat="food">🍱 食</button>
-                        <button onclick="renderPhrases('vege')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-veggie hover:text-white hover:border-veggie transition" data-cat="vege">🥗 素食</button>
-                        <button onclick="renderPhrases('shopping')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-400 hover:text-white hover:border-red-400 transition" data-cat="shopping">👕 衣 (購物)</button>
-                        <button onclick="renderPhrases('stay')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-yellow-400 hover:text-white hover:border-yellow-400 transition" data-cat="stay">🏠 住</button>
-                        <button onclick="renderPhrases('transport')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-400 hover:text-white hover:border-blue-400 transition" data-cat="transport">🚅 行</button>
+                    <div class="relative mb-4">
+                        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="輸入文字..."></textarea>
+                        
+                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white border border-fuji/20 rounded-full shadow-md flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95 z-10">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
                     </div>
 
-                    <!-- Phrase List -->
-                    <div id="phrase-container" class="space-y-2 max-h-60 overflow-y-auto">
-                        <!-- Content will be injected by JS -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="https://translate.google.com/?sl=auto&tl=ja&op=images" target="_blank" class="bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-camera"></i> 圖片/鏡頭翻譯
+                        </a>
+                        
+                        <button onclick="openGoogleTranslate()" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-google"></i> 文字翻譯
+                        </button>
                     </div>
+                    <p class="text-[10px] text-gray-400 mt-2 text-center">
+                        <i class="fa-solid fa-circle-info"></i> 點擊「圖片/鏡頭翻譯」可直接使用 Google 智慧鏡頭功能
+                    </p>
                 </div>
-            </div>
+              
+                <!-- Phrase Book (Survival Cards) -->
+                <details class="hand-card p-0 border-l-8 border-sakura/20 group open:pb-4 transition-all duration-300">
+                    <summary class="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 transition">
+                        <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2">
+                            <i class="fa-solid fa-comment-dots"></i> 生存日語字卡
+                        </h3>
+                        <span class="text-sakura/50 group-open:rotate-180 transition-transform duration-300">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </span>
+                    </summary>
+                    
+                    <div class="px-6 animate-slide-in">
+                        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-3">
+                            <button onclick="renderPhrases('food')" class="phrase-btn active whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-sakura hover:text-white hover:border-sakura transition" data-cat="food">🍱 食</button>
+                            <button onclick="renderPhrases('vege')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-veggie hover:text-white hover:border-veggie transition" data-cat="vege">🥗 素食</button>
+                            <button onclick="renderPhrases('shopping')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-400 hover:text-white hover:border-red-400 transition" data-cat="shopping">👕 衣 (購物)</button>
+                            <button onclick="renderPhrases('stay')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-yellow-400 hover:text-white hover:border-yellow-400 transition" data-cat="stay">🏠 住</button>
+                            <button onclick="renderPhrases('transport')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-400 hover:text-white hover:border-blue-400 transition" data-cat="transport">🚅 行</button>
+                        </div>
+
+                        <div id="phrase-container" class="space-y-2 max-h-60 overflow-y-auto">
+                            </div>
+                    </div>
+                </details>
 
            <!-- Tokyo Transport Map -->
             <div class="mt-6 mb-6">
@@ -809,39 +814,46 @@
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-        // --- TRANSLATE & VOICE & PHRASES ---
+   // --- TRANSLATE & VOICE & PHRASES (極簡版) ---
+        
+        // 1. 語音講完直接翻
         function toggleVoiceInput() {
-            if (!('webkitSpeechRecognition' in window)) return alert("不支援語音");
-            const recognition = new webkitSpeechRecognition(); recognition.lang = 'zh-TW';
-            recognition.onstart = () => { document.getElementById('btn-mic').classList.add('text-red-500'); document.getElementById('voice-wave').classList.remove('hidden'); };
-            recognition.onend = () => { document.getElementById('btn-mic').classList.remove('text-red-500'); document.getElementById('voice-wave').classList.add('hidden'); };
-            recognition.onresult = (e) => { document.getElementById('trans-input').value += e.results[0][0].transcript; };
+            if (!('webkitSpeechRecognition' in window)) return alert("您的瀏覽器不支援語音 (請用 Chrome/Safari)");
+            
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'auto'; // 自動偵測，或設 'zh-TW'
+            
+            const btn = document.getElementById('btn-mic');
+            const icon = btn.querySelector('i');
+            
+            recognition.onstart = () => { 
+                btn.classList.add('bg-red-500', 'text-white', 'animate-pulse');
+                icon.className = 'fa-solid fa-microphone-lines'; // 變換圖示
+                document.getElementById('trans-input').placeholder = "正在聆聽... 請說話";
+            };
+            
+            recognition.onend = () => { 
+                btn.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
+                icon.className = 'fa-solid fa-microphone'; // 恢復圖示
+                document.getElementById('trans-input').placeholder = "輸入文字或點擊麥克風...";
+            };
+            
+            recognition.onresult = (e) => { 
+                const text = e.results[0][0].transcript;
+                document.getElementById('trans-input').value = text;
+                // 收到文字後，直接跳轉 Google 翻譯
+                openGoogleTranslate(text);
+            };
+            
             recognition.start();
         }
-        function openGoogleTranslate() { const txt = document.getElementById('trans-input').value; window.open(`https://translate.google.com/?sl=zh-TW&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
-        // --- 新增功能: 相機翻譯預覽 ---
-        function handlePhotoTranslate(input) {
-            // 使用既有的 processImage 函式來處理圖片壓縮與轉碼
-            processImage(input, (base64) => {
-                document.getElementById('trans-photo-img').src = base64;
-                document.getElementById('trans-photo-overlay').classList.remove('hidden');
-                // 清空 input 讓同一張圖可以重複選取
-                input.value = ''; 
-            });
-        }
 
-        function closeTransPhoto() {
-            document.getElementById('trans-photo-overlay').classList.add('hidden');
-            document.getElementById('trans-photo-img').src = "";
-        }
-        // --- NEW: Speak Function ---
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP'; 
-            utterance.rate = 0.8;
-            utterance.pitch = 1;
-            window.speechSynthesis.speak(utterance);
+        // 2. 執行翻譯 (通用函式)
+        function openGoogleTranslate(text = null) { 
+            const txt = text || document.getElementById('trans-input').value; 
+            if(!txt) return alert("沒有文字可以翻譯");
+            // 直接打開 Google 翻譯頁面 (自動偵測 -> 翻譯成日文)
+            window.open(`https://translate.google.com/?sl=auto&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); 
         }
 
         // --- MODIFIED: Render Phrases with Speaker Icon ---
