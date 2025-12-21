@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/2200/2200326.png">
 
-    <title>一起旅行吧 </title>
+    <title>一起旅行吧</title>
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,6 +78,9 @@
         .drag-handle:active { cursor: grabbing; background-color: rgba(0,0,0,0.05); }
         .meal-clickable:active { background-color: #f3f4f6; border-radius: 4px; }
         .guide-link { color: #bccc9a; font-weight: bold; text-decoration: underline; text-decoration-style: dotted; cursor: pointer; }
+        
+        /* Map specific styles */
+        .phrase-btn.active { background-color: #7b90d2; color: white; border-color: #7b90d2; }
     </style>
 </head>
 <body>
@@ -206,38 +209,38 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <!-- Must Eat -->
                 <div class="hand-card p-6 bg-[#fffdf0] relative border-l-8 border-[#fffdf0]">
-                     <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
-                     <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
+                      <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-12">🍜</div>
+                      <div class="flex justify-between items-center mb-4 border-b border-dashed border-gray-300 pb-2">
                         <h3 class="text-xl font-bold text-pencil handwritten flex items-center gap-2"><i class="fa-solid fa-utensils text-matcha"></i> 必吃清單</h3>
                         <button onclick="openMustEatModal()" class="text-xs bg-matcha/10 text-green-700 px-3 py-1.5 rounded-lg border border-matcha/30 shadow-sm hover:bg-matcha hover:text-white transition font-bold">新增/編輯</button>
-                     </div>
-                     <div id="must-eat-list" class="space-y-3"></div>
+                      </div>
+                      <div id="must-eat-list" class="space-y-3"></div>
                 </div>
 
                 <!-- Shopping -->
                 <div class="hand-card p-0 bg-white relative border-l-8 border-white overflow-hidden flex flex-col" id="shopping-card">
-                     <div class="p-6 pb-2">
-                         <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
-                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-xl font-bold text-pencil handwritten flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-red-400"></i> 購物清單</h3>
-                            <div class="flex gap-2">
-                                <button onclick="openShopOwnerModal()" class="text-xs bg-gray-50 text-gray-500 px-3 py-1.5 rounded-lg border border-gray-100 hover:bg-gray-200 transition font-bold shadow-sm" title="管理購物者"><i class="fa-solid fa-user-pen"></i></button>
-                                <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold shadow-sm">新增</button>
-                            </div>
-                         </div>
-                         <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2 mb-2">
+                      <div class="p-6 pb-2">
+                          <div class="absolute -right-2 -top-2 text-4xl opacity-20 rotate-[-10]">🛍️</div>
+                          <div class="flex justify-between items-center mb-2">
+                             <h3 class="text-xl font-bold text-pencil handwritten flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-red-400"></i> 購物清單</h3>
+                             <div class="flex gap-2">
+                                 <button onclick="openShopOwnerModal()" class="text-xs bg-gray-50 text-gray-500 px-3 py-1.5 rounded-lg border border-gray-100 hover:bg-gray-200 transition font-bold shadow-sm" title="管理購物者"><i class="fa-solid fa-user-pen"></i></button>
+                                 <button onclick="openShoppingModal()" class="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-400 hover:text-white transition font-bold shadow-sm">新增</button>
+                             </div>
+                          </div>
+                          <div class="flex justify-between items-center bg-gray-50 rounded-lg p-2 mb-2">
                              <button onclick="prevShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                              <div class="text-center">
                                  <span id="shop-owner-name" class="font-bold text-gray-700 handwritten text-lg block"></span>
                                  <div id="shop-owner-dots" class="flex justify-center gap-1 mt-1 h-2"></div>
                              </div>
                              <button onclick="nextShopList()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 shadow-sm flex items-center justify-center active:scale-95"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                         </div>
-                     </div>
-                     <div id="shopping-swipe-area" class="flex-1 p-6 pt-0 min-h-[300px] touch-pan-y">
-                         <!-- Categories Render Here -->
-                         <div id="shopping-list-container" class="space-y-4 animate-slide-in"></div>
-                     </div>
+                          </div>
+                      </div>
+                      <div id="shopping-swipe-area" class="flex-1 p-6 pt-0 min-h-[300px] touch-pan-y">
+                          <!-- Categories Render Here -->
+                          <div id="shopping-list-container" class="space-y-4 animate-slide-in"></div>
+                      </div>
                 </div>
                 
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
@@ -259,9 +262,10 @@
         <!-- INFO SECTION -->
         <section id="view-info" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                <!-- AI & Translate -->
                 <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-fuji/20">
                     <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-fuji">🎙️</div>
-                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> AI 隨身翻譯</h3>
+                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> AI 隨身翻譯 (Gemini/ChatGPT)</h3>
                     <div class="relative mb-4">
                         <textarea id="trans-input" class="w-full h-32 p-3 pr-12 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="點麥克風說話，或直接輸入文字..."></textarea>
                         <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95" title="語音輸入"><i class="fa-solid fa-microphone"></i></button>
@@ -269,10 +273,54 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <button onclick="openGoogleTranslate()" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> 文字翻譯</button>
-                        <a href="https://translate.google.com/?op=images" target="_blank" class="bg-white text-gray-600 border border-gray-200 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition flex items-center justify-center gap-2"><i class="fa-solid fa-camera"></i> 相機翻譯</a>
+                        <a href="https://chatgpt.com/" target="_blank" class="bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2"><i class="fa-solid fa-robot"></i> ChatGPT</a>
                     </div>
                 </div>
 
+                <!-- Phrase Book (Survival Cards) -->
+                <div class="hand-card p-6 border-l-8 border-sakura/20">
+                    <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-comment-dots"></i> 生存日語字卡</h3>
+                    
+                    <!-- Categories -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-3">
+                        <button onclick="renderPhrases('food')" class="phrase-btn active whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-sakura hover:text-white hover:border-sakura transition" data-cat="food">🍱 食</button>
+                        <button onclick="renderPhrases('vege')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-veggie hover:text-white hover:border-veggie transition" data-cat="vege">🥗 素食</button>
+                        <button onclick="renderPhrases('shopping')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-400 hover:text-white hover:border-red-400 transition" data-cat="shopping">👕 衣 (購物)</button>
+                        <button onclick="renderPhrases('stay')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-yellow-400 hover:text-white hover:border-yellow-400 transition" data-cat="stay">🏠 住</button>
+                        <button onclick="renderPhrases('transport')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-400 hover:text-white hover:border-blue-400 transition" data-cat="transport">🚅 行</button>
+                    </div>
+
+                    <!-- Phrase List -->
+                    <div id="phrase-container" class="space-y-2 max-h-60 overflow-y-auto">
+                        <!-- Content will be injected by JS -->
+                    </div>
+                </div>
+            </div>
+
+           <!-- Tokyo Transport Map -->
+            <div class="mt-6 mb-6">
+                <div class="hand-card p-4 border-l-8 border-blue-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-map"></i> 東京交通路網圖</h3>
+                        <a href="https://www.tokyometro.jp/en/subwaymap/pdf/routemap_en.pdf" target="_blank" class="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full hover:bg-gray-200"><i class="fa-solid fa-download"></i> PDF 官網</a>
+                    </div>
+                    
+                    <!-- 圖片區域 -->
+                    <!-- 修改說明：請將下面兩個 '在此填入您的圖片網址' 改成您自己的連結 -->
+                    <div class="relative rounded-xl overflow-hidden shadow-inner border border-gray-100 group cursor-pointer" 
+                         onclick="viewPhoto('https://i.redd.it/qdlkazgfuyqd1.jpeg')">
+                        
+                        <img src="https://i.redd.it/qdlkazgfuyqd1.jpeg" 
+                             class="w-full h-48 object-cover object-center group-hover:scale-105 transition duration-500"
+                             alt="交通地圖">
+                             
+                        <div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <span class="bg-white/80 px-3 py-1 rounded-full text-xs font-bold text-gray-700 backdrop-blur-md"><i class="fa-solid fa-magnifying-glass-plus"></i> 點擊放大</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-6">
                     <div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition">
                         <div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()">
@@ -621,6 +669,43 @@
         const WEATHER_MAP = {'sunny': '☀', 'cloudy': '☁', 'rain': '☂', 'snow': '⛄'};
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
+        
+        // --- PHRASE DATA ---
+        const PHRASES = {
+            'food': [
+                { ja: 'メニューをください', p: 'Menu wo kudasai', zh: '請給我菜單' },
+                { ja: 'これをお願いします', p: 'Kore wo onegaishimasu', zh: '我要這個' },
+                { ja: 'お水ください', p: 'Omizu kudasai', zh: '請給我水' },
+                { ja: 'お会計お願いします', p: 'Okaikei onegaishimasu', zh: '我要結帳' },
+                { ja: '美味しいです', p: 'Oishii desu', zh: '很好吃' },
+                { ja: 'テイクアウトで', p: 'Teikuauto de', zh: '我要外帶' }
+            ],
+            'shopping': [
+                { ja: '試着してもいいですか', p: 'Shichaku shitemo ii desu ka', zh: '可以試穿嗎？' },
+                { ja: 'これの大きいサイズはありますか', p: 'Kore no ookii saizu wa arimasu ka', zh: '有大一點的尺寸嗎？' },
+                { ja: 'いくらですか', p: 'Ikura desu ka', zh: '多少錢？' },
+                { ja: '免税できますか', p: 'Menzei dekimasu ka', zh: '可以退稅嗎？' },
+                { ja: '袋はいりません', p: 'Fukuro wa irimasen', zh: '不用袋子' }
+            ],
+            'stay': [
+                { ja: 'チェックインお願いします', p: 'Chekkuin onegaishimasu', zh: '我要辦理入住' },
+                { ja: '荷物を預かってもらえますか', p: 'Nimotsu wo azukatte moraemasu ka', zh: '可以寄放行李嗎？' },
+                { ja: 'Wi-Fiのパスワードは何ですか', p: 'Wi-Fi no pasuwādo wa nan desu ka', zh: 'Wi-Fi密碼是多少？' }
+            ],
+            'transport': [
+                { ja: '駅はどこですか', p: 'Eki wa doko desu ka', zh: '車站在哪裡？' },
+                { ja: '新宿まで行きたいです', p: 'Shinjuku made ikitai desu', zh: '我想去新宿' },
+                { ja: 'この電車は渋谷に行きますか', p: 'Kono densha wa Shibuya ni ikimasu ka', zh: '這班車去澀谷嗎？' },
+                { ja: '切符売り場はどこですか', p: 'Kippu uriba wa doko desu ka', zh: '售票處在哪裡？' }
+            ],
+            'vege': [
+                { ja: '私はベジタリアンです', p: 'Watashi wa bejitarian desu', zh: '我是素食者' },
+                { ja: '肉と魚は食べられません', p: 'Niku to sakana wa taberaremasen', zh: '我不吃肉和魚' },
+                { ja: '出汁に魚は使われていますか', p: 'Dashi ni sakana wa tsukawarete imasu ka', zh: '高湯裡有魚嗎？' },
+                { ja: '卵と乳製品は大丈夫です', p: 'Tamago to nyuseihin wa daijoubu desu', zh: '蛋和奶製品可以吃' },
+                { ja: '肉が入っていない料理はありますか', p: 'Niku ga haitte inai ryouri wa arimasu ka', zh: '有不含肉的料理嗎？' }
+            ]
+        };
 
         let flights=[], itinerary=[], mustEatList=[], expenses=[], guides=[], shoppingList=[], payers=[], payerProfiles={}, manualDebts=[], memoText="", todos=[], shoppingOwners=["我的清單"];
         let vjwData={isOpen:true,items:[]}, publicFundConfig={total:0,currency:'JPY'};
@@ -712,7 +797,7 @@
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-        // --- TRANSLATE & VOICE ---
+        // --- TRANSLATE & VOICE & PHRASES ---
         function toggleVoiceInput() {
             if (!('webkitSpeechRecognition' in window)) return alert("不支援語音");
             const recognition = new webkitSpeechRecognition(); recognition.lang = 'zh-TW';
@@ -722,6 +807,42 @@
             recognition.start();
         }
         function openGoogleTranslate() { const txt = document.getElementById('trans-input').value; window.open(`https://translate.google.com/?sl=zh-TW&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
+        
+        // --- NEW: Speak Function ---
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP'; 
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- MODIFIED: Render Phrases with Speaker Icon ---
+        function renderPhrases(cat) {
+            document.querySelectorAll('.phrase-btn').forEach(btn => {
+                if(btn.dataset.cat === cat) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            
+            const list = PHRASES[cat] || [];
+            const container = document.getElementById('phrase-container');
+            
+            container.innerHTML = list.map(item => `
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2 hover:shadow-sm transition relative">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-800 text-base mb-1">${item.ja}</div>
+                            <div class="text-[10px] text-gray-400 font-serif italic mb-1">${item.p}</div>
+                            <div class="text-xs text-fuji font-bold">${item.zh}</div>
+                        </div>
+                        <button onclick="speak('${item.ja}')" class="shrink-0 w-8 h-8 rounded-full bg-white border border-fuji/30 text-fuji flex items-center justify-center shadow-sm active:scale-95 transition hover:bg-fuji hover:text-white" title="播放發音">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         // --- ITINERARY ---
         function searchDayWeather() {
@@ -941,8 +1062,8 @@
             expenses.forEach(e => {
                 const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
                 if(e.splitBy && e.splitBy.length > 0) {
-                     const share = amt / e.splitBy.length;
-                     e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; });
+                      const share = amt / e.splitBy.length;
+                      e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; });
                 }
             });
             
@@ -1156,9 +1277,9 @@
                     </div>`;
                 
                 if (doneItems.length > 0) {
-                     html += `<div class="border-t border-gray-200/50 pt-2 opacity-60 grayscale filter">
+                      html += `<div class="border-t border-gray-200/50 pt-2 opacity-60 grayscale filter">
                         ${doneItems.map(s => renderShopItem(s, true)).join('')}
-                     </div>`;
+                      </div>`;
                 }
                 html += `</div>`;
                 container.innerHTML += html;
@@ -1290,4 +1411,3 @@
     </script>
 </body>
 </html>
-
