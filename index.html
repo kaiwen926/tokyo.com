@@ -853,7 +853,22 @@
             // 直接打開 Google 翻譯頁面 (自動偵測 -> 翻譯成日文)
             window.open(`https://translate.google.com/?sl=auto&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); 
         }
-
+        // 3. 文字轉語音 (補上這段)
+        function speak(text) {
+            // 檢查瀏覽器支援度
+            if (!window.speechSynthesis) {
+                alert("您的瀏覽器不支援發音功能");
+                return;
+            }
+ // 如果正在講話，先卡掉
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP'; // 設定為日文
+            utterance.rate = 0.8;     // 語速稍慢一點，適合學習
+            utterance.pitch = 1;      // 音調正常
+            utterance.volume = 1;     // 音量最大
+            window.speechSynthesis.speak(utterance);
+        }
         // --- MODIFIED: Render Phrases with Speaker Icon ---
         function renderPhrases(cat) {
             document.querySelectorAll('.phrase-btn').forEach(btn => {
@@ -1544,5 +1559,6 @@
     </script>
 </body>
 </html>
+
 
 
