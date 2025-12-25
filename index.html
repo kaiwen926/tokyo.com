@@ -77,8 +77,18 @@
         .drag-handle { cursor: grab; touch-action: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 100%; background-color: rgba(0,0,0,0.02); position: absolute; left: 0; top: 0; z-index: 10; border-right: 1px solid rgba(0,0,0,0.03); }
         .drag-handle:active { cursor: grabbing; background-color: rgba(0,0,0,0.05); }
         .meal-clickable:active { background-color: #f3f4f6; border-radius: 4px; }
-        .guide-link { color: #bccc9a; font-weight: bold; text-decoration: underline; text-decoration-style: dotted; cursor: pointer; }
-        
+        .guide-link { color: #9ca3af; font-weight: 900; border-bottom: 2px dotted #9ca3af; cursor: pointer; }
+        .weather-group {display: flex;flex-direction: column;align-items: center;justify-content: center;margin-left: 12px;position: relative;top: -4px; /* 稍微上移調整視覺平衡 */}
+        .temp-badge {font-family: 'Zen Maru Gothic', sans-serif; /* 圓圓的可愛字體 */font-weight: 900;font-size: 0.75rem; /* 12px */line-height: 1;margin-bottom: 2px;padding: 2px 6px;border-radius: 10px;color: white;box-shadow: 1px 1px 0px rgba(0,0,0,0.1);transform: rotate(-5deg); /* 稍微歪一點比較俏皮 */text-shadow: 0 1px 0 rgba(0,0,0,0.1);white-space: nowrap;}
+
+        /* 溫度顏色定義 */
+        .temp-hot { background-color: #ff8e8e; border: 2px solid #fff; color: #fff; } /* 熱：粉紅 */
+        .temp-warm { background-color: #ffcc66; border: 2px solid #fff; color: #fff; } /* 暖：橘黃 */
+        .temp-cool { background-color: #88ddcc; border: 2px solid #fff; color: #fff; } /* 涼：薄荷綠 */
+        .temp-cold { background-color: #88ccff; border: 2px solid #fff; color: #fff; } /* 冷：粉藍 */
+ 
+       /* 調整原本的天氣圖示，移除 margin-left 因為現在由父層控制 */
+        .weather-group .weather-badge {margin-left: 0 !important;width: 28px; height: 28px;font-size: 1rem;box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         /* Map specific styles */
         .phrase-btn.active { background-color: #7b90d2; color: white; border-color: #7b90d2; }
     </style>
@@ -483,12 +493,16 @@
             
             <div class="flex gap-2 items-center mb-2">
                  <input type="text" id="day-date-edit" class="flex-1 p-2 border-b-2 border-matcha bg-transparent font-bold font-hand text-xl focus:outline-none" placeholder="日期標題">
+                 
+                 <!-- 新增：氣溫輸入框 -->
+                 <input type="text" id="day-temp-edit" placeholder="氣溫 (e.g. 15°C)" class="bg-white border rounded p-1 text-sm outline-none shadow-sm h-10 w-28 text-center placeholder-gray-300">
+                 
                  <select id="day-weather-edit" class="bg-white border rounded p-1 text-2xl outline-none shadow-sm h-10 w-24">
-                     <option value="">⛅️ 天氣</option>
+                     <option value="">☁ 天氣</option>
                      <option value="sunny">☀ 晴</option>
-                     <option value="cloudy">☁️ 陰</option>
+                     <option value="cloudy">☁ 陰</option>
                      <option value="rain">☂ 雨</option>
-                     <option value="snow">☃️ 雪</option>
+                     <option value="snow">⛄ 雪</option>
                  </select>
             </div>
             
@@ -679,7 +693,7 @@
             {id: 104, title: "東京鐵塔", price: "¥1200~", desc: "紅色經典。推薦預約 Top Deck Tour。", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Tokyo_Tower_special_light_up_2020.jpg/800px-Tokyo_Tower_special_light_up_2020.jpg", time: "09:00 - 23:00"}
         ];
 
-        const WEATHER_MAP = {'sunny': '🌞', 'cloudy': '☁️', 'rain': '☔️', 'snow': '⛄'};
+        const WEATHER_MAP = {'sunny': '☀', 'cloudy': '☁', 'rain': '☂', 'snow': '⛄'};
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
         
@@ -853,22 +867,7 @@
             // 直接打開 Google 翻譯頁面 (自動偵測 -> 翻譯成日文)
             window.open(`https://translate.google.com/?sl=auto&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); 
         }
-        // 3. 文字轉語音 (補上這段)
-        function speak(text) {
-            // 檢查瀏覽器支援度
-            if (!window.speechSynthesis) {
-                alert("您的瀏覽器不支援發音功能");
-                return;
-            }
- // 如果正在講話，先卡掉
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP'; // 設定為日文
-            utterance.rate = 0.8;     // 語速稍慢一點，適合學習
-            utterance.pitch = 1;      // 音調正常
-            utterance.volume = 1;     // 音量最大
-            window.speechSynthesis.speak(utterance);
-        }
+
         // --- MODIFIED: Render Phrases with Speaker Icon ---
         function renderPhrases(cat) {
             document.querySelectorAll('.phrase-btn').forEach(btn => {
@@ -898,7 +897,7 @@
         // --- ITINERARY ---
         
         // 修改：使用 Tenki.jp 搜尋
-        function searchDayWeather() {
+       function searchDayWeather() {
             const date = document.getElementById('day-date-edit').value;
             let loc = document.getElementById('day-accommodation-edit').value;
             if(!loc) loc = "東京";
@@ -909,7 +908,6 @@
             const query = `site:tenki.jp ${loc} ${date} 天気`;
             window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
         }
-
         // --- 多筆交通邏輯 ---
         function renderTransRows() {
             const c = document.getElementById('day-trans-list');
@@ -980,12 +978,33 @@
             
             itinerary.forEach((day) => {
                 let contentHtml = linkifyContent(day.content);
-                const wIcon = WEATHER_MAP[day.weather] || '';
-                const wHtml = wIcon ? `<a href="https://tenki.jp/" target="_blank" class="weather-badge ml-2" title="查看天氣">${wIcon}</a>` : '';
+                const wIcon = WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>';
+                let tempBadgeHtml = '';
+                if (day.temp) {
+                    const tempVal = parseInt(day.temp); 
+                    let tempClass = 'temp-warm'; // 預設
+                    if (!isNaN(tempVal)) {
+                        if (tempVal >= 28) tempClass = 'temp-hot';      // 熱
+                        else if (tempVal >= 20) tempClass = 'temp-warm'; // 舒適
+                        else if (tempVal >= 10) tempClass = 'temp-cool'; // 涼
+                        else tempClass = 'temp-cold';                    // 冷
+                    }
+                    
+                    // 如果輸入純文字(如"微涼")，預設用 cool 顏色
+                    if(isNaN(tempVal)) tempClass = 'temp-cool';
+
+                    tempBadgeHtml = `<span class="temp-badge ${tempClass}">${day.temp.replace('C','').replace('c','')}°C</span>`;
+                }
+                // 如果有天氣或溫度才顯示
+                const weatherGroupHtml = (day.weather || day.temp) ? 
+                    `<a href="https://tenki.jp/" target="_blank" class="weather-group group/weather no-underline" title="查看天氣">
+                        ${tempBadgeHtml}
+                        <div class="weather-badge group-hover/weather:scale-110 transition-transform">${wIcon}</div>
+                    </a>` : '';
+
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
                 const accLink = day.accommodationUrl || checkUrl(day.accommodation);
                 const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 flex items-center gap-2 border-t pt-3 border-dashed border-gray-200"><i class="fa-solid fa-bed text-fuji"></i> ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold">${day.accommodation}</a>` : `<span class="font-bold">${day.accommodation}</span>`}</div>` : '';
-                
                 // 處理交通 (相容舊資料物件格式與新資料陣列格式)
                 let transData = [];
                 if (day.transportation) {
@@ -1019,7 +1038,7 @@
                 };
 
                 const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
-                    `<div class="mt-3 flex gap-4 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 justify-between px-2">
+                    `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">
                         ${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}
                         ${renderMealItem('l', 'fa-utensils', 'text-green-400')}
                         ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
@@ -1027,12 +1046,15 @@
                 
                 const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
 
-                c.innerHTML += `<div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
+               c.innerHTML += `<div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
                     <div class="absolute -left-2.5 top-0 w-5 h-5 rounded-full ${day.highlight?'bg-sakura':'bg-gray-300'} border-4 border-paper shadow-sm"></div>
                     <div class="flex justify-between mb-2 items-center">
                         <div class="flex items-center">
                             <h3 class="font-black text-2xl handwritten ${day.highlight?'text-red-400':'text-pencil'}">${day.date}</h3>
-                            ${wHtml}
+                     
+                            <!-- ★ 修改處：插入新的 weatherGroupHtml (整合溫度與天氣) -->
+                            ${weatherGroupHtml}
+                            
                         </div>
                         <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition p-2"><i class="fa-solid fa-pen"></i></button>
                     </div>
@@ -1051,6 +1073,8 @@
         function openDayEditor(id){ 
             const d=itinerary.find(i=>i.id===id); 
             if(!d)return; 
+            document.getElementById('day-date-edit').value=d.date; 
+            document.getElementById('day-temp-edit').value = d.temp || ""; 
             document.getElementById('day-id-edit').value=d.id; 
             document.getElementById('day-date-edit').value=d.date; 
             document.getElementById('day-weather-edit').value=d.weather||""; 
@@ -1081,6 +1105,7 @@
             if(idx<0)return; 
             const i=itinerary[idx]; 
             i.date=document.getElementById('day-date-edit').value; 
+            i.temp = document.getElementById('day-temp-edit').value;
             i.weather=document.getElementById('day-weather-edit').value; 
             i.highlight=document.getElementById('day-highlight-edit').checked; 
             i.content=document.getElementById('day-content-edit').value; 
@@ -1314,51 +1339,73 @@
         function openPublicFundModal() { document.getElementById('pf-total-input').value = publicFundConfig.total || 0; openModal('pf-settings-modal'); }
         function savePublicFundSettings() { publicFundConfig.total = parseFloat(document.getElementById('pf-total-input').value) || 0; saveData(); renderExpenses(); closeModal('pf-settings-modal'); }
 
+        // --- 新增：切換分類專用函式 ---
+        function switchCategory(id) {
+            selectedCat = id;
+            renderCategoryUI();
+        }
+
+        // --- 新增：獨立渲染分類按鈕 ---
+        function renderCategoryUI() {
+            document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => 
+                `<div onclick="switchCategory('${c.id}')" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${selectedCat===c.id?'ring-2 ring-black scale-110 '+c.color:'bg-gray-50 text-gray-400 hover:bg-gray-100'}">
+                    <i class="fa-solid ${c.icon}"></i>
+                </div>`
+            ).join('');
+        }
+
+        // --- 修正後的 openExpenseModal ---
         function openExpenseModal(id=null) { 
-            // Render Categories
-            document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
-            
-            // Render Payers Options for Dropdown (FIXED)
             const payerSelect = document.getElementById('ex-paid-by');
             payerSelect.innerHTML = payers.map(p => `<option value="${p}">${p}</option>`).join('');
             
             document.getElementById('btn-delete-expense').classList.add('hidden');
             
             if(id) { 
+                // 編輯模式
                 const ex = expenses.find(e => e.id == id); 
                 document.getElementById('ex-id').value = ex.id; 
                 document.getElementById('ex-amount').value = ex.amt; 
                 document.getElementById('ex-currency').value = ex.curr; 
                 document.getElementById('ex-note').value = ex.note; 
                 
-                // Select value for dropdown
                 payerSelect.value = ex.paidBy || "我";
-
                 selectedCat = ex.cat; 
                 selectedPayers = ex.splitBy || []; 
                 document.getElementById('btn-delete-expense').classList.remove('hidden'); 
-                if(ex.photo){document.getElementById('ex-photo-preview-mini').src=ex.photo;document.getElementById('ex-photo-preview-mini').classList.remove('hidden')} 
+                
+                if(ex.photo){
+                    document.getElementById('ex-photo-preview-mini').src=ex.photo;
+                    document.getElementById('ex-photo-preview-mini').classList.remove('hidden');
+                } else {
+                    document.getElementById('ex-photo-preview-mini').classList.add('hidden');
+                }
             }
             else { 
-                // FORCE RESET for new entry (FIXED)
+                // 新增模式
                 document.getElementById('ex-id').value = ''; 
                 document.getElementById('ex-amount').value = ''; 
-                document.getElementById('ex-note').value = ''; 
-                document.getElementById('ex-currency').value = 'JPY';
                 
+                // 簡單判斷：如果是從購物清單來的(通常備註有字)，就不要清空，否則清空
+                if(!document.getElementById('ex-note').value) {
+                     document.getElementById('ex-note').value = '';
+                }
+                
+                document.getElementById('ex-currency').value = 'JPY';
                 payerSelect.value = "我";
                 if (!payers.includes("我") && payers.length > 0) payerSelect.value = payers[0];
-
                 selectedPayers = payers.filter(p => p !== '公費'); 
-                selectedCat = '餐飲'; // Reset category default
+                
+                // 只有未設定分類時才重置，避免點擊重置
+                if(!selectedCat) selectedCat = '餐飲'; 
+                
                 currentPhotoBase64 = null;
                 document.getElementById('ex-photo-preview-mini').src = "";
                 document.getElementById('ex-photo-preview-mini').classList.add('hidden');
-                
-                // Re-render categories to show correct selection
-                document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="selectedCat='${c.id}';openExpenseModal(document.getElementById('ex-id').value||null)" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${selectedCat===c.id?'ring-2 ring-black '+c.color:'bg-gray-50 text-gray-400'}"><i class="fa-solid ${c.icon}"></i></div>`).join('');
             }
             
+            // 呼叫獨立函式渲染分類
+            renderCategoryUI();
             renderSplitButtons(); 
             openModal('expense-modal'); 
         }
@@ -1547,7 +1594,45 @@
         function saveIOU(){ const c=document.getElementById('iou-creditor').value, d=document.getElementById('iou-debtor').value, a=parseFloat(document.getElementById('iou-amount').value), n=document.getElementById('iou-note').value; if(!a||c===d)return; manualDebts.push({id:'iou'+Date.now(),creditor:c,debtor:d,amount:a,note:n}); saveData(); openIOUModal(); }
         function deleteIOU(id){ if(confirm("Del?")){manualDebts=manualDebts.filter(i=>i.id!=id);saveData();openIOUModal();} }
         function toggleVJW() { vjwData.isOpen = !vjwData.isOpen; renderVJW(); saveData(); }
-        function renderVJW() { const c = document.getElementById('vjw-content'); if(vjwData.isOpen) { c.classList.remove('max-h-0'); c.classList.add('max-h-[500px]'); } else { c.classList.add('max-h-0'); c.classList.remove('max-h-[500px]'); } document.getElementById('vjw-container').innerHTML = vjwData.items.map(i => `<div class="flex-shrink-0 w-48 bg-white p-2 border rounded relative"><button onclick="deleteVJW(${i.id})" class="absolute top-1 right-1 text-red-400">x</button><div class="font-bold text-center mb-1">${i.name}</div><img src="${i.image}" class="w-full h-40 object-contain" onclick="viewPhoto('${i.image}')"></div>`).join('') + `<div class="flex-shrink-0 w-48 h-48 border-2 border-dashed flex items-center justify-center cursor-pointer relative"><span class="text-gray-400">+ Add</span><input type="file" class="absolute inset-0 opacity-0" onchange="processImage(this, b=>{vjwData.items.push({id:Date.now(),name:'New',image:b});saveData();renderVJW()})"></div>`; }
+      // --- 新增：更新 VJW 名字的函式 (請貼在 renderVJW 上方) ---
+        function updateVJWName(id, val) {
+            const item = vjwData.items.find(i => i.id === id);
+            if (item) {
+                item.name = val;
+                saveData(); // 自動儲存
+            }
+        }
+
+       function renderVJW() { 
+            const c = document.getElementById('vjw-content'); 
+            if(vjwData.isOpen) { 
+                c.classList.remove('max-h-0'); 
+                c.classList.add('max-h-[500px]'); 
+            } else { 
+                c.classList.add('max-h-0'); 
+                c.classList.remove('max-h-[500px]'); 
+            } 
+            
+            document.getElementById('vjw-container').innerHTML = vjwData.items.map(i => `
+                <div class="flex-shrink-0 w-48 bg-white p-2 border rounded relative group">
+                    <button onclick="deleteVJW(${i.id})" class="absolute top-1 right-1 text-gray-300 hover:text-red-400 w-6 h-6 flex items-center justify-center rounded-full bg-gray-50 z-10"><i class="fa-solid fa-times"></i></button>
+                    
+                    <!-- 修改處：加入 onfocus="this.select()" 點擊自動全選 -->
+                    <input type="text" value="${i.name}" 
+                           onfocus="this.select()" 
+                           onchange="updateVJWName(${i.id}, this.value)" 
+                           class="w-full bg-transparent text-center font-bold mb-1 outline-none border-b border-transparent focus:border-blue-300 text-gray-700 placeholder-gray-300 transition" 
+                           placeholder="輸入名字">
+                    
+                    <img src="${i.image}" class="w-full h-40 object-contain cursor-zoom-in" onclick="viewPhoto('${i.image}')">
+                </div>
+            `).join('') + `
+                <div class="flex-shrink-0 w-48 h-48 border-2 border-dashed border-blue-200/50 rounded-lg flex flex-col items-center justify-center cursor-pointer relative hover:bg-blue-50 transition group">
+                    <i class="fa-solid fa-qrcode text-3xl text-blue-200 mb-2 group-hover:scale-110 transition"></i>
+                    <span class="text-xs text-blue-300 font-bold">+ 新增 QR Code</span>
+                    <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, b=>{vjwData.items.push({id:Date.now(),name:'輸入名字',image:b});saveData();renderVJW()})">
+                </div>`; 
+        }
         function deleteVJW(id){ if(confirm("Del?")){vjwData.items=vjwData.items.filter(i=>i.id!==id);saveData();renderVJW()} }
 
         window.onload = function() {
@@ -1559,7 +1644,3 @@
     </script>
 </body>
 </html>
-
-
-
-
