@@ -300,8 +300,8 @@
                 </div>
               
                 <!-- Phrase Book (Survival Cards) -->
-                <details class="hand-card p-0 border-l-8 border-sakura/20 group open:pb-4 transition-all duration-300">
-                    <summary class="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 transition">
+                <details class="hand-card p-0 border-l-8 border-sakura/20 group transition-all duration-300">
+                    <summary class="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 transition relative select-none">
                         <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2">
                             <i class="fa-solid fa-comment-dots"></i> 生存日語字卡
                         </h3>
@@ -309,8 +309,7 @@
                             <i class="fa-solid fa-chevron-down"></i>
                         </span>
                     </summary>
-                    
-                    <div class="px-6 animate-slide-in">
+                      <div class="px-6 pb-6 animate-slide-in border-t border-gray-100/50 pt-4">
                         <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-3">
                             <button onclick="renderPhrases('food')" class="phrase-btn active whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-sakura hover:text-white hover:border-sakura transition" data-cat="food">🍱 食</button>
                             <button onclick="renderPhrases('vege')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-veggie hover:text-white hover:border-veggie transition" data-cat="vege">🥗 素食</button>
@@ -319,8 +318,9 @@
                             <button onclick="renderPhrases('transport')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-400 hover:text-white hover:border-blue-400 transition" data-cat="transport">🚅 行</button>
                         </div>
 
-                        <div id="phrase-container" class="space-y-2 max-h-60 overflow-y-auto">
-                            </div>
+                       <div id="phrase-container" class="space-y-2 max-h-60 overflow-y-auto">
+                         <script>setTimeout(() => { if(typeof renderPhrases === 'function') renderPhrases('food'); }, 500);</script>    
+                        </div>
                     </div>
                 </details>
 
@@ -381,6 +381,26 @@
             </div>
         </section>
     </main>
+
+    <!-- NEW: ACCOMMODATION PHOTOS MODAL -->
+    <div id="acc-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+        <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[80vh] overflow-hidden flex flex-col">
+            <button onclick="closeModal('acc-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-lg font-bold mb-4 text-center handwritten text-fuji flex items-center justify-center gap-2">
+                <i class="fa-solid fa-bed"></i> 住宿照片
+            </h3>
+            <div id="acc-modal-title" class="text-center text-sm font-bold text-gray-600 mb-4 truncate px-2"></div>
+            
+            <div class="flex-1 overflow-y-auto no-scrollbar mb-4 bg-white/50 rounded-xl border border-gray-100 p-2">
+                <div id="acc-photos-grid" class="grid grid-cols-2 gap-2"></div>
+            </div>
+            
+            <div class="relative w-full bg-fuji text-white py-3 rounded-xl font-bold text-center cursor-pointer shadow hover:bg-fuji/90 transition active:scale-95">
+                <i class="fa-solid fa-camera mr-1"></i> 新增照片
+                <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addAccPhoto(this)">
+            </div>
+        </div>
+    </div>
 
     <!-- EXPENSE MODAL (Revamped Fixed) -->
     <div id="expense-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
@@ -478,7 +498,14 @@
                     <input type="text" id="flight-date" placeholder="日期 (例: 1/10 去程)" class="w-full p-1 bg-transparent text-center text-sm font-hand text-gray-500 mb-1 focus:outline-none">
                     <input type="text" id="flight-time" placeholder="時間 (例: 14:00 - 18:00)" class="w-full p-1 bg-transparent text-center text-sm font-hand text-gray-500 focus:outline-none">
                 </div>
-                <input type="url" id="flight-url" placeholder="連結 (e-ticket)" class="w-full p-2 border rounded-lg bg-white text-xs text-center outline-none">
+                <div class="flex gap-2">
+                <input type="url" id="flight-url" placeholder="官網/報到連結" class="flex-1 p-2 border rounded-xl bg-white text-xs outline-none">
+                <div class="relative w-12 h-10 border border-dashed border-fuji/50 rounded-xl flex items-center justify-center bg-white cursor-pointer hover:bg-blue-50 overflow-hidden">
+                        <i class="fa-solid fa-camera text-fuji"></i>
+                        <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (b64)=>{currentFlightPhoto=b64; document.getElementById('flight-photo-preview').src=b64; document.getElementById('flight-photo-preview').classList.remove('hidden');})">
+                        <img id="flight-photo-preview" class="hidden absolute inset-0 w-full h-full object-cover pointer-events-none">
+                    </div>
+                </div>
                 <button onclick="saveFlight()" class="w-full bg-fuji text-white py-3 rounded-xl font-bold mt-2 shadow-lg shadow-fuji/30 hover:bg-fuji/90 transition handwritten tracking-widest">儲 存</button>
             </div>
         </div>
@@ -740,6 +767,8 @@
         let tempThemes=[], currentPhotoBase64=null, currentGuidePhoto=null, currentShopPhoto=null, currentTransPhoto=null, tempDayPhotos=[], selectedPayers=[], selectedCat='餐飲';
         
         let tempTrans = []; // 新增：暫存交通多筆資料
+        let currentFlightPhoto = null; // 暫存航班照片
+        let currentAccDayId = null; // 當前正在編輯住宿照片的天數 ID
 
         // --- CORE ---
         function reloadLocalData() {
@@ -771,21 +800,26 @@
             });
         }
         function saveData() {
-            localStorage.setItem('flights', JSON.stringify(flights));
-            localStorage.setItem('itinerary_v3', JSON.stringify(itinerary));
-            localStorage.setItem('mustEatList', JSON.stringify(mustEatList));
-            localStorage.setItem('expenses', JSON.stringify(expenses));
-            localStorage.setItem('guides', JSON.stringify(guides));
-            localStorage.setItem('shoppingList_v3', JSON.stringify(shoppingList));
-            localStorage.setItem('shoppingOwners', JSON.stringify(shoppingOwners));
-            localStorage.setItem('payers', JSON.stringify(payers));
-            localStorage.setItem('payerProfiles', JSON.stringify(payerProfiles));
-            localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
-            localStorage.setItem('todos', JSON.stringify(todos));
-            localStorage.setItem('memo', memoText); 
-            localStorage.setItem('publicFundConfig_v2', JSON.stringify(publicFundConfig));
-            localStorage.setItem('vjwData', JSON.stringify(vjwData));
-            if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(forceUpload, 2000); }
+            try {
+                localStorage.setItem('flights', JSON.stringify(flights));
+                localStorage.setItem('itinerary_v3', JSON.stringify(itinerary));
+                localStorage.setItem('mustEatList', JSON.stringify(mustEatList));
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+                localStorage.setItem('guides', JSON.stringify(guides));
+                localStorage.setItem('shoppingList_v3', JSON.stringify(shoppingList));
+                localStorage.setItem('shoppingOwners', JSON.stringify(shoppingOwners));
+                localStorage.setItem('payers', JSON.stringify(payers));
+                localStorage.setItem('payerProfiles', JSON.stringify(payerProfiles));
+                localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
+                localStorage.setItem('todos', JSON.stringify(todos));
+                localStorage.setItem('memo', memoText); 
+                localStorage.setItem('publicFundConfig_v2', JSON.stringify(publicFundConfig));
+                localStorage.setItem('vjwData', JSON.stringify(vjwData));
+                if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(forceUpload, 2000); }
+            } catch (e) {
+                alert("儲存失敗：資料量可能已超過瀏覽器限制 (LocalStorage)。建議刪除部分舊照片。");
+                console.error(e);
+            }
         }
 
         // --- GIST SYNC ---
@@ -822,11 +856,93 @@
         function openModal(id){document.getElementById(id).classList.remove('hidden');setTimeout(()=>document.getElementById(id).classList.add('visible'),10);}
         function closeModal(id){const el=document.getElementById(id);el.classList.remove('visible');setTimeout(()=>el.classList.add('hidden'),200);}
         function switchTab(t){ document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); document.getElementById('view-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); document.querySelector(`[data-target="${t}"]`).classList.add('active'); window.scrollTo(0,0); }
-        function processImage(input, cb) { if(input.files[0]){const r=new FileReader();r.onload=e=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas'),x=c.getContext('2d'),max=800;let w=i.width,h=i.height;if(w>h&&w>max){h*=max/w;w=max}else if(h>max){w*=max/h;h=max}c.width=w;c.height=h;x.drawImage(i,0,0,w,h);cb(c.toDataURL('image/jpeg',0.6))};i.src=e.target.result};r.readAsDataURL(input.files[0])} }
+        
+        // --- 升級版圖片處理 (高畫質) ---
+        function processImage(input, cb) { 
+            if(input.files[0]){
+                const r=new FileReader();
+                r.onload=e=>{
+                    const i=new Image();
+                    i.onload=()=>{
+                        const c=document.createElement('canvas');
+                        const x=c.getContext('2d');
+                        // 提升解析度限制到 1200 (原本800)
+                        const max=1200;
+                        let w=i.width,h=i.height;
+                        if(w>h&&w>max){h*=max/w;w=max}else if(h>max){w*=max/h;h=max}
+                        c.width=w;c.height=h;
+                        x.drawImage(i,0,0,w,h);
+                        // 提升壓縮品質到 0.8 (原本0.6)
+                        cb(c.toDataURL('image/jpeg',0.8))
+                    };
+                    i.src=e.target.result
+                };
+                r.readAsDataURL(input.files[0])
+            } 
+        }
+
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-   // --- TRANSLATE & VOICE & PHRASES (極簡版) ---
+        // --- ACCOMMODATION PHOTOS LOGIC ---
+        function openAccModal(dayId) {
+            currentAccDayId = dayId;
+            const day = itinerary.find(d => d.id === dayId);
+            if (!day) return;
+            
+            document.getElementById('acc-modal-title').innerText = day.accommodation || day.date;
+            renderAccPhotos();
+            openModal('acc-modal');
+        }
+
+        function renderAccPhotos() {
+            const day = itinerary.find(d => d.id === currentAccDayId);
+            if (!day) return;
+
+            const photos = day.accPhotos || []; // 確保有陣列
+            const container = document.getElementById('acc-photos-grid');
+            
+            if (photos.length === 0) {
+                container.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-8 text-sm">還沒有照片<br>點擊下方按鈕新增</div>';
+            } else {
+                container.innerHTML = photos.map((p, i) => `
+                    <div class="relative group aspect-[4/3] rounded-lg overflow-hidden shadow-sm border border-gray-200">
+                        <img src="${p}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-500" onclick="viewPhoto('${p}')">
+                        <button onclick="deleteAccPhoto(${i})" class="absolute top-1 right-1 bg-red-500/80 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow hover:bg-red-600 transition z-10">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function addAccPhoto(input) {
+            processImage(input, (base64) => {
+                const dayIdx = itinerary.findIndex(d => d.id === currentAccDayId);
+                if (dayIdx > -1) {
+                    if (!itinerary[dayIdx].accPhotos) itinerary[dayIdx].accPhotos = [];
+                    itinerary[dayIdx].accPhotos.push(base64);
+                    saveData();
+                    renderAccPhotos();
+                    renderItinerary(); // 更新外部 ICON 狀態
+                }
+            });
+            input.value = ''; // Reset input
+        }
+
+        function deleteAccPhoto(index) {
+            if (confirm("確定刪除這張照片？")) {
+                const dayIdx = itinerary.findIndex(d => d.id === currentAccDayId);
+                if (dayIdx > -1 && itinerary[dayIdx].accPhotos) {
+                    itinerary[dayIdx].accPhotos.splice(index, 1);
+                    saveData();
+                    renderAccPhotos();
+                    renderItinerary(); // 更新外部 ICON 狀態
+                }
+            }
+        }
+
+        // --- TRANSLATE & VOICE & PHRASES (極簡版) ---
         
         // 1. 語音講完直接翻
         function toggleVoiceInput() {
@@ -973,103 +1089,134 @@
         }
 
         function renderItinerary() {
-            const c = document.getElementById('itinerary-container'); 
-            c.innerHTML = '';
-            
-            itinerary.forEach((day) => {
-                let contentHtml = linkifyContent(day.content);
-                const wIcon = WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>';
-                let tempBadgeHtml = '';
-                if (day.temp) {
-                    const tempVal = parseInt(day.temp); 
-                    let tempClass = 'temp-warm'; // 預設
-                    if (!isNaN(tempVal)) {
-                        if (tempVal >= 28) tempClass = 'temp-hot';      // 熱
-                        else if (tempVal >= 20) tempClass = 'temp-warm'; // 舒適
-                        else if (tempVal >= 10) tempClass = 'temp-cool'; // 涼
-                        else tempClass = 'temp-cold';                    // 冷
-                    }
-                    
-                    // 如果輸入純文字(如"微涼")，預設用 cool 顏色
-                    if(isNaN(tempVal)) tempClass = 'temp-cool';
+    const c = document.getElementById('itinerary-container');
+    if (!c) return;
+    c.innerHTML = '';
+    itinerary.forEach((day) => {
+        let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
+        const loc = day.accommodation || "東京";
+        const date = day.date || "";
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(`site:tenki.jp ${loc} ${date} 天気`)}`;
 
-                    tempBadgeHtml = `<span class="temp-badge ${tempClass}">${day.temp.replace('C','').replace('c','')}°C</span>`;
-                }
-                // 如果有天氣或溫度才顯示
-                const weatherGroupHtml = (day.weather || day.temp) ? 
-                    `<a href="https://tenki.jp/" target="_blank" class="weather-group group/weather no-underline" title="查看天氣">
-                        ${tempBadgeHtml}
-                        <div class="weather-badge group-hover/weather:scale-110 transition-transform">${wIcon}</div>
-                    </a>` : '';
-
-                const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
-                const accLink = day.accommodationUrl || checkUrl(day.accommodation);
-                const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 flex items-center gap-2 border-t pt-3 border-dashed border-gray-200"><i class="fa-solid fa-bed text-fuji"></i> ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold">${day.accommodation}</a>` : `<span class="font-bold">${day.accommodation}</span>`}</div>` : '';
-                // 處理交通 (相容舊資料物件格式與新資料陣列格式)
-                let transData = [];
-                if (day.transportation) {
-                    if (Array.isArray(day.transportation)) {
-                        transData = day.transportation;
-                    } else if (day.transportation.content || day.transportation.photo) {
-                        transData = [day.transportation];
-                    }
-                }
-
-                const transHtml = transData.length > 0 ? transData.map(t => `
-                    <div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm">
-                        <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
-                            <i class="fa-solid fa-train text-blue-400"></i> 
-                            ${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono">${t.time}</span>` : ''}
-                            <span class="text-gray-700">${t.content || '交通移動'}</span>
-                        </div>
-                        ${t.note ? `<div class="ml-6 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2">${t.note}</div>` : ''}
-                        ${t.photo ? `<div class="mt-2 ml-6"><button onclick="viewPhoto('${t.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1 rounded shadow-sm hover:bg-blue-50 transition flex items-center gap-1"><i class="fa-solid fa-ticket"></i> 查看車票/憑證</button></div>` : ''}
-                    </div>
-                `).join('') : '';
-
-                const renderMealItem = (type, icon, color) => {
-                    const m = day.meals?.[type];
-                    if(!m || !m.name) return '';
-                    const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1">${m.name}</a>` : `<span class="ml-1">${m.name}</span>`;
-                    return `<div class="flex items-center gap-1 meal-clickable p-1 rounded transition">
-                                <i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition" onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i> 
-                                ${linkPart}
-                            </div>`;
-                };
-
-                const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
-                    `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">
-                        ${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}
-                        ${renderMealItem('l', 'fa-utensils', 'text-green-400')}
-                        ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
-                    </div>` : '';
-                
-                const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
-
-               c.innerHTML += `<div class="relative pl-8 border-l-2 ${day.highlight?'border-sakura':'border-gray-200'} pb-8 group">
-                    <div class="absolute -left-2.5 top-0 w-5 h-5 rounded-full ${day.highlight?'bg-sakura':'bg-gray-300'} border-4 border-paper shadow-sm"></div>
-                    <div class="flex justify-between mb-2 items-center">
-                        <div class="flex items-center">
-                            <h3 class="font-black text-2xl handwritten ${day.highlight?'text-red-400':'text-pencil'}">${day.date}</h3>
-                     
-                            <!-- ★ 修改處：插入新的 weatherGroupHtml (整合溫度與天氣) -->
-                            ${weatherGroupHtml}
-                            
-                        </div>
-                        <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition p-2"><i class="fa-solid fa-pen"></i></button>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
-                        <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>
-                        ${photosHtml}
-                        ${accHtml}
-                        ${transHtml}
-                        ${mealsHtml}
-                        ${noteHtml}
-                    </div>
-                </div>`;
-            });
-        }
+        const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
         
+        let tempBadgeHtml = '';
+        if (day.temp) {
+            const tempVal = parseInt(day.temp);
+            let tempClass = 'temp-warm';
+            if (!isNaN(tempVal)) {
+                if (tempVal >= 28) tempClass = 'temp-hot';
+                else if (tempVal >= 20) tempClass = 'temp-warm';
+                else if (tempVal >= 10) tempClass = 'temp-cool';
+                else tempClass = 'temp-cold';
+            }
+            tempBadgeHtml = `<span class="temp-badge ${tempClass}">${day.temp.replace('C','').replace('c','')}°C</span>`;
+        }
+
+        const weatherGroupHtml = (day.weather || day.temp) ? 
+            `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline" title="搜尋天氣">
+                ${tempBadgeHtml}
+                <div class="weather-badge group-hover/weather:scale-110 transition-transform">${wIcon}</div>
+            </a>` : '';
+        const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
+        const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null);
+        
+        // --- 修改後的住宿區塊 ---
+        const accHtml = day.accommodation ? 
+            `<div class="mt-3 text-sm text-gray-600 flex items-center gap-2 border-t pt-3 border-dashed border-gray-200">
+                <button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative" title="管理住宿照片">
+                    <i class="fa-solid fa-bed"></i>
+                    ${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}
+                </button>
+                ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold">${day.accommodation}</a>` : `<span class="font-bold">${day.accommodation}</span>`}
+            </div>` : '';
+
+        const renderMealItem = (type, icon, color) => { 
+            const m = day.meals?.[type]; 
+            if(!m || !m.name) return ''; 
+            const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1">${m.name}</a>` : `<span class="ml-1">${m.name}</span>`; 
+            return `<div class="flex items-center gap-1 p-1">
+                <i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition" 
+                   onclick="quickExpense('${m.name}', '餐飲')" 
+                   title="點擊記帳"></i>
+                ${linkPart}
+            </div>`;
+        };
+        const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
+            `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">
+                ${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}
+                ${renderMealItem('l', 'fa-utensils', 'text-green-400')}
+                ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
+            </div>` : '';
+       let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []);
+       const transHtml = transData.map(t => `
+            <div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition">
+                <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-train text-blue-400"></i>
+                    ${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}
+                    <span class="text-gray-700">${t.content || '交通移動'}</span>
+                </div>
+                
+                ${t.note ? `<div class="ml-6 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}
+                
+                ${t.photo ? `
+                <div class="mt-1 ml-6">
+                    <button onclick="viewPhoto('${t.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1 font-bold">
+                        <i class="fa-solid fa-ticket"></i> 查看車票/憑證
+                    </button>
+                </div>` : ''}
+            </div>
+        `).join('');
+        const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
+        const tapeColor = day.highlight ? 'bg-sakura/80' : 'bg-sky-300'; // 平日: 藍色
+        const tapeGridStyle = day.highlight ? '' : `
+            background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); 
+            background-size: 6px 6px;
+        `; 
+        
+        const stickerBg = day.highlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]';
+        const stickerBorder = day.highlight ? 'border-sakura' : 'border-[#e6dbbf]';
+        const stickerText = day.highlight ? 'text-sakura' : 'text-[#5d574b]';
+        c.innerHTML += `
+            <div class="relative pl-8 border-l-2 ${day.highlight ? 'border-sakura' : 'border-gray-200'} pb-10 group">
+                <div class="absolute -left-2.5 top-3 w-5 h-5 rounded-full ${day.highlight ? 'bg-sakura' : 'bg-gray-300'} border-4 border-paper shadow-sm z-10"></div>
+                
+                <div class="flex justify-between mb-3 items-end">
+                    <div class="flex items-center gap-4">
+                        <!-- 貼紙區塊 -->
+                        <div class="relative mt-3" onclick="openDayEditor('${day.id}')">
+                    
+                            <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 ${tapeColor} -rotate-1 rounded-sm z-20 shadow-sm opacity-90" 
+                                 style="${tapeGridStyle}"></div>
+
+                            <div class="relative ${stickerBg} border-2 ${stickerBorder} px-4 py-1.5 rounded-lg -rotate-2 hover:rotate-0 transition-all duration-300 cursor-pointer min-w-[4rem] text-center shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                                <span class="text-xl font-black font-maru tracking-widest ${stickerText}">
+                                    ${day.date}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- 天氣圖示 -->
+                        <div class="mb-1">${weatherGroupHtml}</div>
+                    </div>
+                    
+                    <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition p-2">
+                        <i class="fa-solid fa-pen text-sm"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
+                    <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>
+                    ${photosHtml}
+                    ${accHtml}
+                    ${transHtml}
+                    ${mealsHtml}
+                    ${noteHtml}
+                </div>
+            </div>`;
+    });
+}
         function openDayEditor(id){ 
             const d=itinerary.find(i=>i.id===id); 
             if(!d)return; 
@@ -1154,10 +1301,77 @@
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:document.getElementById('guide-desc').value, price:document.getElementById('guide-price').value, time:document.getElementById('guide-time').value, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
 
         // --- FLIGHTS ---
-        function renderFlights() { document.getElementById('flight-list-container').innerHTML = flights.map(f=>`<div class="bg-white rounded-[24px] p-5 shadow-soft relative hand-card"><button onclick="editFlight(${f.id})" class="absolute top-3 right-3 text-gray-300"><i class="fa-solid fa-pen"></i></button><div class="flex justify-between items-center mb-4"><span class="text-4xl font-black handwritten text-pencil">${f.dep}</span><i class="fa-solid fa-plane text-fuji rotate-[-45deg]"></i><span class="text-4xl font-black handwritten text-pencil">${f.arr}</span></div><div class="bg-fuji-light rounded-2xl py-2 px-4 text-center"><div class="font-bold text-fuji">${f.code}</div><div class="text-xs text-gray-400">${f.date} ${f.time}</div></div></div>`).join(''); }
-        function saveFlight(){ const id=document.getElementById('flight-id').value; const f={id:id?parseInt(id):Date.now(), dep:document.getElementById('flight-dep').value, arr:document.getElementById('flight-arr').value, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value}; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
-        function editFlight(id){ const f=flights.find(i=>i.id==id); if(f){document.getElementById('flight-id').value=f.id;document.getElementById('flight-dep').value=f.dep;document.getElementById('flight-arr').value=f.arr;document.getElementById('flight-code').value=f.code;document.getElementById('flight-date').value=f.date;document.getElementById('flight-time').value=f.time;document.getElementById('flight-url').value=f.url;openModal('flight-modal');} }
-        function openFlightModal(){ ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); openModal('flight-modal'); }
+        function renderFlights() { 
+            document.getElementById('flight-list-container').innerHTML = flights.map(f => {
+                const planeIcon = f.url 
+                    ? `<a href="${f.url}" target="_blank" class="cursor-pointer hover:scale-110 transition-transform inline-block" title="前往官網"><i class="fa-solid fa-plane text-fuji text-2xl rotate-[-45deg]"></i></a>`
+                    : `<i class="fa-solid fa-plane text-fuji text-2xl rotate-[-45deg]"></i>`;
+                const codeDisplay = f.photo
+                    ? `<div onclick="viewPhoto('${f.photo}')" class="font-bold text-fuji text-xl handwritten cursor-pointer hover:text-blue-600 border-b-2 border-dashed border-fuji/30 inline-block px-2" title="查看機票截圖">${f.code} <i class="fa-solid fa-image text-[10px] align-top opacity-50"></i></div>`
+                    : `<div class="font-bold text-fuji text-xl handwritten">${f.code}</div>`;
+
+                return `
+                <div class="bg-white rounded-[24px] p-5 shadow-soft relative hand-card group">
+                    <button onclick="editFlight(${f.id})" class="absolute top-3 right-3 text-gray-300 hover:text-fuji transition"><i class="fa-solid fa-pen"></i></button>
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <span class="text-4xl font-black handwritten text-pencil">${f.dep}</span>
+                        ${planeIcon}
+                        <span class="text-4xl font-black handwritten text-pencil">${f.arr}</span>
+                    </div>
+                    <div class="bg-fuji-light/50 rounded-2xl py-3 px-4 text-center border border-fuji/10">
+                        ${codeDisplay}
+                    <div class="text-lg font-bold text-gray-600 mt-2">${f.date} ${f.time}</div>
+                        
+                    </div>
+                </div>`;
+            }).join(''); 
+        }
+        function saveFlight(){ 
+            const id=document.getElementById('flight-id').value; 
+            const f={
+                id:id?parseInt(id):Date.now(), 
+                dep:document.getElementById('flight-dep').value, 
+                arr:document.getElementById('flight-arr').value, 
+                code:document.getElementById('flight-code').value, 
+                time:document.getElementById('flight-time').value, 
+                date:document.getElementById('flight-date').value, 
+                url:document.getElementById('flight-url').value,
+                photo: currentFlightPhoto // ★ 儲存照片
+            }; 
+            if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} 
+            saveData(); renderFlights(); closeModal('flight-modal'); 
+        }
+
+        function editFlight(id){ 
+            const f=flights.find(i=>i.id==id); 
+            if(f){
+                document.getElementById('flight-id').value=f.id;
+                document.getElementById('flight-dep').value=f.dep;
+                document.getElementById('flight-arr').value=f.arr;
+                document.getElementById('flight-code').value=f.code;
+                document.getElementById('flight-date').value=f.date;
+                document.getElementById('flight-time').value=f.time;
+                document.getElementById('flight-url').value=f.url;
+                currentFlightPhoto = f.photo;
+                if(f.photo) {
+                    document.getElementById('flight-photo-preview').src = f.photo;
+                    document.getElementById('flight-photo-preview').classList.remove('hidden');
+                } else {
+                    document.getElementById('flight-photo-preview').classList.add('hidden');
+                    document.getElementById('flight-photo-preview').src = "";
+                }
+                
+                openModal('flight-modal');
+            } 
+        }
+
+        function openFlightModal(){ 
+            ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); 
+            currentFlightPhoto = null;
+            document.getElementById('flight-photo-preview').classList.add('hidden');
+            document.getElementById('flight-photo-preview').src = "";
+        openModal('flight-modal'); 
+        }
 
         // --- WALLET & CHARTS & SETTLEMENT ---
         function renderExpenses() {
@@ -1200,8 +1414,8 @@
                 let totalConsumed = 0;
                 expenses.forEach(e => { 
                     if(e.splitBy && e.splitBy.includes(p)) {
-                         const amt = (e.curr==='JPY' ? e.amt*rate : e.amt);
-                         totalConsumed += amt / e.splitBy.length;
+                          const amt = (e.curr==='JPY' ? e.amt*rate : e.amt);
+                          totalConsumed += amt / e.splitBy.length;
                     }
                 });
                 dash.innerHTML += `<div class="min-w-[140px] p-4 bg-white rounded-[24px] shadow-sm border border-gray-100"><div class="font-bold text-gray-700 text-sm mb-1">${p} 消費</div><div class="text-lg font-bold font-mono text-gray-800">NT$ ${Math.round(totalConsumed).toLocaleString()}</div></div>`;
@@ -1235,8 +1449,8 @@
             expenses.forEach(e => {
                 const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
                 if(e.splitBy && e.splitBy.length > 0) {
-                      const share = amt / e.splitBy.length;
-                      e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; });
+                       const share = amt / e.splitBy.length;
+                       e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; });
                 }
             });
             
