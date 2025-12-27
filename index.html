@@ -77,7 +77,7 @@
         .drag-handle { cursor: grab; touch-action: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 100%; background-color: rgba(0,0,0,0.02); position: absolute; left: 0; top: 0; z-index: 10; border-right: 1px solid rgba(0,0,0,0.03); }
         .drag-handle:active { cursor: grabbing; background-color: rgba(0,0,0,0.05); }
         .meal-clickable:active { background-color: #f3f4f6; border-radius: 4px; }
-        .guide-link { color: #9ca3af; font-weight: 900; border-bottom: 2px dotted #9ca3af; cursor: pointer; }
+        .guide-link { color: #060c21; font-weight: 900; border-bottom: 2px dotted #060c21; cursor: pointer;}
         .weather-group {display: flex;flex-direction: column;align-items: center;justify-content: center;margin-left: 12px;position: relative;top: -4px; /* 稍微上移調整視覺平衡 */}
         .temp-badge {font-family: 'Zen Maru Gothic', sans-serif; /* 圓圓的可愛字體 */font-weight: 900;font-size: 0.75rem; /* 12px */line-height: 1;margin-bottom: 2px;padding: 2px 6px;border-radius: 10px;color: white;box-shadow: 1px 1px 0px rgba(0,0,0,0.1);transform: rotate(-5deg); /* 稍微歪一點比較俏皮 */text-shadow: 0 1px 0 rgba(0,0,0,0.1);white-space: nowrap;}
 
@@ -1104,7 +1104,7 @@
         const loc = day.accommodation || "東京";
         // const date = day.date || ""; // 站內搜尋用不到日期，先註解掉
         const cleanLoc = (typeof cleanLocationName === 'function') ? cleanLocationName(loc) : loc;
-        const searchUrl = `https://tenki.jp/search/?keyword=${encodeURIComponent(cleanLoc)}`;
+        const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html";
         const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
         
         let tempBadgeHtml = '';
@@ -1175,7 +1175,7 @@
             </div>
         `).join('');
         const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
-        const tapeColor = day.highlight ? 'bg-sakura/80' : 'bg-sky-300'; // 平日: 藍色
+        const tapeColor = day.highlight ? 'bg-sakura/80' : 'bg-purple-300'; // 平日: 藍色
         const tapeGridStyle = day.highlight ? '' : `
             background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), 
                               linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); 
@@ -1197,7 +1197,7 @@
                             <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 ${tapeColor} -rotate-1 rounded-sm z-20 shadow-sm opacity-90" 
                                  style="${tapeGridStyle}"></div>
 
-                            <div class="relative ${stickerBg} border-2 ${stickerBorder} px-4 py-1.5 rounded-lg -rotate-2 hover:rotate-0 transition-all duration-300 cursor-pointer min-w-[4rem] text-center shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                            <div class="relative ${stickerBg} border-2 ${stickerBorder} px-4 py-1.5 rounded-lg -rotate-2 hover:rotate-0 transition-all duration-300 cursor-pointer min-w-[4rem] text-center shadow-md hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap">
                                 <span class="text-xl font-black font-maru tracking-widest ${stickerText}">
                                     ${day.date}
                                 </span>
