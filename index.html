@@ -127,13 +127,9 @@
             <div class="flex justify-between items-center mb-4 border-t-2 border-dashed border-gray-200 pt-8 mt-6">
                  <h3 class="text-pencil font-bold handwritten text-xl flex items-center"><i class="fa-solid fa-map-location-dot mr-2 text-xl text-matcha"></i>每日行程</h3>
             </div>
-            
-            <!-- Hint -->
-            <p class="text-xs text-gray-400 mb-6 text-center handwritten flex justify-center items-center gap-4 bg-white/60 py-2 rounded-full mx-auto max-w-xs backdrop-blur-sm shadow-sm">
-                <span><i class="fa-solid fa-utensils text-orange-400"></i> 點擊<i class="fa-solid fa-utensils"></i>記帳，點文字跳轉</span>
-            </p>
-
-            <div id="itinerary-container" class="space-y-6 md:grid md:grid-cols-2 md:space-y-0 md:gap-6 items-start"></div>
+          
+          <div id="quick-nav-container" class="mb-8 px-2"></div>  
+          <div id="itinerary-container" class="space-y-6 md:grid md:grid-cols-2 md:space-y-0 md:gap-6 items-start"></div>
             
             <button onclick="addNewDay()" class="w-full mt-8 mb-8 border-2 border-dashed border-gray-300 text-gray-400 rounded-2xl py-4 hover:bg-white hover:border-matcha hover:text-matcha transition font-bold text-sm bg-white/50 handwritten flex items-center justify-center gap-2 group">
                 <i class="fa-solid fa-plus-circle group-hover:scale-110 transition"></i> 寫下一頁回憶
@@ -1097,8 +1093,38 @@
 
         function renderItinerary() {
     const c = document.getElementById('itinerary-container');
+    const navC = document.getElementById('quick-nav-container'); // 取得導覽列容器
     if (!c) return;
     c.innerHTML = '';
+    if (navC && itinerary.length > 0) {
+        const stickersHtml = itinerary.map((day, idx) => {
+            const themes = [
+                { cloud: 'text-pink-200', text: 'text-pink-600' },    // 粉
+                { cloud: 'text-yellow-200', text: 'text-yellow-700' },// 黃
+                { cloud: 'text-blue-200', text: 'text-blue-600' },    // 藍
+                { cloud: 'text-green-200', text: 'text-green-600' },  // 綠
+                { cloud: 'text-purple-200', text: 'text-purple-600' },// 紫
+                { cloud: 'text-orange-200', text: 'text-orange-700' },// 橘
+                { cloud: 'text-cyan-200', text: 'text-cyan-700' }     // 青
+            ];
+            const theme = themes[idx % 7];
+            
+            return `
+            <button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})"
+                    class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300">
+                <i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1">
+                    <span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span>
+                    <span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span>
+                </div>
+            </button>`;
+        }).join('');
+        navC.innerHTML = `
+            <div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">
+                ${stickersHtml}
+            </div>
+        `;
+    }
     itinerary.forEach((day) => {
         let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
         const loc = day.accommodation || "東京";
@@ -1186,7 +1212,7 @@
         const stickerBorder = day.highlight ? 'border-sakura' : 'border-[#e6dbbf]';
         const stickerText = day.highlight ? 'text-sakura' : 'text-[#827355]';
         c.innerHTML += `
-            <div class="relative pl-8 border-l-2 ${day.highlight ? 'border-sakura' : 'border-gray-200'} pb-10 group">
+            <div id="${day.id}"class="relative pl-8 border-l-2 ${day.highlight ? 'border-sakura' : 'border-gray-200'} pb-10 group">
                 <div class="absolute -left-2.5 top-3 w-5 h-5 rounded-full ${day.highlight ? 'bg-sakura' : 'bg-gray-300'} border-4 border-paper shadow-sm z-10"></div>
                 
                 <div class="flex justify-between mb-3 items-end">
@@ -1865,5 +1891,3 @@
     </script>
 </body>
 </html>
-
-
