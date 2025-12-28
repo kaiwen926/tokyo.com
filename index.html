@@ -827,7 +827,7 @@
         async function forceUpload() {
             if(!gistId) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, lastUpdate: new Date() };
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText,vjwData,todos, manualDebts,shoppingOwners,lastUpdate: new Date() };
             try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
         }
         function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
