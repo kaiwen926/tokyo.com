@@ -1722,8 +1722,10 @@
             saveData(); renderExpenses(); closeModal('expense-modal'); 
         }
         function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }
+// --- SHOPPING (分類資料夾 + 縮圖) ---
+        // 確保分類展開狀態的變數存在
+        window.expandedCategories = window.expandedCategories || new Set();
 
-        // --- SHOPPING (V18 ENHANCED) ---
         function renderShoppingList() {
             const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; 
             const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner);
@@ -1737,49 +1739,143 @@
                 grouped[cat].push(item);
             });
 
+            // 定義標籤顏色風格 (Tag Style)
+            const catStyles = { 
+                '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 
+                'Outlet': 'border-blue-400 bg-blue-50 text-blue-600', 
+                '便利商店': 'border-green-400 bg-green-50 text-green-600', 
+                '伴手禮': 'border-red-400 bg-red-50 text-red-600', 
+                '電器': 'border-gray-500 bg-gray-100 text-gray-600', 
+                '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 
+                '未分類': 'border-gray-300 bg-gray-50 text-gray-500' 
+            };
+
             Object.keys(grouped).sort().forEach(cat => {
                 const catItems = grouped[cat];
-                const doneItems = catItems.filter(i => i.done);
-                const pendingItems = catItems.filter(i => !i.done);
-                
-                let html = `<div class="bg-gray-50/50 rounded-xl p-3 border border-gray-100">
-                    <h5 class="font-bold text-gray-400 text-xs mb-2 flex items-center gap-1"><i class="fa-solid fa-tag"></i> ${cat}</h5>
-                    <div class="grid grid-cols-2 gap-3 mb-2">
-                        ${pendingItems.map(s => renderShopItem(s, false)).join('')}
-                    </div>`;
-                
-                if (doneItems.length > 0) {
-                      html += `<div class="border-t border-gray-200/50 pt-2 opacity-60 grayscale filter">
-                        ${doneItems.map(s => renderShopItem(s, true)).join('')}
-                      </div>`;
-                }
-                html += `</div>`;
+                const doneCount = catItems.filter(i => i.done).length;
+                const isExpanded = expandedCategories.has(cat);
+                const styleClass = catStyles[cat] || catStyles['未分類'];
+
+                let html = `
+                <div class="mb-3 transition-all duration-300">
+                    <!-- 分類標題卡片 -->
+                    <div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" 
+                         onclick="toggleShopCat('${cat}')"
+                         style="background-color: white;">
+                        <div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-tag text-sm opacity-70"></i>
+                            <h5 class="font-bold text-sm tracking-wide">${cat}</h5>
+                            <span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i>
+                    </div>
+                    
+                    <!-- 展開後的商品列表 -->
+                    <div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">
+                        ${catItems.map(s => renderShopItem(s)).join('')}
+                    </div>
+                </div>`;
                 container.innerHTML += html;
             });
             document.getElementById('shop-owner-name').innerText = owner;
         }
-
-        function renderShopItem(s, isDone) {
-            return `<div class="relative p-2 border shadow-sm rounded bg-white flex items-start gap-2" onclick="openShoppingModal(${s.id})">
-                <div class="mt-1 w-5 h-5 border-2 rounded flex-shrink-0 cursor-pointer ${isDone?'bg-red-400 border-red-400':''}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})"></div>
-                <div class="min-w-0">
-                    <div class="font-bold truncate text-sm">${s.name}</div>
-                    <div class="text-[10px] text-gray-400">¥${s.price} x ${s.qty}</div>
+        function renderShopItem(s) {
+            const isDone = s.done;
+            return `
+            <div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal(${s.id})">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})">
+                        <i class="fa-solid fa-check text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5 font-mono">¥${s.price} <span class="text-gray-300">x</span> ${s.qty}</div>
+                    </div>
                 </div>
+                ${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}
             </div>`;
         }
+        function toggleShopCat(cat) {
+            if (expandedCategories.has(cat)) expandedCategories.delete(cat);
+            else expandedCategories.add(cat);
+            renderShoppingList();
+        }
+function openShoppingModal(id=null){ 
+            ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); 
+            document.getElementById('shop-qty').value=1; 
+            currentShopPhoto=null; 
+            document.getElementById('shop-photo-preview').classList.add('hidden'); 
+            
+            if(id){
+                const s=shoppingList.find(i=>i.id===id);
+                document.getElementById('shop-id').value=s.id;
+                document.getElementById('shop-name').value=s.name;
+                document.getElementById('shop-qty').value=s.qty;
+                document.getElementById('shop-price').value=s.price;
+                document.getElementById('shop-category').value=s.category||'';
+                if(s.photo){
+                    currentShopPhoto=s.photo;
+                    document.getElementById('shop-photo-preview').src=s.photo;
+                    document.getElementById('shop-photo-preview').classList.remove('hidden')
+                }
+            } 
+            openModal('shopping-modal'); 
+        }
 
+        // 6. 儲存商品
+        function saveShoppingItem(){ 
+            const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; 
+            if(!name)return; 
+            const item={ 
+                id:id?parseInt(id):Date.now(), 
+                name, 
+                qty:document.getElementById('shop-qty').value, 
+                price:document.getElementById('shop-price').value, 
+                category:document.getElementById('shop-category').value, 
+                photo:currentShopPhoto, 
+                done:false, 
+                owner: shoppingOwners[currentShopOwnerIdx] 
+            }; 
+            
+            if(id){
+                const idx=shoppingList.findIndex(i=>i.id==id);
+                item.done=shoppingList[idx].done; // 保持已完成狀態
+                shoppingList[idx]=item;
+            } else {
+                shoppingList.push(item);
+            } 
+            saveData(); 
+            renderShoppingList(); 
+            closeModal('shopping-modal'); 
+        }
+
+        // 7. 刪除商品
+        function deleteShoppingItem(){ 
+            if(confirm("確定要刪除這個商品嗎？")){
+                shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value);
+                saveData();
+                renderShoppingList();
+                closeModal('shopping-modal');
+            } 
+        }
+
+        // 8. 觸發購買動作 (勾選)
         function triggerShopAction(id, isDone) {
             if(isDone) {
+                // 取消勾選
                 const s = shoppingList.find(i=>i.id===id);
                 s.done = false;
-                saveData(); renderShoppingList();
+                saveData(); 
+                renderShoppingList();
             } else {
+                // 勾選 -> 彈出確認視窗
                 document.getElementById('confirm-shop-id').value = id;
                 openModal('shop-confirm-modal');
             }
         }
 
+        // 9. 確認購買動作 (記帳或純標記)
         function confirmShopAction(action) {
             const id = parseInt(document.getElementById('confirm-shop-id').value);
             const s = shoppingList.find(i=>i.id===id);
@@ -1790,87 +1886,76 @@
                 const categoryNote = s.category ? ` (${s.category})` : '';
                 document.getElementById('ex-note').value = s.name + categoryNote;
                 document.getElementById('ex-amount').value = s.price * s.qty;
+                
+                // 設定記帳預設值
                 selectedCat = '購物';
-                selectedPayers = ['我']; // Default split for shopping usually self, or change in modal
-                openExpenseModal(); // Let user confirm payer/split
-                s.done = true;
-                saveData(); renderShoppingList();
+                selectedPayers = ['我']; 
+                
+                openExpenseModal(); // 打開記帳視窗
+                
+                s.done = true; // 標記為已買
+                saveData(); 
+                renderShoppingList();
             } else if (action === 'done_only') {
                 s.done = true;
-                saveData(); renderShoppingList();
+                saveData(); 
+                renderShoppingList();
                 closeModal('shop-confirm-modal');
             } else if (action === 'cancel') {
                 closeModal('shop-confirm-modal');
             }
         }
-
-        function openShoppingModal(id=null){ 
-            ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); 
-            document.getElementById('shop-qty').value=1;
-            currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); 
-            if(id){
-                const s=shoppingList.find(i=>i.id===id);
-                document.getElementById('shop-id').value=s.id;document.getElementById('shop-name').value=s.name;document.getElementById('shop-qty').value=s.qty;document.getElementById('shop-price').value=s.price;document.getElementById('shop-category').value=s.category||'';
-                if(s.photo){currentShopPhoto=s.photo;document.getElementById('shop-photo-preview').src=s.photo;document.getElementById('shop-photo-preview').classList.remove('hidden')}
-            } 
-            openModal('shopping-modal'); 
-        }
-        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:document.getElementById('shop-category').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){const idx=shoppingList.findIndex(i=>i.id==id);item.done=shoppingList[idx].done;shoppingList[idx]=item;}else{shoppingList.push(item);} saveData(); renderShoppingList(); closeModal('shopping-modal'); }
-        function deleteShoppingItem(){ if(confirm("Del?")){shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value);saveData();renderShoppingList();closeModal('shopping-modal');} }
         function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
         function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
         function setShopCat(val) { document.getElementById('shop-category').value = val; }
-        
         function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map(n=>`<div class="bg-gray-50 p-2 border rounded text-sm">${n}</div>`).join(''); openModal('manage-shop-lists-modal'); }
         function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){shoppingOwners.push(n);saveData();openShopOwnerModal();renderShoppingList();} }
 
-        // --- OTHER LISTS ---
+        // --- OTHER LISTS (MUST EAT 折疊 + CHECKLIST 卡片) ---
         function renderMustEatList() {
             const c = document.getElementById('must-eat-list'); c.innerHTML = '';
             mustEatList.forEach(locItem => {
-                const themesHtml = locItem.themes.map(t => `<div class="bg-white p-3 rounded shadow-sm border border-gray-100 mb-2 flex justify-between"><span class="${t.isVeg?'text-green-600 font-bold':''}">${t.isVeg?'🥗 ':''}${t.name}</span>${t.url?`<a href="${t.url}" target="_blank" class="text-fuji"><i class="fa-solid fa-link"></i></a>`:''}</div>`).join('');
-                c.innerHTML += `<div class="mb-6 group relative"><button onclick="openMustEatModal('${locItem.id}')" class="absolute top-0 right-0 text-gray-300 hover:text-fuji px-2"><i class="fa-solid fa-pen"></i></button><h4 class="text-lg font-black handwritten text-matcha border-b-2 border-matcha/30 inline-block px-2 mb-3">${locItem.location}</h4><div class="pl-2 border-l-2 border-matcha/10">${themesHtml}</div></div>`;
+                const themesHtml = locItem.themes.map(t => `<div class="bg-white p-3 rounded-lg border border-matcha/20 mb-2 flex justify-between items-center"><span class="${t.isVeg?'text-green-600 font-bold':''} text-gray-700">${t.isVeg?'<i class="fa-solid fa-leaf mr-1"></i>':''}${t.name}</span>${t.url?`<a href="${t.url}" target="_blank" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-matcha hover:bg-matcha hover:text-white transition"><i class="fa-solid fa-link text-xs"></i></a>`:''}</div>`).join('');
+                c.innerHTML += `
+                    <div class="mb-3 bg-[#fffdf5] rounded-xl border-l-4 border-matcha shadow-sm overflow-hidden">
+                        <!-- 地點標題 (點擊展開) -->
+                        <div class="flex justify-between items-center p-4 cursor-pointer hover:bg-[#fcfcf0]" onclick="toggleMustEat('${locItem.id}')">
+                            <h4 class="text-lg font-black handwritten text-gray-700 flex items-center gap-2"><i class="fa-solid fa-location-dot text-matcha"></i> ${locItem.location}</h4>
+                            <div class="flex items-center gap-3"><span class="text-[10px] text-matcha font-bold bg-matcha/10 px-2 py-1 rounded-full border border-matcha/20">${locItem.themes.length} 間</span><i id="icon-${locItem.id}" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i></div>
+                        </div>
+                        <!-- 展開內容 -->
+                        <div id="details-${locItem.id}" class="hidden bg-white/50 p-4 border-t border-matcha/10 animate-slide-in relative">
+                             <div class="flex justify-end mb-2"><button onclick="openMustEatModal('${locItem.id}')" class="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full hover:bg-matcha hover:text-white transition font-bold flex items-center gap-1"><i class="fa-solid fa-pen"></i> 編輯</button></div>
+                             <div class="space-y-1">${themesHtml}</div>
+                        </div>
+                    </div>`;
             });
         }
-        function openMustEatModal(id=null) {
-            document.getElementById('eat-location').value = ''; tempThemes = []; document.getElementById('eat-loc-id').value = '';
-            if(id) {
-                const item = mustEatList.find(i => i.id === id);
-                if(item) { document.getElementById('eat-loc-id').value = item.id; document.getElementById('eat-location').value = item.location; tempThemes = JSON.parse(JSON.stringify(item.themes)); }
-            } else { tempThemes = [{id: Date.now(), name: '', url: '', isVeg: false}]; }
-            renderThemeRows(); openModal('must-eat-modal');
+        function toggleMustEat(id) {
+            const el = document.getElementById(`details-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            if (el.classList.contains('hidden')) { el.classList.remove('hidden'); icon.classList.add('rotate-180'); } else { el.classList.add('hidden'); icon.classList.remove('rotate-180'); }
         }
-        function renderThemeRows() {
-            document.getElementById('eat-themes-container').innerHTML = tempThemes.map((t, idx) => `
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group mb-2">
-                    <button onclick="tempThemes.splice(${idx},1);renderThemeRows()" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
-                    <div class="flex items-center gap-2 mb-2"><input type="text" placeholder="餐廳名稱" class="flex-1 bg-transparent border-b border-gray-300 text-sm font-bold" value="${t.name}" oninput="tempThemes[${idx}].name=this.value"><label class="text-xs text-green-600"><input type="checkbox" ${t.isVeg ? 'checked' : ''} onchange="tempThemes[${idx}].isVeg=this.checked"> 素食</label></div>
-                    <input type="url" placeholder="網址" class="w-full bg-white border rounded text-xs p-1" value="${t.url||''}" oninput="tempThemes[${idx}].url=this.value">
-                </div>
-            `).join('');
-        }
+        function openMustEatModal(id=null) { document.getElementById('eat-location').value = ''; tempThemes = []; document.getElementById('eat-loc-id').value = ''; if(id) { const item = mustEatList.find(i => i.id === id); if(item) { document.getElementById('eat-loc-id').value = item.id; document.getElementById('eat-location').value = item.location; tempThemes = JSON.parse(JSON.stringify(item.themes)); } } else { tempThemes = [{id: Date.now(), name: '', url: '', isVeg: false}]; } renderThemeRows(); openModal('must-eat-modal'); }
+        function renderThemeRows() { document.getElementById('eat-themes-container').innerHTML = tempThemes.map((t, idx) => `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group mb-2"><button onclick="tempThemes.splice(${idx},1);renderThemeRows()" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button><div class="flex items-center gap-2 mb-2"><input type="text" placeholder="餐廳名稱" class="flex-1 bg-transparent border-b border-gray-300 text-sm font-bold" value="${t.name}" oninput="tempThemes[${idx}].name=this.value"><label class="text-xs text-green-600"><input type="checkbox" ${t.isVeg ? 'checked' : ''} onchange="tempThemes[${idx}].isVeg=this.checked"> 素食</label></div><input type="url" placeholder="網址" class="w-full bg-white border rounded text-xs p-1" value="${t.url||''}" oninput="tempThemes[${idx}].url=this.value"></div>`).join(''); }
         function addThemeRow() { tempThemes.push({id: Date.now(), name: '', url: '', isVeg: false}); renderThemeRows(); }
-        function saveMustEatLocation() {
-            const id = document.getElementById('eat-loc-id').value, location = document.getElementById('eat-location').value;
-            if(!location) return alert("請輸入地點名稱");
-            const data = { id: id || 'loc_'+Date.now(), location, themes: tempThemes.filter(t => t.name) };
-            if(id) { const idx = mustEatList.findIndex(i => i.id === id); if(idx > -1) mustEatList[idx] = data; } else { mustEatList.push(data); }
-            saveData(); renderMustEatList(); closeModal('must-eat-modal');
-        }
+        function saveMustEatLocation() { const id = document.getElementById('eat-loc-id').value, location = document.getElementById('eat-location').value; if(!location) return alert("請輸入地點名稱"); const data = { id: id || 'loc_'+Date.now(), location, themes: tempThemes.filter(t => t.name) }; if(id) { const idx = mustEatList.findIndex(i => i.id === id); if(idx > -1) mustEatList[idx] = data; } else { mustEatList.push(data); } saveData(); renderMustEatList(); closeModal('must-eat-modal'); }
         function deleteMustEatLocation() { const id = document.getElementById('eat-loc-id').value; if(id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); closeModal('must-eat-modal'); } }
 
-        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border-b border-gray-100"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji"><input class="flex-1 bg-transparent font-hand text-lg ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300">x</button></li>`).join('');}
+        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border rounded-lg bg-white shadow-sm"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji flex-shrink-0 w-4 h-4"><input class="flex-1 bg-transparent font-hand text-sm ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300 hover:text-red-400 px-1">x</button></li>`).join('');}
         function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false}); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
         function toggleTodo(i){todos[i].done=!todos[i].done; saveData(); renderChecklist();}
         function updateTodo(i,v){todos[i].text=v; saveData();}
         function deleteTodo(i){todos.splice(i,1); saveData(); renderChecklist();}
+        
         function openMemberModal(){ document.getElementById('member-list').innerHTML=payers.map((p,i)=>`<div class="flex justify-between p-2 bg-gray-50 rounded items-center"><span class="font-bold text-sm">${p}</span>${p!=='公費'&&payers.length>2?`<button onclick="removePayer(${i})" class="text-red-400 text-xs px-2">刪除</button>`:''}</div>`).join(''); openModal('member-modal'); }
         function addPayer(){const n=document.getElementById('new-payer-name').value;if(n&&!payers.includes(n)){payers.push(n); saveData(); openMemberModal(); renderExpenses();}}
         function removePayer(i){if(confirm("Del?")){payers.splice(i,1); saveData(); openMemberModal(); renderExpenses();}}
         function openIOUModal(){ const h=payers.filter(p=>p!=='公費').map(p=>`<option value="${p}">${p}</option>`).join(''); document.getElementById('iou-creditor').innerHTML=h; document.getElementById('iou-debtor').innerHTML=h; document.getElementById('iou-list-container').innerHTML=manualDebts.map(i=>`<div class="flex justify-between p-2 border-b"><span class="text-sm">${i.debtor} 欠 ${i.creditor}</span><span class="font-bold">NT$${i.amount}</span><button onclick="deleteIOU('${i.id}')" class="text-xs text-red-400">x</button></div>`).join(''); openModal('iou-modal'); }
         function saveIOU(){ const c=document.getElementById('iou-creditor').value, d=document.getElementById('iou-debtor').value, a=parseFloat(document.getElementById('iou-amount').value), n=document.getElementById('iou-note').value; if(!a||c===d)return; manualDebts.push({id:'iou'+Date.now(),creditor:c,debtor:d,amount:a,note:n}); saveData(); openIOUModal(); }
-        function deleteIOU(id){ if(confirm("Del?")){manualDebts=manualDebts.filter(i=>i.id!=id);saveData();openIOUModal();} }
+        function deleteIOU(id){ if(confirm("Del?")){manualDebts=manualDebts.filter(i=>i.id!=id);saveData();openIOUModal();}}
         function toggleVJW() { vjwData.isOpen = !vjwData.isOpen; renderVJW(); saveData(); }
+        function updateVJWName(id, val) { const item = vjwData.items.find(i => i.id === id); if (item) { item.name = val; saveData(); } }
       // --- 新增：更新 VJW 名字的函式 (請貼在 renderVJW 上方) ---
         function updateVJWName(id, val) {
             const item = vjwData.items.find(i => i.id === id);
