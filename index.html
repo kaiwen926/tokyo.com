@@ -820,7 +820,11 @@
                 localStorage.setItem('guides',JSON.stringify(c.guides||[]));
                 localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
                 localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
-                localStorage.setItem('memo',c.memo||"");
+                localStorage.setItem('memo',c.memo||"");            
+                localStorage.setItem('shoppingOwners', JSON.stringify(c.shoppingOwners||["我的清單"]));
+                localStorage.setItem('vjwData', JSON.stringify(c.vjwData||{isOpen:true, items:[]})); 
+                localStorage.setItem('todos', JSON.stringify(c.todos||[]));
+                localStorage.setItem('manualDebts_v1', JSON.stringify(c.manualDebts||[])); 
                 updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
             }).catch(()=>updateCloudStatus("下載失敗"));
         }
