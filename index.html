@@ -341,26 +341,27 @@
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-6">
-                    <div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition">
-                        <div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()">
-                            <h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>Visit Japan Web</h3>
-                            <div class="flex gap-2 items-center">
-                                <a href="https://www.vjw.digital.go.jp/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a>
-                                <i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i>
-                            </div>
-                        </div>
-                        <div id="vjw-content" class="transition-all duration-300 overflow-hidden"><div class="p-4 pb-6"><div id="vjw-container" class="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 no-scrollbar items-start"></div></div></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <a href="https://tenki.jp/" target="_blank" class="hand-card p-4 flex flex-col items-center justify-center hover:bg-blue-50 transition group">
-                            <i class="fa-solid fa-cloud-sun-rain text-3xl text-fuji mb-2 group-hover:scale-110 transition"></i><span class="font-bold text-sm text-gray-600">Tenki.jp 天氣</span>
-                        </a>
-                        <a href="https://www.google.com/maps/search/drugstore" target="_blank" class="hand-card p-4 flex flex-col items-center justify-center hover:bg-pink-50 transition group">
-                            <i class="fa-solid fa-store text-3xl text-sakura mb-2 group-hover:scale-110 transition"></i><span class="font-bold text-sm text-gray-600">附近藥妝</span>
-                        </a>
-                    </div>
+              <div class="grid grid-cols-4 gap-3">
+                       <a href="https://tenki.jp/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                        <i class="fa-solid fa-cloud-sun-rain text-2xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-bold text-gray-500">天氣</span>
+                    </a>
+                    <a href="https://www.google.com/maps/search/drugstore" target="_blank" class="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                        <i class="fa-solid fa-store text-2xl text-sakura mb-1 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-bold text-gray-500">藥妝</span>
+                    </a>
+                    <a href="https://tabelog.com/" target="_blank" class="flex flex-col items-center justify-center bg-orange-50 hover:bg-orange-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                        <i class="fa-solid fa-utensils text-2xl text-orange-400 mb-1 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-bold text-gray-500">美食</span>
+                    </a>
+                    <a href="https://transit.yahoo.co.jp/" target="_blank" class="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                        <i class="fa-solid fa-train-subway text-2xl text-red-400 mb-1 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-bold text-gray-500">交通</span>
+                    </a>
+                </div>
+            </div>
+                    
+                  </div>
                     <details class="group hand-card overflow-hidden border border-gray-200">
                         <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none">
                             <span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span>
@@ -377,8 +378,6 @@
             </div>
         </section>
     </main>
-
-    <!-- NEW: ACCOMMODATION PHOTOS MODAL -->
     <div id="acc-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[80vh] overflow-hidden flex flex-col">
             <button onclick="closeModal('acc-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
