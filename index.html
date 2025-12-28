@@ -1805,7 +1805,10 @@
                     </div>
                     <div class="min-w-0">
                         <div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div>
-                        <div class="text-[11px] text-gray-400 mt-0.5 font-mono">¥${s.price} <span class="text-gray-300">x</span> ${s.qty}</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5 font-mono">
+                            ${s.price ? `¥${s.price} ` : ''}
+                            <span class="text-gray-300">x</span> ${s.qty}
+                        </div>
                     </div>
                 </div>
                 ${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}
