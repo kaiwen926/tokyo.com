@@ -816,6 +816,7 @@
                 const c = JSON.parse(content);
                 localStorage.setItem('flights',JSON.stringify(c.flights||[]));
                 localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
+                localStorage.setItem('mustEatList', JSON.stringify(c.mustEatList||[]));
                 localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
                 localStorage.setItem('guides',JSON.stringify(c.guides||[]));
                 localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
@@ -1810,6 +1811,7 @@
                     <div class="min-w-0">
                         <div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div>
                         <div class="text-[11px] text-gray-400 mt-0.5 font-mono">
+                            ${s.price ? `¥${s.price} ` : ''}
                             ${s.price ? `¥${s.price} ` : ''}
                             <span class="text-gray-300">x</span> ${s.qty}
                         </div>
