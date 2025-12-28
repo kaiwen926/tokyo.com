@@ -251,7 +251,7 @@
                  <div class="hand-card p-6 bg-[#fffff0] rotate-1 shadow-md border-t-8 border-[#e6e6d8]/30">
                     <div class="absolute top-0 left-0 w-full h-4 bg-yellow-400/10"></div>
                     <h3 class="text-lg font-bold mb-2 handwritten text-yellow-800 flex items-center gap-2"><i class="fa-solid fa-note-sticky"></i> 隨手記 (MEMO)</h3>
-                    <textarea id="memo-pad" class="w-full h-48 p-3 bg-transparent border-none resize-none text-sm leading-8 outline-none text-gray-700 handwritten" style="background-image: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px); line-height: 32px;" placeholder="在這裡隨手記下想法... (輸入後自動同步)"></textarea>
+                   <textarea id="memo-pad" class="w-full h-48 px-3 py-1 bg-transparent border-none resize-none text-sm leading-8 outline-none text-gray-700 handwritten" style="background-image: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px); line-height: 32px;" placeholder="在這裡隨手記下想法... (輸入後自動同步)"></textarea>
                 </div>
             </div>
         </section>
@@ -1757,7 +1757,7 @@
                 const styleClass = catStyles[cat] || catStyles['未分類'];
 
                 let html = `
-                <div class="mb-3 transition-all duration-300">
+                <div class="mb-3 transition-all duration-300 w-full max-w-full">
                     <!-- 分類標題卡片 -->
                     <div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" 
                          onclick="toggleShopCat('${cat}')"
@@ -1801,7 +1801,7 @@
             else expandedCategories.add(cat);
             renderShoppingList();
         }
-function openShoppingModal(id=null){ 
+        function openShoppingModal(id=null){ 
             ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); 
             document.getElementById('shop-qty').value=1; 
             currentShopPhoto=null; 
@@ -1942,7 +1942,7 @@ function openShoppingModal(id=null){
         function saveMustEatLocation() { const id = document.getElementById('eat-loc-id').value, location = document.getElementById('eat-location').value; if(!location) return alert("請輸入地點名稱"); const data = { id: id || 'loc_'+Date.now(), location, themes: tempThemes.filter(t => t.name) }; if(id) { const idx = mustEatList.findIndex(i => i.id === id); if(idx > -1) mustEatList[idx] = data; } else { mustEatList.push(data); } saveData(); renderMustEatList(); closeModal('must-eat-modal'); }
         function deleteMustEatLocation() { const id = document.getElementById('eat-loc-id').value; if(id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); closeModal('must-eat-modal'); } }
 
-        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border rounded-lg bg-white shadow-sm"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji flex-shrink-0 w-4 h-4"><input class="flex-1 bg-transparent font-hand text-sm ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300 hover:text-red-400 px-1">x</button></li>`).join('');}
+        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border rounded-lg bg-white shadow-sm"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji flex-shrink-0 w-4 h-4"><input class="flex-1 w-0 bg-transparent font-hand text-sm ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300 hover:text-red-400 px-1">x</button></li>`).join('');}
         function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false}); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
         function toggleTodo(i){todos[i].done=!todos[i].done; saveData(); renderChecklist();}
         function updateTodo(i,v){todos[i].text=v; saveData();}
