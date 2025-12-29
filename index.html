@@ -244,8 +244,11 @@
                 </div>
                 
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
-                    <h3 class="text-lg font-bold text-center mb-4 text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
-                    <!-- Packing List - Changed to Grid 2 cols -->
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
+                        <button onclick="uncheckAllTodos()" class="text-xs bg-white/50 border border-fuji/20 text-fuji px-2 py-1 rounded-full shadow-sm hover:bg-white transition" title="全部取消勾選"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+                    </div>
+                    
                     <ul id="checklist-container" class="grid grid-cols-2 gap-x-4 gap-y-2"></ul>
                     <div class="mt-4 flex gap-2 border-t pt-2 border-gray-200/50">
                         <input type="text" id="new-todo" placeholder="新增項目..." class="flex-1 bg-transparent border-b border-gray-300 text-sm outline-none font-hand focus:border-fuji transition px-1">
@@ -712,7 +715,7 @@
         const WEATHER_MAP = {'sunny': '🌞', 'cloudy': '⛅','Partly cloudy': '🌦️','rain': '☂', 'thunderstorm': '⛈️','snow': '⛄'};
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
-        
+        const DEFAULT_TODOS = ["衣服", "褲子", "內衣/褲", "襪子", "(毛)帽子", "外套", "墨鏡", "(拖)鞋", "毛巾(?)", "口罩", "化妝品", "保養品", "雨傘", "環保袋", "藥品", "衛生棉", "耳塞", "U型枕", "餐盒", "充電器", "行動電源", "Gopro", "自拍棒", "行李秤", "防曬乳", "酒精", "日幣", "錢包", "護照"];
         // --- PHRASE DATA ---
         const PHRASES = {
             'food': [
@@ -773,7 +776,7 @@
             if(!payers.includes("公費")) payers.push("公費");
             payerProfiles = JSON.parse(localStorage.getItem('payerProfiles')) || {};
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
-            todos = JSON.parse(localStorage.getItem('todos')) || [];
+            todos = JSON.parse(localStorage.getItem('todos')) || DEFAULT_TODOS.map(text => ({text, done: false}));
             memoText = localStorage.getItem('memo') || "";
             publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig_v2')) || { total: 0, currency: 'JPY' };
             vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
@@ -828,15 +831,14 @@
                 localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
                 localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
                 localStorage.setItem('memo',c.memo||"");
-                localStorage.setItem('todos',JSON.stringify(c.todos||[]));
                 updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
             }).catch(()=>updateCloudStatus("下載失敗"));
         }
         async function forceUpload() {
             if(!gistId) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, todos, lastUpdate: new Date() };
-            try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, lastUpdate: new Date() };
+           try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
         }
         function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
         function saveGistConfig() { gistId=document.getElementById('gist-id-input').value; gistToken=document.getElementById('gist-token-input').value; localStorage.setItem('gist_id',gistId); localStorage.setItem('gist_token',gistToken); alert("已儲存"); forceDownload(); }
@@ -2163,13 +2165,12 @@
         function addThemeRow() { tempThemes.push({id: Date.now(), name: '', url: '', isVeg: false, note: ''}); renderThemeRows(); }
         function saveMustEatLocation() { const id = document.getElementById('eat-loc-id').value, location = document.getElementById('eat-location').value; if(!location) return alert("請輸入地點名稱"); const data = { id: id || 'loc_'+Date.now(), location, themes: tempThemes.filter(t => t.name) }; if(id) { const idx = mustEatList.findIndex(i => i.id === id); if(idx > -1) mustEatList[idx] = data; } else { mustEatList.push(data); } saveData(); renderMustEatList(); closeModal('must-eat-modal'); }
         function deleteMustEatLocation() { const id = document.getElementById('eat-loc-id').value; if(id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); closeModal('must-eat-modal'); } }
-
-        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border rounded-lg bg-white shadow-sm"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji flex-shrink-0 w-4 h-4"><input class="flex-1 w-0 bg-transparent font-hand text-sm ${t.done?'line-through text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300 hover:text-red-400 px-1">x</button></li>`).join('');}
+        function renderChecklist(){document.getElementById('checklist-container').innerHTML=todos.map((t,i)=>`<li class="flex items-center gap-2 p-2 border rounded-lg bg-white shadow-sm transition-opacity duration-300 ${t.done ? 'opacity-60' : ''}"><input type="checkbox" onchange="toggleTodo(${i})" ${t.done?'checked':''} class="accent-fuji flex-shrink-0 w-4 h-4 cursor-pointer"><input class="flex-1 w-0 bg-transparent font-hand text-sm ${t.done?'text-gray-300':''}" value="${t.text}" onchange="updateTodo(${i},this.value)"><button onclick="deleteTodo(${i})" class="text-gray-300 hover:text-red-400 px-1"><i class="fa-solid fa-times"></i></button></li>`).join('');}
+        function uncheckAllTodos() {if(confirm("確定要取消所有勾選狀態嗎？")) {todos.forEach(t => t.done = false);saveData();renderChecklist();}}
         function addTodo(){const v=document.getElementById('new-todo').value;if(v){todos.push({text:v,done:false}); saveData(); renderChecklist();document.getElementById('new-todo').value='';}}
         function toggleTodo(i){todos[i].done=!todos[i].done; saveData(); renderChecklist();}
         function updateTodo(i,v){todos[i].text=v; saveData();}
         function deleteTodo(i){todos.splice(i,1); saveData(); renderChecklist();}
-        
         function openMemberModal(){ document.getElementById('member-list').innerHTML=payers.map((p,i)=>`<div class="flex justify-between p-2 bg-gray-50 rounded items-center"><span class="font-bold text-sm">${p}</span>${p!=='公費'&&payers.length>2?`<button onclick="removePayer(${i})" class="text-red-400 text-xs px-2">刪除</button>`:''}</div>`).join(''); openModal('member-modal'); }
         function addPayer(){const n=document.getElementById('new-payer-name').value;if(n&&!payers.includes(n)){payers.push(n); saveData(); openMemberModal(); renderExpenses();}}
         function removePayer(i){if(confirm("Del?")){payers.splice(i,1); saveData(); openMemberModal(); renderExpenses();}}
