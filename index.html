@@ -269,7 +269,7 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <a href="https://translate.google.com/?sl=auto&tl=ja&op=images" target="_blank" class="bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2"><i class="fa-solid fa-camera"></i> 圖片/鏡頭翻譯</a>
-                        <button onclick="openGoogleTranslate()" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2"><i class="fa-brands fa-google"></i> 文字翻譯</button>
+                        <a href="https://translate.google.com/?sl=auto&tl=ja&op=translate" target="_blank" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2 no-underline"><i class="fa-brands fa-google"></i> 文字翻譯</a>
                     </div>
                 </div>
                 <!-- Phrase Book -->
@@ -633,8 +633,8 @@
                 <input type="text" id="shop-category" placeholder="例: 藥妝, Outlet, 超商..." class="w-full border rounded p-2 text-sm bg-white mb-2">
                 <div class="flex flex-wrap gap-2">
                     <button onclick="setShopCat('藥妝')" class="text-xs bg-pink-50 text-pink-500 px-2 py-1 rounded-full border border-pink-100">藥妝</button>
-                    <button onclick="setShopCat('Outlet')" class="text-xs bg-blue-50 text-blue-500 px-2 py-1 rounded-full border border-blue-100">Outlet</button>
-<button onclick="setShopCat('7-11')" class="text-xs bg-orange-50 text-orange-500 px-2 py-1 rounded-full border border-orange-100">7-11</button>
+                    <button onclick="setShopCat('Outlet')" class="text-xs bg-sky-50 text-sky-500 px-2 py-1 rounded-full border border-sky-100">Outlet</button>
+                    <button onclick="setShopCat('7-11')" class="text-xs bg-orange-50 text-orange-500 px-2 py-1 rounded-full border border-orange-100">7-11</button>
                     <button onclick="setShopCat('全家')" class="text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full border border-green-200">全家</button>
                     <button onclick="setShopCat('Lawson')" class="text-xs bg-blue-50 text-blue-500 px-2 py-1 rounded-full border border-blue-100">Lawson</button>
                     <button onclick="setShopCat('伴手禮')" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full border border-red-100">伴手禮</button>
@@ -824,13 +824,14 @@
                 localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
                 localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
                 localStorage.setItem('memo',c.memo||"");
+                localStorage.setItem('todos',JSON.stringify(c.todos||[]));
                 updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
             }).catch(()=>updateCloudStatus("下載失敗"));
         }
         async function forceUpload() {
             if(!gistId) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, lastUpdate: new Date() };
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, todos, lastUpdate: new Date() };
             try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
         }
         function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
@@ -1802,7 +1803,7 @@
             // 定義標籤顏色風格
             const catStyles = { 
                 '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 
-                'Outlet': 'border-blue-400 bg-blue-50 text-blue-600', 
+                'Outlet': 'border-sky-400 bg-sky-50 text-sky-600', 
                 '7-11': 'border-orange-400 bg-orange-50 text-orange-600', 
                 '全家': 'border-green-500 bg-green-50 text-green-700',
                 'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', 
