@@ -1569,8 +1569,12 @@
              detailsContainer.innerHTML = `
                 <div class="mb-4">${categorySummaryHtml}</div>
                 <div class="pt-2 border-t-2 border-dashed border-gray-200">
-                    <h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1"><i class="fa-solid fa-list"></i> 詳細支出紀錄 (點擊可修改)</h4>
-                    <div class="space-y-0.5 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                    <h4 onclick="const chartContainer=document.getElementById('memberDetailChart').parentElement; const listContainer=this.nextElementSibling; if(chartContainer.classList.contains('hidden')){chartContainer.classList.remove('hidden');listContainer.classList.remove('h-96');listContainer.classList.add('max-h-60');}else{chartContainer.classList.add('hidden');listContainer.classList.remove('max-h-60');listContainer.classList.add('h-96');}" 
+                        class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1 cursor-pointer hover:text-fuji transition select-none group">
+                        <i class="fa-solid fa-list"></i> 詳細支出紀錄 (點擊展開) 
+                        <i class="fa-solid fa-chevron-up ml-auto group-active:scale-125 transition"></i>
+                    </h4>                 
+                    <div class="space-y-0.5 max-h-60 overflow-y-auto pr-1 custom-scrollbar transition-all duration-300">
                         ${expenseListHtml || '<div class="text-center text-gray-300 py-4 text-xs">尚無紀錄</div>'}
                     </div>
                 </div>
@@ -1597,10 +1601,30 @@
                     }
                 }
              });
-
              openModal('member-analysis-modal');
         }
-        
+       function toggleAnalysisExpand() {
+            const chartDiv = document.getElementById('memberDetailChart').parentElement;
+            const summaryDiv = document.getElementById('analysis-cat-summary');
+            const listBody = document.getElementById('analysis-list-body');
+            const arrow = document.getElementById('analysis-arrow');
+
+            if (chartDiv.classList.contains('hidden')) {
+                // 還原模式 (顯示圓餅圖)
+                chartDiv.classList.remove('hidden');
+                summaryDiv.classList.remove('hidden');
+                listBody.classList.remove('h-[78vh]'); // 修改：移除滿版高度
+                listBody.classList.add('max-h-60');    // 回復原本高度限制
+                arrow.classList.remove('rotate-180');
+            } else {
+                // 放大模式 (隱藏圓餅圖，幾近滿版)
+                chartDiv.classList.add('hidden');
+                summaryDiv.classList.add('hidden');
+                listBody.classList.remove('max-h-60');
+                listBody.classList.add('h-[78vh]');  
+                arrow.classList.add('rotate-180');
+            }
+        }
         function updateInlineCharts(rate) {
             // 1. Category Breakdown
             const catData = {};
