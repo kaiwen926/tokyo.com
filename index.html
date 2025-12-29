@@ -844,43 +844,35 @@
             document.getElementById(id).classList.remove('hidden');
             setTimeout(()=>document.getElementById(id).classList.add('visible'),10);
         }
+
+        // 修改：手動點擊 X 關閉視窗時，使用 history.back() 模擬按返回鍵
+        // 這樣可以把剛剛 pushState 加進去的歷史紀錄消掉，避免使用者下次按返回鍵時鬼打牆
         function closeModal(id){
             if(history.state && history.state.modal === id) {
-                history.back(); // 這會觸發下方的 onpopstate 來關閉視窗
+                history.back(); // 這行代碼會觸發下方的 window.onpopstate
             } else {
+                // 如果沒有歷史紀錄 (例如重整網頁後)，就直接用 CSS 關閉
                 const el=document.getElementById(id);
                 if(el){ el.classList.remove('visible'); setTimeout(()=>el.classList.add('hidden'),200); }
             }
         }
-       const visibleModal = document.querySelector('.modal.visible');
-            if (visibleModal) {
-                // 如果目前有開視窗，但歷史狀態顯示不該開 (代表按了返回)，就關閉它
-                if (!event.state || event.state.modal !== visibleModal.id) {
-                    visibleModal.classList.remove('visible');
-                    setTimeout(() => visibleModal.classList.add('hidden'), 200);
-                }
-                return; // 視窗處理完就停止，不切換頁籤
-            }
 
-            // 2. 處理頁籤 (Tab) 切換
-            if (event.state && event.state.tab) {
-                switchTab(event.state.tab, false); // false = 不用再推歷史紀錄
-            } else {
-                // 如果沒有狀態 (回到最一開始)，預設切回行程 (plan)
-                switchTab('plan', false);
-            }
+        // 新增：監聽瀏覽器/手機的「返回鍵」事件
+        window.onpopstate = function(event) {
+            // 取得當前歷史紀錄中應該開啟的視窗 ID (如果有的話)
+            const activeModalId = event.state ? event.state.modal : null;
+            
+            // 掃描所有目前顯示中的視窗
+            document.querySelectorAll('.modal.visible').forEach(el => {
+                // 如果這個視窗不是當前歷史紀錄要顯示的 (代表我們按了返回)，就關閉它
+                if (el.id !== activeModalId) { 
+                    el.classList.remove('visible');
+                    setTimeout(() => el.classList.add('hidden'), 200);
+                }
+            });
         };
 
-        // 修改：切換頁籤時加入歷史紀錄 (增加 pushHistory 參數)
-        function switchTab(t, pushHistory = true){ 
-            if(pushHistory) history.pushState({tab: t}, null, "");
-            
-            document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); 
-            document.getElementById('view-'+t).classList.remove('hidden'); 
-            document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); 
-            document.querySelector(`[data-target="${t}"]`).classList.add('active'); 
-            window.scrollTo(0,0); 
-        }
+        function switchTab(t){ document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); document.getElementById('view-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); document.querySelector(`[data-target="${t}"]`).classList.add('active'); window.scrollTo(0,0); }
         // --- 升級版圖片處理 (高畫質) ---
         function processImage(input, cb) { 
             if(input.files[0]){
