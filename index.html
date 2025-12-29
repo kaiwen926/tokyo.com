@@ -1525,28 +1525,26 @@
                      // 累積分類數據 (給圓餅圖用)
                      catData[e.cat] = (catData[e.cat] || 0) + share;
                      total += share;
-
                      // --- 新增：生成詳細支出項目的 HTML ---
                      const cat = expenseCategories.find(c => c.id === e.cat) || expenseCategories[5];
-                     // 判斷是否為個人花銷 (只有自己分攤 且 非公費)
-                     const isPersonal = (e.paidBy !== '公費') && (!e.splitBy || e.splitBy.length <= 1);
-                     const personalBadge = isPersonal ? `<span class="text-[9px] bg-gray-200 text-gray-500 px-1 rounded ml-1">個人</span>` : '';
-
-                     expenseListHtml += `
-                        <div onclick="openExpenseModal(${e.id})" class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-100 transition px-2 rounded-lg group">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-8 h-8 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-xs"><i class="fa-solid ${cat.icon}"></i></div>
+                      const isPersonal = (e.paidBy !== '公費') && (!e.splitBy || e.splitBy.length <= 1);
+                      const personalBadge = isPersonal ? `<span class="text-[10px] bg-gray-200 text-gray-500 px-1 rounded ml-1">個人</span>` : '';
+                      // 修改：加大了圖示(w-10 h-10)、字體(text-base)、金額(text-lg)與間距(py-3)
+                      expenseListHtml += `
+                        <div onclick="openExpenseModal(${e.id})" class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-100 transition px-3 rounded-lg group">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-base"><i class="fa-solid ${cat.icon}"></i></div>
                                 <div class="min-w-0">
-                                    <div class="text-xs font-bold text-gray-700 truncate">${e.note || cat.id} ${personalBadge}</div>
-                                    <div class="text-[10px] text-gray-400">${e.paidBy} 先付 ${e.curr==='JPY'?'¥'+e.amt:''}</div>
+                                    <div class="text-base font-bold text-gray-700 truncate">${e.note || cat.id} ${personalBadge}</div>
+                                    <div class="text-xs text-gray-500">${e.paidBy} 先付 ${e.curr==='JPY'?'¥'+e.amt:''}</div>
                                 </div>
                             </div>
                             <div class="text-right flex-shrink-0">
-                                <div class="text-sm font-bold font-mono text-gray-700">NT$${Math.round(share).toLocaleString()}</div>
-                                <div class="text-[10px] text-fuji opacity-0 group-hover:opacity-100 transition">修改</div>
+                                <div class="text-lg font-bold font-mono text-gray-700">NT$${Math.round(share).toLocaleString()}</div>
+                                <div class="text-xs text-fuji opacity-0 group-hover:opacity-100 transition">修改</div>
                             </div>
                         </div>
-                     `;
+                      `;
                  }
              });
 
@@ -1567,14 +1565,15 @@
 
              // 將 分類統計 與 詳細清單 組合
              detailsContainer.innerHTML = `
-                <div class="mb-4">${categorySummaryHtml}</div>
-                <div class="pt-2 border-t-2 border-dashed border-gray-200">
-                    <h4 onclick="const chartContainer=document.getElementById('memberDetailChart').parentElement; const listContainer=this.nextElementSibling; if(chartContainer.classList.contains('hidden')){chartContainer.classList.remove('hidden');listContainer.classList.remove('h-96');listContainer.classList.add('max-h-60');}else{chartContainer.classList.add('hidden');listContainer.classList.remove('max-h-60');listContainer.classList.add('h-96');}" 
-                        class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1 cursor-pointer hover:text-fuji transition select-none group">
-                        <i class="fa-solid fa-list"></i> 詳細支出紀錄 (點擊展開) 
-                        <i class="fa-solid fa-chevron-up ml-auto group-active:scale-125 transition"></i>
+                <div id="analysis-cat-summary" class="mb-4 transition-all duration-300 overflow-hidden">${categorySummaryHtml}</div>
+                
+                <div id="analysis-list-wrapper" class="pt-2 border-t-2 border-dashed border-gray-200 flex flex-col flex-1 min-h-0">
+                    <h4 onclick="toggleAnalysisExpand()" 
+                        class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1 cursor-pointer hover:text-fuji transition select-none group py-1">
+                        <i class="fa-solid fa-list"></i> 詳細支出紀錄 (點擊放大) 
+                        <i id="analysis-arrow" class="fa-solid fa-chevron-down ml-auto transition-transform duration-300"></i>
                     </h4>                 
-                    <div class="space-y-0.5 max-h-60 overflow-y-auto pr-1 custom-scrollbar transition-all duration-300">
+                    <div id="analysis-list-body" class="space-y-0.5 overflow-y-auto pr-1 custom-scrollbar transition-all duration-300 flex-1 min-h-[150px]">
                         ${expenseListHtml || '<div class="text-center text-gray-300 py-4 text-xs">尚無紀錄</div>'}
                     </div>
                 </div>
@@ -1604,26 +1603,51 @@
              openModal('member-analysis-modal');
         }
        function toggleAnalysisExpand() {
-            const chartDiv = document.getElementById('memberDetailChart').parentElement;
-            const summaryDiv = document.getElementById('analysis-cat-summary');
-            const listBody = document.getElementById('analysis-list-body');
-            const arrow = document.getElementById('analysis-arrow');
+          const modalContainer = document.querySelector('#member-analysis-modal');
+           const card = modalContainer.querySelector('.hand-card'); 
+           const chartDiv = document.getElementById('memberDetailChart').parentElement;
+           const summaryDiv = document.getElementById('analysis-cat-summary');
+           
+           const detailsDiv = document.getElementById('analysis-details'); // 灰色背景區塊
+           const listWrapper = document.getElementById('analysis-list-wrapper'); // 列表外層
+           const arrow = document.getElementById('analysis-arrow');
 
-            if (chartDiv.classList.contains('hidden')) {
-                // 還原模式 (顯示圓餅圖)
+           const isExpanded = card.classList.contains('!w-[95vw]');
+
+           if (isExpanded) {
+                // --- 還原模式 (變回小視窗) ---
+                card.classList.remove('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col');
+                card.classList.add('max-w-sm'); 
+                
                 chartDiv.classList.remove('hidden');
                 summaryDiv.classList.remove('hidden');
-                listBody.classList.remove('h-[78vh]'); // 修改：移除滿版高度
-                listBody.classList.add('max-h-60');    // 回復原本高度限制
+                
+                // 還原灰色區塊的高度限制
+                detailsDiv.classList.remove('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full');
+                detailsDiv.classList.add('max-h-40', 'overflow-y-auto');
+                
+                // 還原列表外層
+                listWrapper.classList.remove('flex-1', 'h-full', 'overflow-hidden');
+                
                 arrow.classList.remove('rotate-180');
-            } else {
-                // 放大模式 (隱藏圓餅圖，幾近滿版)
+
+           } else {
+                // --- 放大模式 (解決空白問題) ---
+                card.classList.remove('max-w-sm'); 
+                card.classList.add('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col'); 
+                
                 chartDiv.classList.add('hidden');
                 summaryDiv.classList.add('hidden');
-                listBody.classList.remove('max-h-60');
-                listBody.classList.add('h-[78vh]');  
+                
+                // 移除灰色區塊的高度限制，讓它填滿剩餘空間
+                detailsDiv.classList.remove('max-h-40', 'overflow-y-auto');
+                detailsDiv.classList.add('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full');
+                
+                // 讓列表外層也填滿空間
+                listWrapper.classList.add('flex-1', 'h-full', 'overflow-hidden');
+                
                 arrow.classList.add('rotate-180');
-            }
+           }
         }
         function updateInlineCharts(rate) {
             // 1. Category Breakdown
