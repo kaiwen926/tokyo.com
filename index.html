@@ -634,8 +634,8 @@
                 <div class="flex flex-wrap gap-2">
                     <button onclick="setShopCat('藥妝')" class="text-xs bg-pink-50 text-pink-500 px-2 py-1 rounded-full border border-pink-100">藥妝</button>
                     <button onclick="setShopCat('Outlet')" class="text-xs bg-blue-50 text-blue-500 px-2 py-1 rounded-full border border-blue-100">Outlet</button>
-                    <button onclick="setShopCat('7-11')" class="text-xs bg-green-50 text-green-500 px-2 py-1 rounded-full border border-green-100">7-11</button>
-                    <button onclick="setShopCat('全家')" class="text-xs bg-green-50 text-green-500 px-2 py-1 rounded-full border border-green-100">全家</button>
+<button onclick="setShopCat('7-11')" class="text-xs bg-orange-50 text-orange-500 px-2 py-1 rounded-full border border-orange-100">7-11</button>
+                    <button onclick="setShopCat('全家')" class="text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full border border-green-200">全家</button>
                     <button onclick="setShopCat('Lawson')" class="text-xs bg-blue-50 text-blue-500 px-2 py-1 rounded-full border border-blue-100">Lawson</button>
                     <button onclick="setShopCat('伴手禮')" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full border border-red-100">伴手禮</button>
                     <button onclick="setShopCat('電器')" class="text-xs bg-gray-50 text-gray-500 px-2 py-1 rounded-full border border-gray-100">電器</button>
@@ -818,6 +818,7 @@
                 const c = JSON.parse(content);
                 localStorage.setItem('flights',JSON.stringify(c.flights||[]));
                 localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
+                localStorage.setItem('mustEatList',JSON.stringify(c.mustEatList||[]));
                 localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
                 localStorage.setItem('guides',JSON.stringify(c.guides||[]));
                 localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
@@ -1802,8 +1803,8 @@
             const catStyles = { 
                 '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 
                 'Outlet': 'border-blue-400 bg-blue-50 text-blue-600', 
-                '7-11': 'border-green-400 bg-green-50 text-green-600', 
-                '全家': 'border-green-400 bg-green-50 text-green-600', 
+                '7-11': 'border-orange-400 bg-orange-50 text-orange-600', 
+                '全家': 'border-green-500 bg-green-50 text-green-700',
                 'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', 
                 '伴手禮': 'border-red-400 bg-red-50 text-red-600', 
                 '電器': 'border-gray-500 bg-gray-100 text-gray-600', 
