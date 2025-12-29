@@ -104,11 +104,11 @@
         <div class="deco-icon top-20 right-10 text-3xl text-blue-200 rotate-[-20deg]">🍙</div>
         <div class="deco-icon bottom-32 left-8 text-3xl text-green-200">🍡</div>
         <div class="deco-icon top-1/3 right-4 text-5xl text-red-100 rotate-[15deg]">⛩️</div>
-        <div class="deco-icon top-24 left-4 text-6xl opacity-20 float-anim" style="--r: 10deg; position: fixed; z-index: 0; color: #aaddff;">☁️</div>
-        <div class="deco-icon top-40 right-1/4 text-3xl opacity-10 rotate-12" style="position: fixed; z-index: 0;">✈️</div>
-        <div class="deco-icon bottom-24 -right-4 text-[9rem] opacity-5" style="position: fixed; z-index: 0; transform: rotate(-5deg); filter: sepia(0.5);">🗻</div>
-        <div class="deco-icon top-1/2 left-2 text-4xl opacity-10 rotate-45 text-pink-200" style="position: fixed; z-index: 0;">🎈</div>
-        <div class="deco-icon bottom-1/3 left-8 text-2xl opacity-20 rotate-12 text-yellow-300" style="position: fixed; z-index: 0;">✨</div>
+        <div class="deco-icon top-32 left-6 text-6xl opacity-40 animate-pulse" style="position: absolute; z-index: 20; animation-duration: 8s;">☁️</div>
+        <div class="deco-icon top-[450px] right-6 text-4xl opacity-20 rotate-12" style="position: absolute; z-index: 20;">✈️</div>
+        <div class="deco-icon top-[900px] left-4 text-5xl opacity-20 rotate-45 text-pink-300" style="position: absolute; z-index: 20;">🎈</div>
+        <div class="deco-icon top-[1300px] right-12 text-3xl opacity-30 rotate-12 text-yellow-400" style="position: absolute; z-index: 20;">✨</div>
+        <div class="deco-icon bottom-0 -right-8 text-[12rem] opacity-10" style="position: absolute; z-index: 20; transform: rotate(-5deg); filter: sepia(0.5);">🗻</div>
 
         <!-- PLAN SECTION -->
         <section id="view-plan" class="view-section animate-fade relative z-10">
@@ -884,14 +884,14 @@
             document.querySelector(`[data-target="${t}"]`).classList.add('active'); 
             
             if (t === 'plan') {
-                const el = document.getElementById('quick-nav-container');
-                // 如果找不到快速導覽列(例如還沒新增行程)，就回到頂端
-                if (el) el.scrollIntoView();
-                else window.scrollTo(0,0);
-            } else {
-                // 其他分頁維持回到頂端
-                window.scrollTo(0,0); 
-            }
+            const el = document.getElementById('quick-nav-container');
+            // 修改：捲動到雲朵區塊，並設定 block: 'center' 讓它垂直置中，避免被上方標題擋住
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            else window.scrollTo(0,0);
+        } else {
+            // 其他分頁維持回到最頂端
+            window.scrollTo(0,0); 
+         }
         }
         // --- 升級版圖片處理 (高畫質) ---
         function processImage(input, cb) { 
