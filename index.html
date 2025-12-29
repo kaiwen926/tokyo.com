@@ -838,10 +838,30 @@
         function saveGistConfig() { gistId=document.getElementById('gist-id-input').value; gistToken=document.getElementById('gist-token-input').value; localStorage.setItem('gist_id',gistId); localStorage.setItem('gist_token',gistToken); alert("已儲存"); forceDownload(); }
 
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
-
         // --- UI UTILS ---
-        function openModal(id){document.getElementById(id).classList.remove('hidden');setTimeout(()=>document.getElementById(id).classList.add('visible'),10);}
-        function closeModal(id){const el=document.getElementById(id);el.classList.remove('visible');setTimeout(()=>el.classList.add('hidden'),200);}
+        function openModal(id){
+            history.pushState({modal: id}, null, ""); 
+            document.getElementById(id).classList.remove('hidden');
+            setTimeout(()=>document.getElementById(id).classList.add('visible'),10);
+        }
+        function closeModal(id){
+            if(history.state && history.state.modal === id) {
+                history.back(); // 這會觸發下方的 onpopstate 來關閉視窗
+            } else {
+                const el=document.getElementById(id);
+                if(el){ el.classList.remove('visible'); setTimeout(()=>el.classList.add('hidden'),200); }
+            }
+        }
+        window.onpopstate = function(event) {
+            const activeModalId = event.state ? event.state.modal : null;
+            document.querySelectorAll('.modal.visible').forEach(el => {
+                         if (el.id !== activeModalId) { 
+                    el.classList.remove('visible');
+                    setTimeout(() => el.classList.add('hidden'), 200);
+                }
+            });
+        };
+
         function switchTab(t){ document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); document.getElementById('view-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); document.querySelector(`[data-target="${t}"]`).classList.add('active'); window.scrollTo(0,0); }
         
         // --- 升級版圖片處理 (高畫質) ---
