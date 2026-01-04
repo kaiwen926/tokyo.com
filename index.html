@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Yomogi&family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <!-- Tailwind Config -->
@@ -82,7 +83,26 @@
         .temp-cold { background-color: #88ccff; border: 2px solid #fff; color: #fff; } 
         .weather-group .weather-badge {margin-left: 0 !important;width: 28px; height: 28px;font-size: 1rem;box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
         .phrase-btn.active { background-color: #7b90d2; color: white; border-color: #7b90d2; }
-    </style>
+        #view-plan h3,      /* 行程標題 */
+        #view-guide h2,     /* 導覽標題 */
+        #view-wallet h2,    /* 記帳標題 */
+        #view-lists h3,     /* 清單標題 */
+        .hand-card h3       /* 卡片內標題 */
+        {
+            font-family: 'Zen Kurenaido', sans-serif !important; /* 蠟筆手寫字體 */
+            color: #595857 !important;    /* ✏️ 鉛筆灰 (取代黑色，也不會是彩色) */
+            font-weight: 600;             /* 微粗，像蠟筆質感 */
+            letter-spacing: 0.1em;        /* 字距拉寬 */
+            transform: rotate(-1deg);     /* 微微歪斜，增加手寫感 */
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.05); /* 輕微立體感 */
+        }
+        #view-plan h3 i, #view-guide h2 i, #view-wallet h2 i, #view-lists h3 i, .hand-card h3 i {
+            transform: rotate(1deg);
+            display: inline-block;
+            margin-right: 4px;
+            /* color: #595857 !important; */
+        }
+ </style>
 </head>
 <body>
 
