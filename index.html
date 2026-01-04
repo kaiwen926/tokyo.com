@@ -58,7 +58,8 @@
             background-size: 24px 24px; background-position: center top;
             -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none;
             min-height: 100vh; padding-bottom: calc(80px + var(--sab));
-        }
+            overflow-x: hidden;width: 100%;
+         }
         .handwritten { font-family: 'Yomogi', cursive; }
         .modal { transition: opacity 0.2s ease-in-out; } .modal.hidden { opacity: 0; pointer-events: none; } .modal.visible { opacity: 1; pointer-events: auto; }
         .hand-card { background: #fff; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; transition: transform 0.2s; border: 1px solid rgba(0,0,0,0.02); }
@@ -98,7 +99,7 @@
         </div>
     </header>
 
-    <main id="app" class="px-4 w-full mx-auto min-h-screen max-w-5xl relative pb-24">
+    <main id="app" class="px-4 w-full mx-auto min-h-screen max-w-5xl relative pb-24 overflow-hidden">
         
         <div class="deco-icon top-4 left-4 text-4xl">🌸</div>
         <div class="deco-icon top-20 right-10 text-3xl text-blue-200 rotate-[-20deg]">🍙</div>
@@ -246,7 +247,8 @@
                 <div class="hand-card p-6 bg-[#f0f4f8] border-l-8 border-[#f0f4f8]">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-fuji handwritten"><i class="fa-solid fa-suitcase mr-2"></i>行李確認</h3>
-                        <button onclick="uncheckAllTodos()" class="text-xs bg-white/50 border border-fuji/20 text-fuji px-2 py-1 rounded-full shadow-sm hover:bg-white transition" title="全部取消勾選"><i class="fa-solid fa-rotate-left"></i> 重置</button>
+                        <button onclick="uncheckAllTodos()" class="text-xs bg-white/50 border border-fuji/20 text-fuji px-2 py-1 rounded-full shadow-sm hover:bg-white transition" title="全部取消勾選"><i class="fa-solid fa-rotate-left"></i> 重置狀態</button>
+                        <button onclick="restoreDefaultTodos()" class="text-xs bg-white/50 border border-fuji/20 text-fuji px-2 py-1 rounded-full shadow-sm hover:bg-white transition ml-2" title="恢復內建清單"><i class="fa-solid fa-list-ul"></i> 恢復預設</button>
                     </div>
                     
                     <ul id="checklist-container" class="grid grid-cols-2 gap-x-4 gap-y-2"></ul>
@@ -513,8 +515,8 @@
             <input type="hidden" id="day-id-edit">
             
             <div class="flex gap-2 items-center mb-2">
-                <input type="text" id="day-date-edit" class="flex-1 p-2 border-b-2 border-matcha bg-transparent font-bold font-maru text-xl focus:outline-none" placeholder="日期標題">
-          
+                 <input type="text" id="day-date-edit" class="flex-1 p-2 border-b-2 border-matcha bg-transparent font-bold font-hand text-xl focus:outline-none" placeholder="日期標題">
+                 
                  <input type="text" id="day-temp-edit" placeholder="氣溫 (e.g. 15°C)" class="bg-white border rounded p-1 text-sm outline-none shadow-sm h-10 w-28 text-center placeholder-gray-300">
                  
                  <select id="day-weather-edit" class="bg-white border rounded p-1 text-2xl outline-none shadow-sm h-10 w-24">
@@ -647,6 +649,9 @@
                     <button onclick="setShopCat('伴手禮')" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full border border-red-100">伴手禮</button>
                     <button onclick="setShopCat('電器')" class="text-xs bg-gray-50 text-gray-500 px-2 py-1 rounded-full border border-gray-100">電器</button>
                     <button onclick="setShopCat('服飾')" class="text-xs bg-purple-50 text-purple-500 px-2 py-1 rounded-full border border-purple-100">服飾</button>
+                    <button onclick="setShopCat('AEON')" class="text-xs bg-fuchsia-50 text-fuchsia-600 px-2 py-1 rounded-full border border-fuchsia-200">AEON</button>
+                    <button onclick="setShopCat('超市')" class="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-200">超市</button>
+                    <button onclick="setShopCat('唐吉軻德')" class="text-xs bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full border border-yellow-200">唐吉軻德</button>
                 </div>
             </div>
 
@@ -715,7 +720,7 @@
         const WEATHER_MAP = {'sunny': '🌞', 'cloudy': '⛅','Partly cloudy': '🌦️','rain': '☂', 'thunderstorm': '⛈️','snow': '⛄'};
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
-        const DEFAULT_TODOS = [ "日幣", "錢包", "護照","衣服", "褲子", "內衣/褲", "襪子", "(毛)帽子", "外套", "墨鏡", "(拖)鞋", "毛巾", "口罩", "化妝品", "保養品", "雨傘", "環保袋", "藥品", "衛生棉", "耳塞", "U型枕", "餐盒", "充電器", "行動電源","耳機", "Gopro", "自拍棒", "行李秤", "防曬乳", "酒精"];
+        const DEFAULT_TODOS = ["衣服", "褲子", "內衣/褲", "襪子", "(毛)帽子", "外套", "墨鏡", "(拖)鞋", "毛巾(?)", "口罩", "化妝品", "保養品", "雨傘", "環保袋", "藥品", "衛生棉", "耳塞", "U型枕", "餐盒", "充電器", "行動電源", "Gopro", "自拍棒", "行李秤", "防曬乳", "酒精", "日幣", "錢包", "護照"];
         // --- PHRASE DATA ---
         const PHRASES = {
             'food': [
@@ -777,6 +782,8 @@
             payerProfiles = JSON.parse(localStorage.getItem('payerProfiles')) || {};
             manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
             todos = JSON.parse(localStorage.getItem('todos')) || DEFAULT_TODOS.map(text => ({text, done: false}));
+            const savedTodos = JSON.parse(localStorage.getItem('todos'));
+            if (!savedTodos || savedTodos.length === 0){todos = DEFAULT_TODOS.map(text => ({text, done: false}));} else {todos = savedTodos;}
             memoText = localStorage.getItem('memo') || "";
             publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig_v2')) || { total: 0, currency: 'JPY' };
             vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
@@ -894,7 +901,57 @@
             window.scrollTo(0,0); 
          }
         }
-        // --- 升級版圖片處理 (高畫質) ---
+// --- 升級版圖片處理 (高畫質) + 自動上傳 GitHub ---
+        // 1. 上傳核心函式
+        async function uploadImageToGitHub(base64Content) {
+            // 【請在這裡修改你的 GitHub 資訊】
+            const username = 'kaiwen926';   // 你的 GitHub 帳號
+            const repo = 'tokyo.com';       // 你的儲存庫名稱
+            const folder = 'images';        // 存照片的資料夾
+
+            // 自動抓取你在「資訊」頁籤設定的 Token
+            const token = localStorage.getItem('gist_token'); 
+
+            if (!token) {
+                alert("請先在「資訊 > 雲端同步設定」填寫 Token，才能上傳照片！");
+                return null;
+            }
+
+            updateCloudStatus("圖片上傳中..."); // 顯示上傳狀態
+
+            const timestamp = new Date().getTime();
+            const fileName = `${folder}/img_${timestamp}.jpg`;
+            const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${fileName}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Upload from App ${new Date().toLocaleDateString()}`,
+                        content: base64Content // 這裡傳入的是純 Base64 (不含 header)
+                    })
+                });
+
+                if (!response.ok) throw new Error('GitHub API Error');
+
+                const data = await response.json();
+                updateCloudStatus("上傳成功");
+                // 回傳原本的 raw 網址 (CDN 比較快)
+                return data.content.download_url;
+
+            } catch (error) {
+                console.error(error);
+                alert("上傳失敗！請檢查 Token 是否有勾選 'repo' 權限，或是儲存庫名稱是否正確。");
+                updateCloudStatus("上傳失敗");
+                return null;
+            }
+        }
+
+        // 2. 修改後的處理函式 (壓縮 -> 上傳 -> 回傳網址)
         function processImage(input, cb) { 
             if(input.files[0]){
                 const r=new FileReader();
@@ -903,19 +960,31 @@
                     i.onload=()=>{
                         const c=document.createElement('canvas');
                         const x=c.getContext('2d');
-                        const max=1200;
+                        const max=1200; // 限制最大寬度，加速處理
                         let w=i.width,h=i.height;
                         if(w>h&&w>max){h*=max/w;w=max}else if(h>max){w*=max/h;h=max}
                         c.width=w;c.height=h;
                         x.drawImage(i,0,0,w,h);
-                        cb(c.toDataURL('image/jpeg',0.8))
+                        
+                        // 取得 Base64 字串 (品質 0.8)
+                        const fullBase64 = c.toDataURL('image/jpeg',0.8);
+                        const cleanBase64 = fullBase64.split(',')[1]; // 去掉 data:image... 開頭
+
+                        // --- 關鍵修改：呼叫上傳函式 ---
+                        uploadImageToGitHub(cleanBase64).then(imageUrl => {
+                            if (imageUrl) {
+                                cb(imageUrl); // 成功：回傳網址
+                            } else {
+                                // 失敗：回傳原本的 Base64 讓使用者至少能看 (但會佔空間)
+                                // cb(fullBase64); 
+                            }
+                        });
                     };
                     i.src=e.target.result
                 };
                 r.readAsDataURL(input.files[0])
             } 
         }
-
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
@@ -1908,14 +1977,33 @@
                 '伴手禮': 'border-red-400 bg-red-50 text-red-600', 
                 '電器': 'border-gray-500 bg-gray-100 text-gray-600', 
                 '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 
+                'AEON': 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-600', 
+                '超市': 'border-emerald-400 bg-emerald-50 text-emerald-600', 
+                '唐吉軻德': 'border-yellow-400 bg-yellow-50 text-yellow-700',
                 '未分類': 'border-gray-300 bg-gray-50 text-gray-500' 
             };
-
-            Object.keys(grouped).sort().forEach(cat => {
+             const autoPalettes = [
+                'border-teal-400 bg-teal-50 text-teal-600',
+                'border-indigo-400 bg-indigo-50 text-indigo-600',
+                'border-lime-400 bg-lime-50 text-lime-700',
+                'border-cyan-400 bg-cyan-50 text-cyan-600',
+                'border-rose-400 bg-rose-50 text-rose-600',
+                'border-amber-400 bg-amber-50 text-amber-700',
+                'border-violet-400 bg-violet-50 text-violet-600'
+            ];
+                Object.keys(grouped).sort().forEach(cat => {
                 const catItems = grouped[cat];
                 const doneCount = catItems.filter(i => i.done).length;
                 const isExpanded = expandedCategories.has(cat);
-                const styleClass = catStyles[cat] || catStyles['未分類'];
+                let styleClass = catStyles[cat];
+                if (!styleClass) {
+                    // 簡單的 hash 算法，把字串轉成數字
+                    let hash = 0;
+                    for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+                    // 取絕對值後對調色盤數量取餘數，決定用哪一組顏色
+                    const colorIdx = Math.abs(hash) % autoPalettes.length;
+                    styleClass = autoPalettes[colorIdx];
+                }
                 const itemsHtml = catItems.map(s => renderShopItem(s)).join('');
                 let html = `
                 <div class="mb-3 transition-all duration-300 w-full max-w-full">
@@ -2219,17 +2307,9 @@
                 </div>`; 
         }
         function deleteVJW(id){ if(confirm("Del?")){vjwData.items=vjwData.items.filter(i=>i.id!==id);saveData();renderVJW()} }
-
-        window.onload = function() {
-            reloadLocalData();
-            if(gistId) { document.getElementById('gist-id-input').value = gistId; document.getElementById('gist-token-input').value = gistToken; updateCloudStatus("連線中..."); forceDownload(); } 
-            else { window.refreshUI(); }
-            switchTab('plan');
-        }
+        function restoreDefaultTodos() { if(confirm("確定要恢復成內建的預設清單嗎？目前的自訂項目會消失喔！")) {todos = DEFAULT_TODOS.map(text => ({text, done: false}));saveData();renderChecklist();}}
+        window.onload = function() {reloadLocalData();if(gistId) { document.getElementById('gist-id-input').value = gistId; document.getElementById('gist-token-input').value = gistToken; updateCloudStatus("連線中..."); forceDownload(); } else { window.refreshUI();}switchTab('plan');}
     </script>
 </body>
 </html>
-
-
-
 
