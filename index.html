@@ -291,18 +291,29 @@
         <section id="view-info" class="view-section hidden relative z-10">
             <!-- (Info section code remains unchanged, simplified for brevity as no changes requested here) -->
              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-               <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-fuji/20">
-                    <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-fuji">🎙️</div>
-                    <h3 class="font-bold text-fuji handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> 隨身翻譯</h3>
-                    <div class="relative mb-4">
-                        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-fuji-light/50 border border-fuji/20 rounded-xl resize-none text-sm outline-none focus:border-fuji transition font-hand" placeholder="輸入文字..."></textarea>
-                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white border border-fuji/20 rounded-full shadow-md flex items-center justify-center text-fuji hover:bg-fuji hover:text-white transition active:scale-95 z-10"><i class="fa-solid fa-microphone"></i></button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="https://translate.google.com/?sl=auto&tl=ja&op=images" target="_blank" class="bg-matcha text-white py-3 rounded-xl font-bold shadow-sm hover:bg-matcha/90 transition flex items-center justify-center gap-2"><i class="fa-solid fa-camera"></i> 圖片/鏡頭翻譯</a>
-                        <a href="https://translate.google.com/?sl=auto&tl=ja&op=translate" target="_blank" class="bg-fuji text-white py-3 rounded-xl font-bold shadow-sm hover:bg-fuji/90 transition flex items-center justify-center gap-2 no-underline"><i class="fa-brands fa-google"></i> 文字翻譯</a>
-                    </div>
-                </div>
+               <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-purple-200">
+    <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-purple-400">✨</div>
+    <h3 class="font-bold text-purple-500 handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 隨身翻譯</h3>
+    
+    <div class="relative mb-3">
+        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-purple-50/50 border border-purple-100 rounded-xl resize-none text-sm outline-none focus:border-purple-300 transition font-hand placeholder-purple-300/70" placeholder="輸入文字 (例如: 這是什麼魚？)"></textarea>
+        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white border border-purple-100 rounded-full shadow-sm flex items-center justify-center text-purple-400 hover:bg-purple-500 hover:text-white transition active:scale-95 z-10"><i class="fa-solid fa-microphone"></i></button>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2">
+            <button onclick="callGeminiAI()" class="bg-purple-500 text-white py-2 rounded-xl font-bold shadow-sm hover:bg-purple-600 transition flex items-center justify-center gap-1 text-sm active:scale-95">
+            <i class="fa-solid fa-language"></i> 翻譯
+        </button>
+        <a href="https://translate.google.com/?sl=auto&tl=ja&op=images" target="_blank" class="bg-white border border-purple-100 text-purple-500 py-2 rounded-xl font-bold shadow-sm hover:bg-purple-50 transition flex items-center justify-center gap-1 text-sm no-underline">
+            <i class="fa-solid fa-camera"></i> 鏡頭
+        </a>
+        <a href="https://translate.google.com/?sl=auto&tl=ja&op=translate" target="_blank" class="bg-white border border-purple-100 text-purple-500 py-2 rounded-xl font-bold shadow-sm hover:bg-purple-50 transition flex items-center justify-center gap-1 text-sm no-underline">
+            <i class="fa-brands fa-google"></i> Google
+        </a>
+    </div>
+    
+    <div id="ai-result" class="mt-3 text-sm text-gray-700 bg-white p-3 rounded-xl border border-purple-100 hidden leading-relaxed font-bold shadow-inner min-h-[3rem]"></div>
+</div>
                 <!-- Phrase Book -->
                 <details class="hand-card p-0 border-l-8 border-sakura/20 group transition-all duration-300">
                     <summary class="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 transition relative select-none">
@@ -375,8 +386,13 @@
                         <div class="p-4 bg-white space-y-3 border-t border-gray-100">
                             <div class="text-[10px] text-gray-400 mb-2">設定 Gist ID 後，資料變動將自動上傳。</div>
                             <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Gist ID</label><input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
-                            <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="password" id="gist-token-input" placeholder="Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
-                            <button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition">儲存設定</button>
+                           <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="password" id="gist-token-input" placeholder="Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
+
+<div class="mt-2 border-t border-dashed border-gray-200 pt-2">
+    <label class="text-[10px] font-bold text-purple-400 block mb-1">Gemini API Key (AI 功能用)</label>
+    <input type="password" id="gemini-api-key-input" placeholder="貼上 AIza 開頭的密鑰" class="w-full border p-2 rounded text-xs font-mono bg-purple-50 outline-none focus:border-purple-300">
+</div>
+<button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition">儲存設定</button>
                            
                        </div>
                     </details>
@@ -878,14 +894,15 @@
                 localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
                 localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
                 localStorage.setItem('memo',c.memo||"");
+                localStorage.setItem('vjwData', JSON.stringify(c.vjwData || { isOpen: true, items: [] }));
                 updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
             }).catch(()=>updateCloudStatus("下載失敗"));
         }
         async function forceUpload() {
             if(!gistId) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, lastUpdate: new Date() };
-           try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, lastUpdate: new Date() };
+            try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
         }
         function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
         function saveGistConfig() { gistId=document.getElementById('gist-id-input').value; gistToken=document.getElementById('gist-token-input').value; localStorage.setItem('gist_id',gistId); localStorage.setItem('gist_token',gistToken); alert("已儲存"); forceDownload(); }
@@ -2417,6 +2434,42 @@ function renderItinerary() {
                 saveDay(); // 這會存檔並關閉視窗
             }
         });
+        // --- GEMINI AI 功能 ---
+        async function callGeminiAI() {
+            const text = document.getElementById('trans-input').value;
+            const apiKey = localStorage.getItem('gemini_api_key');
+            const resultBox = document.getElementById('ai-result');
+
+            if (!text) return alert("請先輸入要翻譯的文字！");
+            if (!apiKey) return alert("請先到下方「雲端同步設定」填寫 Gemini API Key！");
+
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = '<div class="flex items-center gap-2 text-purple-400"><i class="fa-solid fa-circle-notch fa-spin"></i> <span>AI 思考中...</span></div>';
+
+            // 針對日本旅遊優化的 Prompt
+            const prompt = `你是我的日本旅遊隨身翻譯助手。請將以下文字翻譯成自然的日文（如果是日文則翻成繁體中文）。如果輸入的是菜單名稱，請簡單解釋這道菜是什麼（例如口味、食材）。\n\n使用者輸入：${text}`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content) {
+                    const reply = data.candidates[0].content.parts[0].text;
+                    // 將 Markdown 的換行轉為 HTML
+                    resultBox.innerHTML = reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b class="text-purple-600">$1</b>');
+                } else {
+                    resultBox.innerText = "翻譯失敗，請重試。";
+                }
+            } catch (e) {
+                console.error(e);
+                resultBox.innerText = "連線錯誤，請檢查 API Key 或網路。";
+            }
+        }
         window.onload = function() {reloadLocalData();if(gistId) { document.getElementById('gist-id-input').value = gistId; document.getElementById('gist-token-input').value = gistToken; updateCloudStatus("連線中..."); forceDownload(); } else { window.refreshUI();}switchTab('plan');}
     </script>
 </body>
