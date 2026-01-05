@@ -536,18 +536,32 @@
             <h3 class="text-lg font-bold mb-2 text-center handwritten">編輯行程</h3>
             <input type="hidden" id="day-id-edit">
             
-            <div class="flex gap-2 items-center mb-2">
-                 <input type="text" id="day-date-edit" class="flex-1 p-2 border-b-2 border-matcha bg-transparent font-bold font-hand text-xl focus:outline-none" placeholder="日期標題">
-                 <input type="text" id="day-temp-edit" placeholder="氣溫 (e.g. 15°C)" class="bg-white border rounded p-1 text-sm outline-none shadow-sm h-10 w-28 text-center placeholder-gray-300">
-                 <select id="day-weather-edit" class="bg-white border rounded p-1 text-2xl outline-none shadow-sm h-10 w-24">
-                     <option value="">☁ 天氣</option>
-                     <option value="sunny">☀ 晴</option>
-                     <option value="cloudy">☁ 陰</option>
-                     <option value="rain">☂ 雨</option>
-                     <option value="snow">⛄ 雪</option>
-                 </select>
+            <div class="mb-3">
+                 <input type="text" id="day-date-edit" class="w-full p-2 border-b-2 border-matcha bg-transparent font-bold font-hand text-2xl focus:outline-none placeholder-gray-300" placeholder="日期標題 (例如: Day 1 成田)">
             </div>
             
+           <div class="flex gap-3 items-center mb-4">
+                 <div class="flex-1 relative">
+                    <i class="fa-solid fa-temperature-half absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="day-temp-edit" placeholder="氣溫" class="w-full pl-8 p-2 bg-white border rounded-xl text-sm outline-none shadow-sm text-center font-bold text-gray-600 focus:border-matcha transition">
+                 </div>
+                 
+                 <div class="flex-1 relative">
+                     <select id="day-weather-edit" class="w-full p-2 bg-white border rounded-xl text-sm outline-none shadow-sm text-center appearance-none focus:border-matcha transition cursor-pointer font-bold text-gray-600">
+                         <option value="">☁ 選擇天氣</option>
+                         <option value="sunny">☀ 晴朗豔陽</option>
+                         <option value="partly-cloudy">⛅ 晴時多雲</option>
+                         <option value="cloudy">☁ 陰天</option>
+                         <option value="rain">☂ 小雨/陣雨</option>
+                         <option value="heavy-rain">⛈️ 豪雨/雷雨</option>
+                         <option value="snow">⛄ 下雪</option>
+                         <option value="fog">🌫️ 起霧</option>
+                     </select>
+                     <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center px-1 text-gray-400">
+                        <i class="fa-solid fa-caret-down text-xs"></i>
+                     </div>
+                 </div>
+            </div>
                         <label class="flex items-center space-x-2 text-sm text-gray-600 mb-4 bg-yellow-50 p-2 rounded"><input type="checkbox" id="day-highlight-edit" class="accent-red-400"><span>標記為重點天數 (Highlight)</span></label>
             
             <div class="mb-4 bg-white p-2 rounded border border-gray-200 shadow-inner">
@@ -740,7 +754,7 @@
             {id: 104, title: "東京鐵塔", price: "¥1200~", desc: "紅色經典。推薦預約 Top Deck Tour。", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Tokyo_Tower_special_light_up_2020.jpg/800px-Tokyo_Tower_special_light_up_2020.jpg", time: "09:00 - 23:00"}
         ];
 
-        const WEATHER_MAP = {'sunny': '🌞', 'cloudy': '⛅','Partly cloudy': '🌦️','rain': '☂', 'thunderstorm': '⛈️','snow': '⛄'};
+        const WEATHER_MAP = {'sunny': '🌞','partly-cloudy': '⛅','cloudy': '☁','rain': '☂','heavy-rain': '⛈️','snow': '⛄','fog': '🌫️','windy': '🍃'};
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
         const DEFAULT_TODOS = ["衣服", "褲子", "內衣/褲", "襪子", "(毛)帽子", "外套", "墨鏡", "(拖)鞋", "毛巾(?)", "口罩", "化妝品", "保養品", "雨傘", "環保袋", "藥品", "衛生棉", "耳塞", "U型枕", "餐盒", "充電器", "行動電源", "Gopro", "自拍棒", "行李秤", "防曬乳", "酒精", "日幣", "錢包", "護照"];
@@ -1233,171 +1247,175 @@
         }
 
         function renderItinerary() {
-    const c = document.getElementById('itinerary-container');
-    const navC = document.getElementById('quick-nav-container'); 
-    if (!c) return;
-    c.innerHTML = '';
-    if (navC && itinerary.length > 0) {
-        const stickersHtml = itinerary.map((day, idx) => {
-            const themes = [
-                { cloud: 'text-pink-200', text: 'text-pink-600' },    
-                { cloud: 'text-yellow-200', text: 'text-yellow-700' },
-                { cloud: 'text-blue-200', text: 'text-blue-600' },    
-                { cloud: 'text-green-200', text: 'text-green-600' },  
-                { cloud: 'text-purple-200', text: 'text-purple-600' },
-                { cloud: 'text-orange-200', text: 'text-orange-700' },
-                { cloud: 'text-cyan-200', text: 'text-cyan-700' }      
-            ];
-            const theme = themes[idx % 7];
-            
-            return `
-            <button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})"
-                    class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300">
-                <i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i>
-                <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1">
-                    <span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span>
-                    <span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span>
-                </div>
-            </button>`;
-        }).join('');
-        navC.innerHTML = `
-            <div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">
-                ${stickersHtml}
-            </div>
-        `;
-    }
-    itinerary.forEach((day) => {
-        let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
-        const loc = day.accommodation || "東京";
-        // const date = day.date || ""; 
-        const cleanLoc = (typeof cleanLocationName === 'function') ? cleanLocationName(loc) : loc;
-        const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html";
-        const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
-        
-        let tempBadgeHtml = '';
-        if (day.temp) {
-            const tempVal = parseInt(day.temp);
-            let tempClass = 'temp-warm';
-            if (!isNaN(tempVal)) {
-                if (tempVal >= 28) tempClass = 'temp-hot';
-                else if (tempVal >= 20) tempClass = 'temp-warm';
-                else if (tempVal >= 10) tempClass = 'temp-cool';
-                else tempClass = 'temp-cold';
-            }
-            tempBadgeHtml = `<span class="temp-badge ${tempClass}">${day.temp.replace('C','').replace('c','')}°C</span>`;
-        }
+            const c = document.getElementById('itinerary-container');
+            const navC = document.getElementById('quick-nav-container'); 
+            if (!c) return;
+            c.innerHTML = '';
 
-        const weatherGroupHtml = (day.weather || day.temp) ? 
-            `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline" title="搜尋天氣">
-                ${tempBadgeHtml}
-                <div class="weather-badge group-hover/weather:scale-110 transition-transform">${wIcon}</div>
-            </a>` : '';
-        const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
-        const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null);
-        
-       const accHtml = day.accommodation ? 
-            `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200">
-                <div class="flex items-start gap-2">
-                    <button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片">
-                        <i class="fa-solid fa-bed"></i>
-                        ${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}
-                    </button>
-                    <div class="flex-1 min-w-0 pt-1">
-                        ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}                       
-                        ${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}
+            // 1. 上方快速導航 (雲朵) - 保持不變
+            if (navC && itinerary.length > 0) {
+                const stickersHtml = itinerary.map((day, idx) => {
+                    const themes = [
+                        { cloud: 'text-pink-200', text: 'text-pink-600' },    
+                        { cloud: 'text-yellow-200', text: 'text-yellow-700' },
+                        { cloud: 'text-blue-200', text: 'text-blue-600' },    
+                        { cloud: 'text-green-200', text: 'text-green-600' },  
+                        { cloud: 'text-purple-200', text: 'text-purple-600' },
+                        { cloud: 'text-orange-200', text: 'text-orange-700' },
+                        { cloud: 'text-cyan-200', text: 'text-cyan-700' }      
+                    ];
+                    const theme = themes[idx % 7];
+                    
+                    return `
+                    <button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})"
+                            class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300">
+                        <i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1">
+                            <span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span>
+                            <span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span>
+                        </div>
+                    </button>`;
+                }).join('');
+                navC.innerHTML = `
+                    <div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">
+                        ${stickersHtml}
                     </div>
-                </div>
-            </div>` : '';
+                `;
+            }
 
-        const renderMealItem = (type, icon, color) => { 
-            const m = day.meals?.[type]; 
-            if(!m || !m.name) return ''; 
-            const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1 font-bold">${m.name}</a>` : `<span class="ml-1 font-bold">${m.name}</span>`; 
-            const notePart = m.note ? `<span class="text-[10px] text-gray-400 ml-2 border-l pl-2 border-gray-300">${m.note}</span>` : '';
-            return `<div class="flex items-center gap-1 p-1">
-                <i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition flex-shrink-0" 
-                   onclick="quickExpense('${m.name}', '餐飲')" 
-                   title="點擊記帳"></i>
-                <div class="flex-1 min-w-0 truncate">
-                    ${linkPart}${notePart}
-                </div>
-            </div>`;
-        };
-        const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
-            `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">
-                ${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}
-                ${renderMealItem('l', 'fa-utensils', 'text-green-400')}
-                ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
-            </div>` : '';
-       let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []);
-       const transHtml = transData.map(t => `
-            <div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition">
-                <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
-                    <!-- 顯示選擇的 Icon，若無則預設火車 -->
-                    <i class="fa-solid ${t.icon || 'fa-train-subway'} text-blue-400 w-5 text-center"></i>
-                    
-                    ${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}
-                    <span class="text-gray-700">${t.content || '交通移動'}</span>
-                </div>
+            // 2. 渲染每一天 (主要修改這裡)
+            itinerary.forEach((day, idx) => {
+                let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
+                const loc = day.accommodation || "東京";
+                const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null);
                 
-                ${t.note ? `<div class="ml-9 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}
-                ${t.photo ? `<div class="mt-1 ml-9"><button onclick="viewPhoto('${t.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1 font-bold">
-                        <i class="fa-solid fa-ticket"></i> 查看車票/憑證
-                    </button>
-                </div>` : ''}
-            </div>
-        `).join('');
-        const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
-        const tapeColor = day.highlight ? 'bg-sakura/80' : 'bg-purple-300'; 
-        const tapeGridStyle = day.highlight ? '' : `
-            background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); 
-            background-size: 6px 6px;
-        `; 
-        
-        const stickerBg = day.highlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]';
-        const stickerBorder = day.highlight ? 'border-sakura' : 'border-[#e6dbbf]';
-        const stickerText = day.highlight ? 'text-sakura' : 'text-[#827355]';
-        c.innerHTML += `
-            <div id="${day.id}"class="relative pl-8 border-l-2 ${day.highlight ? 'border-sakura' : 'border-gray-200'} pb-10 group">
-                <div class="absolute -left-2.5 top-3 w-5 h-5 rounded-full ${day.highlight ? 'bg-sakura' : 'bg-gray-300'} border-4 border-paper shadow-sm z-10"></div>
+                // 天氣資訊
+                const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html";
+                const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
                 
-                <div class="flex justify-between mb-3 items-end">
-                    <div class="flex items-center gap-4">
-                        <!-- 貼紙區塊 -->
-                        <div class="relative mt-3" onclick="openDayEditor('${day.id}')">
-                    
-                            <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 ${tapeColor} -rotate-1 rounded-sm z-20 shadow-sm opacity-90" 
-                                 style="${tapeGridStyle}"></div>
+                // 氣溫標籤
+                let tempBadgeHtml = '';
+                if (day.temp) {
+                    const tempVal = parseInt(day.temp);
+                    let tempClass = 'temp-warm';
+                    if (!isNaN(tempVal)) {
+                        if (tempVal >= 28) tempClass = 'temp-hot';
+                        else if (tempVal >= 20) tempClass = 'temp-warm';
+                        else if (tempVal >= 10) tempClass = 'temp-cool';
+                        else tempClass = 'temp-cold';
+                    }
+                    tempBadgeHtml = `<span class="temp-badge ${tempClass}">${day.temp.replace('C','').replace('c','')}°C</span>`;
+                }
 
-                            <div class="relative ${stickerBg} border-2 ${stickerBorder} px-4 py-1.5 rounded-lg -rotate-2 hover:rotate-0 transition-all duration-300 cursor-pointer min-w-[4rem] text-center shadow-md hover:shadow-lg hover:-translate-y-0.5 whitespace-nowrap">
-                                <span class="text-xl font-black font-maru tracking-widest ${stickerText}">
-                                    ${day.date}
-                                </span>
+                // 左側吊飾用的天氣區塊
+                const weatherGroupHtml = (day.weather || day.temp) ? 
+                    `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline mt-1" title="搜尋天氣">
+                        ${tempBadgeHtml}
+                        <div class="weather-badge group-hover/weather:scale-110 transition-transform text-lg shadow-md border-2 border-white">${wIcon}</div>
+                    </a>` : '';
+
+                // 照片、住宿、交通、三餐 HTML 生成 (保持原本邏輯)
+                const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
+                
+                const accHtml = day.accommodation ? 
+                    `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200">
+                        <div class="flex items-start gap-2">
+                            <button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片">
+                                <i class="fa-solid fa-bed"></i>
+                                ${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}
+                            </button>
+                            <div class="flex-1 min-w-0 pt-1">
+                                ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}
+                                ${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}
                             </div>
                         </div>
-                        
-                        <!-- 天氣圖示 -->
-                        <div class="mb-1">${weatherGroupHtml}</div>
-                    </div>
-                    
-                    <button onclick="openDayEditor('${day.id}')" class="text-gray-300 hover:text-fuji transition p-2">
-                        <i class="fa-solid fa-pen text-sm"></i>
-                    </button>
-                </div>
+                    </div>` : '';
 
-                <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative">
-                    <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>
-                    ${photosHtml}
-                    ${accHtml}
-                    ${transHtml}
-                    ${mealsHtml}
-                    ${noteHtml}
-                </div>
-            </div>`;
-    });
-}
-        function openDayEditor(id){ 
+                const renderMealItem = (type, icon, color) => { 
+                    const m = day.meals?.[type]; 
+                    if(!m || !m.name) return ''; 
+                    const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1 font-bold">${m.name}</a>` : `<span class="ml-1 font-bold">${m.name}</span>`; 
+                    const notePart = m.note ? `<span class="text-[10px] text-gray-400 ml-2 border-l pl-2 border-gray-300">${m.note}</span>` : '';
+                    return `<div class="flex items-center gap-1 p-1">
+                        <i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition flex-shrink-0" 
+                           onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i>
+                        <div class="flex-1 min-w-0 truncate">${linkPart}${notePart}</div>
+                    </div>`;
+                };
+                const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
+                    `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">
+                        ${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}
+                        ${renderMealItem('l', 'fa-utensils', 'text-green-400')}
+                        ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
+                    </div>` : '';
+
+                let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []);
+                const transHtml = transData.map(t => `
+                    <div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition">
+                        <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
+                            <i class="fa-solid ${t.icon || 'fa-train-subway'} text-blue-400 w-5 text-center"></i>
+                            ${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}
+                            <span class="text-gray-700">${t.content || '交通移動'}</span>
+                        </div>
+                        ${t.note ? `<div class="ml-9 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}
+                        ${t.photo ? `<div class="mt-1 ml-9"><button onclick="viewPhoto('${t.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1 font-bold"><i class="fa-solid fa-ticket"></i> 查看車票/憑證</button></div>` : ''}
+                    </div>
+                `).join('');
+
+                const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
+
+                // --- 樣式設定 ---
+                const isHighlight = day.highlight;
+                const stickerBg = isHighlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]';
+                const stickerBorder = isHighlight ? 'border-sakura' : 'border-[#e6dbbf]';
+                const stickerTextMain = isHighlight ? 'text-sakura' : 'text-[#827355]';
+                const stickerTextSub = isHighlight ? 'text-pink-300' : 'text-[#b0a58e]';
+
+                c.innerHTML += `
+                    <div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
+                        
+                        <div class="absolute -left-5 sm:-left-6 top-0 flex flex-col items-center z-10 w-12 sm:w-14">
+                            <div onclick="openDayEditor('${day.id}')" 
+                                 class="relative w-full aspect-square bg-white border-2 border-gray-200 rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors">
+                                <span class="text-[9px] font-black font-sans tracking-widest text-gray-300 mb-[-2px]">DAY</span>
+                                <span class="text-2xl font-black font-maru leading-none text-gray-700">${idx + 1}</span>
+                            </div>
+                            <div class="h-4 w-0.5 bg-gray-300"></div>
+                            ${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300"><i class="fa-solid fa-cloud"></i></div>'}
+                        </div>
+
+                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative group/card hover:border-fuji/30 transition-colors">
+                            
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="relative transform -rotate-1 hover:rotate-0 transition-transform duration-300 cursor-pointer" onclick="openDayEditor('${day.id}')">
+                                    <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/40 backdrop-blur-[1px] border border-white/20 rounded-sm shadow-sm z-20"></div>
+                                    
+                                    <div class="relative ${stickerBg} border-2 ${stickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem] text-center">
+                                        <h4 class="text-xl font-black font-maru tracking-widest ${stickerTextMain} leading-tight">
+                                            ${day.date}
+                                        </h4>
+                                    </div>
+                                </div>
+
+                                <button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2 hover:bg-gray-50 rounded-full">
+                                    <i class="fa-solid fa-pen text-sm"></i>
+                                </button>
+                            </div>
+
+                            <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">
+                                ${contentHtml}
+                            </ul>
+                            
+                            ${photosHtml}
+                            ${accHtml}
+                            ${transHtml}
+                            ${mealsHtml}
+                            ${noteHtml}
+                        </div>
+                    </div>`;
+            });
+        }
+            function openDayEditor(id){ 
             const d=itinerary.find(i=>i.id===id); 
             if(!d)return; 
             document.getElementById('day-date-edit').value=d.date; 
