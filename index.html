@@ -853,6 +853,10 @@
                     e.paidBy = e.splitBy[0] || "我"; // Default to first person or me
                 }
             });
+        if(document.getElementById('gemini-api-key-input')) {
+                document.getElementById('gemini-api-key-input').value = localStorage.getItem('gemini_api_key') || "";
+            }
+
         }
         function saveData() {
             try {
@@ -905,7 +909,22 @@
             try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
         }
         function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
-        function saveGistConfig() { gistId=document.getElementById('gist-id-input').value; gistToken=document.getElementById('gist-token-input').value; localStorage.setItem('gist_id',gistId); localStorage.setItem('gist_token',gistToken); alert("已儲存"); forceDownload(); }
+        function saveGistConfig() { 
+            // 1. 抓取原本的 Gist 資料
+            gistId = document.getElementById('gist-id-input').value; 
+            gistToken = document.getElementById('gist-token-input').value; 
+            
+            // 2. 👇 關鍵：抓取新的 Gemini Key
+            const geminiKey = document.getElementById('gemini-api-key-input').value; 
+
+            // 3. 存入瀏覽器記憶體
+            localStorage.setItem('gist_id', gistId); 
+            localStorage.setItem('gist_token', gistToken); 
+            localStorage.setItem('gemini_api_key', geminiKey); // 這一行一定要有！
+
+            alert("設定已儲存！(包含 AI Key)"); 
+            forceDownload(); 
+        }
 
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
         // --- UI UTILS ---
