@@ -392,8 +392,12 @@
     <label class="text-[10px] font-bold text-purple-400 block mb-1">Gemini API Key (AI 功能用)</label>
     <input type="password" id="gemini-api-key-input" placeholder="貼上 AIza 開頭的密鑰" class="w-full border p-2 rounded text-xs font-mono bg-purple-50 outline-none focus:border-purple-300">
 </div>
-<button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition">儲存設定</button>
-                           
+<button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
+                            
+                            <button onclick="forceUpload(true)" class="w-full bg-red-100 text-red-500 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> 強制上傳 (覆蓋雲端)
+                            </button>
+                            <p class="text-[9px] text-gray-400 text-center mt-1">⚠️ 這會把目前的畫面內容存到雲端，請小心使用</p>              
                        </div>
                     </details>
                 </div>
@@ -902,31 +906,69 @@
                 updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
             }).catch(()=>updateCloudStatus("下載失敗"));
         }
-        async function forceUpload() {
+        async function forceUpload(isManual = false) {
             if(!gistId) return;
+
+            // 如果是手動按紅色按鈕，跳出確認視窗
+            if (isManual) {
+                const check = confirm("⚠️ 警告：確定要將「目前的內容」強制上傳嗎？\n\n這將會【覆蓋並刪除】雲端上原本的資料！\n(建議先按「同步(下載)」確認雲端資料，再執行此操作)");
+                if (!check) return; // 如果按取消，就停止執行
+            }
+
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, lastUpdate: new Date() };
-            try { await fetch(`https://api.github.com/gists/${gistId}`, { method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) }); updateCloudStatus("已同步"); } catch(e){ updateCloudStatus("上傳失敗"); }
+            
+            // 資料包 (記得包含 vjwData)
+            const payload = { 
+                flights, 
+                itinerary, 
+                mustEatList, 
+                expenses, 
+                guides, 
+                shoppingList, 
+                payers, 
+                publicFundConfig, 
+                memo: memoText, 
+                vjwData, // ✅ 這裡有同步 VJW
+                lastUpdate: new Date() 
+            };
+            
+            try { 
+                await fetch(`https://api.github.com/gists/${gistId}`, { 
+                    method: 'PATCH', 
+                    headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) 
+                }); 
+                updateCloudStatus("上傳成功"); 
+                if(isManual) alert("✅ 上傳成功！雲端資料已更新為您目前的內容。");
+            } catch(e){ 
+                console.error(e);
+                updateCloudStatus("上傳失敗"); 
+                if(isManual) alert("❌ 上傳失敗，請檢查網路或 Token 設定。");
+            }
         }
-        function updateCloudStatus(msg) { document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; }
+
+        // 2. 狀態更新函式 (保持不變)
+        function updateCloudStatus(msg) { 
+            document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
+        }
+
+        // 3. 儲存設定函式 (包含 Gist ID, Token 和 Gemini Key)
         function saveGistConfig() { 
-            // 1. 抓取原本的 Gist 資料
+            // 抓取原本的 Gist 資料
             gistId = document.getElementById('gist-id-input').value; 
             gistToken = document.getElementById('gist-token-input').value; 
             
-            // 2. 👇 關鍵：抓取新的 Gemini Key
+            // 抓取新的 Gemini Key
             const geminiKey = document.getElementById('gemini-api-key-input').value; 
 
-            // 3. 存入瀏覽器記憶體
+            // 存入瀏覽器記憶體
             localStorage.setItem('gist_id', gistId); 
             localStorage.setItem('gist_token', gistToken); 
-            localStorage.setItem('gemini_api_key', geminiKey); // 這一行一定要有！
+            localStorage.setItem('gemini_api_key', geminiKey); // ✅ 儲存 AI Key
 
             alert("設定已儲存！(包含 AI Key)"); 
-            forceDownload(); 
-        }
-
-        window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
+            forceDownload(); // 存完設定後，先嘗試下載一次同步
+        }        window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
         // --- UI UTILS ---
         function openModal(id){
             history.pushState({modal: id}, null, ""); 
