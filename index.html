@@ -288,33 +288,32 @@
         </section>
 
         <!-- INFO SECTION -->
-        <section id="view-info" class="view-section hidden relative z-10">
-            <!-- (Info section code remains unchanged, simplified for brevity as no changes requested here) -->
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-               <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-purple-200">
-    <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-purple-400">✨</div>
-    <h3 class="font-bold text-purple-500 handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 隨身翻譯</h3>
-    
-    <div class="relative mb-3">
-        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-purple-50/50 border border-purple-100 rounded-xl resize-none text-sm outline-none focus:border-purple-300 transition font-hand placeholder-purple-300/70" placeholder="輸入文字 (例如: 這是什麼魚？)"></textarea>
-        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white border border-purple-100 rounded-full shadow-sm flex items-center justify-center text-purple-400 hover:bg-purple-500 hover:text-white transition active:scale-95 z-10"><i class="fa-solid fa-microphone"></i></button>
-    </div>
+<section id="view-info" class="view-section hidden relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                
+                <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-blue-200">
+                    <div class="absolute -right-4 -top-4 text-6xl opacity-10 rotate-12 text-blue-400">🗾</div>
+                    <h3 class="font-bold text-blue-500 handwritten text-xl flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-language"></i> 隨身翻譯
+                    </h3>
+                    
+                    <div class="relative mb-3">
+                        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-blue-50/30 border border-blue-100 rounded-xl resize-none text-sm outline-none focus:border-blue-300 transition font-hand placeholder-gray-400" placeholder="輸入文字或按右下角說話..."></textarea>
+                        <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white border border-blue-200 text-blue-500 rounded-full shadow-md flex items-center justify-center hover:bg-blue-500 hover:text-white transition active:scale-95 z-10">
+                            <i class="fa-solid fa-microphone"></i>
+                        </button>
+                    </div>
 
-    <div class="grid grid-cols-3 gap-2">
-            <button onclick="callGeminiAI()" class="bg-purple-500 text-white py-2 rounded-xl font-bold shadow-sm hover:bg-purple-600 transition flex items-center justify-center gap-1 text-sm active:scale-95">
-            <i class="fa-solid fa-language"></i> 翻譯
-        </button>
-        <a href="https://translate.google.com/?sl=auto&tl=ja&op=images" target="_blank" class="bg-white border border-purple-100 text-purple-500 py-2 rounded-xl font-bold shadow-sm hover:bg-purple-50 transition flex items-center justify-center gap-1 text-sm no-underline">
-            <i class="fa-solid fa-camera"></i> 鏡頭
-        </a>
-        <a href="https://translate.google.com/?sl=auto&tl=ja&op=translate" target="_blank" class="bg-white border border-purple-100 text-purple-500 py-2 rounded-xl font-bold shadow-sm hover:bg-purple-50 transition flex items-center justify-center gap-1 text-sm no-underline">
-            <i class="fa-brands fa-google"></i> Google
-        </a>
-    </div>
-    
-    <div id="ai-result" class="mt-3 text-sm text-gray-700 bg-white p-3 rounded-xl border border-purple-100 hidden leading-relaxed font-bold shadow-inner min-h-[3rem]"></div>
-</div>
-                <!-- Phrase Book -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="https://translate.google.com/?sl=auto&tl=ja&op=images" target="_blank" class="bg-blue-100 text-blue-600 border border-blue-200 py-3 rounded-xl font-bold shadow-sm hover:bg-blue-500 hover:text-white transition flex items-center justify-center gap-2 no-underline text-sm">
+                            <i class="fa-solid fa-camera"></i> 拍照翻譯
+                        </a>
+                        <button onclick="openGoogleTranslate()" class="bg-blue-500 text-white py-3 rounded-xl font-bold shadow-sm hover:bg-blue-600 transition flex items-center justify-center gap-2 text-sm active:scale-95">
+                            <i class="fa-solid fa-paper-plane"></i> 文字翻譯
+                        </button>
+                    </div>
+                </div>
+
                 <details class="hand-card p-0 border-l-8 border-sakura/20 group transition-all duration-300">
                     <summary class="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 transition relative select-none">
                         <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> 生存日語字卡</h3>
@@ -332,7 +331,7 @@
                     </div>
                 </details>
             </div>
-             <!-- Tokyo Transport Map -->
+
             <div class="mt-6 mb-6">
                 <div class="hand-card p-4 border-l-8 border-blue-200">
                     <div class="flex justify-between items-center mb-4">
@@ -347,26 +346,27 @@
                     </div>
                 </div>
             </div>
-              <div class="grid grid-cols-4 gap-3">
-                       <a href="https://tenki.jp/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-3 rounded-xl transition group no-underline text-center h-24">
-                        <i class="fa-solid fa-cloud-sun-rain text-2xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-xs font-bold text-gray-500">天氣</span>
-                    </a>
-                    <a href="https://www.google.com/maps/search/drugstore" target="_blank" class="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 p-3 rounded-xl transition group no-underline text-center h-24">
-                        <i class="fa-solid fa-store text-2xl text-sakura mb-1 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-xs font-bold text-gray-500">藥妝</span>
-                    </a>
-                    <a href="https://tabelog.com/" target="_blank" class="flex flex-col items-center justify-center bg-orange-50 hover:bg-orange-100 p-3 rounded-xl transition group no-underline text-center h-24">
-                        <i class="fa-solid fa-utensils text-2xl text-orange-400 mb-1 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-xs font-bold text-gray-500">美食</span>
-                    </a>
-                    <a href="https://transit.yahoo.co.jp/" target="_blank" class="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 p-3 rounded-xl transition group no-underline text-center h-24">
-                        <i class="fa-solid fa-train-subway text-2xl text-red-400 mb-1 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-xs font-bold text-gray-500">交通</span>
-                    </a>
-                </div>
+
+            <div class="grid grid-cols-4 gap-3">
+                <a href="https://tenki.jp/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                    <i class="fa-solid fa-cloud-sun-rain text-2xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-xs font-bold text-gray-500">天氣</span>
+                </a>
+                <a href="https://www.google.com/maps/search/drugstore" target="_blank" class="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                    <i class="fa-solid fa-store text-2xl text-sakura mb-1 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-xs font-bold text-gray-500">藥妝</span>
+                </a>
+                <a href="https://tabelog.com/" target="_blank" class="flex flex-col items-center justify-center bg-orange-50 hover:bg-orange-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                    <i class="fa-solid fa-utensils text-2xl text-orange-400 mb-1 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-xs font-bold text-gray-500">美食</span>
+                </a>
+                <a href="https://transit.yahoo.co.jp/" target="_blank" class="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 p-3 rounded-xl transition group no-underline text-center h-24">
+                    <i class="fa-solid fa-train-subway text-2xl text-red-400 mb-1 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-xs font-bold text-gray-500">交通</span>
+                </a>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 mt-6">
                 <div class="space-y-6">
                     <div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition">
                         <div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()">
@@ -378,6 +378,7 @@
                         </div>
                         <div id="vjw-content" class="transition-all duration-300 overflow-hidden"><div class="p-4 pb-6"><div id="vjw-container" class="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 no-scrollbar items-start"></div></div></div>
                     </div>
+
                      <details class="group hand-card overflow-hidden border border-gray-200">
                         <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none">
                             <span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span>
@@ -388,11 +389,7 @@
                             <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Gist ID</label><input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
                            <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="password" id="gist-token-input" placeholder="Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
 
-<div class="mt-2 border-t border-dashed border-gray-200 pt-2">
-    <label class="text-[10px] font-bold text-purple-400 block mb-1">Gemini API Key (AI 功能用)</label>
-    <input type="password" id="gemini-api-key-input" placeholder="貼上 AIza 開頭的密鑰" class="w-full border p-2 rounded text-xs font-mono bg-purple-50 outline-none focus:border-purple-300">
-</div>
-<button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
+                            <button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
                             
                             <button onclick="forceUpload(true)" class="w-full bg-red-100 text-red-500 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-cloud-arrow-up"></i> 強制上傳 (覆蓋雲端)
@@ -487,12 +484,15 @@
             <div class="flex gap-3 items-center mb-6">
                 <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 relative overflow-hidden cursor-pointer hover:bg-gray-200">
                     <i class="fa-solid fa-camera"></i>
-                    <input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('ex-photo-preview-mini').src = base64; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); })">
+                    <input type="file" id="ex-photo" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentPhotoBase64 = base64; document.getElementById('ex-photo-preview-mini').src = base64; document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); document.getElementById('btn-remove-ex-photo').classList.remove('hidden'); })">
                     <img id="ex-photo-preview-mini" class="hidden absolute inset-0 w-full h-full object-cover">
                 </div>
                 <span class="text-xs text-gray-400">收據</span>
+                
+                <button id="btn-remove-ex-photo" onclick="removeExpensePhoto()" class="hidden text-xs text-red-400 border border-red-200 bg-red-50 px-2 py-1 rounded-full hover:bg-red-400 hover:text-white transition flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i> 移除
+                </button>
             </div>
-
             <div class="flex gap-3">
                 <button onclick="deleteExpense()" id="btn-delete-expense" class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 hidden"><i class="fa-solid fa-trash-can"></i></button>
                 <button onclick="saveExpense()" class="flex-1 bg-ink text-white py-3 rounded-full font-bold shadow-lg">確認儲存</button>
@@ -755,8 +755,16 @@
     <div id="manage-shop-lists-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg hand-card"><h4 class="font-bold mb-3 text-center text-lg handwritten">管理購物清單</h4><div id="shop-lists-container" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2 border-t pt-3"><input type="text" id="new-shop-list-name" placeholder="輸入名稱 (如: 媽媽)" class="flex-1 border p-2 text-sm rounded bg-gray-50 outline-none focus:border-red-300"><button onclick="addShopList()" class="bg-red-400 text-white px-3 rounded text-sm font-bold shadow-sm">新增</button></div><button onclick="closeModal('manage-shop-lists-modal')" class="w-full mt-3 bg-gray-100 text-gray-500 py-2 rounded-lg text-sm hover:bg-gray-200 transition">完成</button></div></div>
     <div id="iou-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-[#f9f7f2] w-full max-w-sm rounded-2xl p-5 shadow-2xl relative hand-card max-h-[90vh] overflow-y-auto"><button onclick="closeModal('iou-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button><h3 class="text-lg font-bold mb-4 text-center text-fuji">🤝 手動欠款/借款</h3><input type="hidden" id="iou-id"><div class="space-y-3 p-3 border rounded-lg bg-white mb-4"><div class="text-xs text-gray-500 mb-1">誰借給誰？</div><div class="flex gap-2"><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債權人</label><select id="iou-creditor" class="w-full bg-white border rounded p-1 text-sm"></select></div><div class="flex-1"><label class="block text-xs text-gray-400 mb-1">債務人</label><select id="iou-debtor" class="w-full bg-white border rounded p-1 text-sm"></select></div></div><div class="flex items-center gap-2 bg-gray-50 border rounded p-2"><span class="font-bold text-sm">TWD</span><input type="number" id="iou-amount" placeholder="金額" class="flex-1 text-lg text-right w-full bg-transparent" inputmode="numeric"></div><input type="text" id="iou-note" placeholder="備註" class="w-full p-2 border rounded text-sm"><div class="flex gap-2 mt-3"><button onclick="deleteIOU()" id="btn-delete-iou" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg text-sm hidden">刪除</button><button onclick="saveIOU()" class="flex-[2] bg-fuji text-white py-2 rounded-lg font-bold shadow">儲存</button></div></div><h4 class="text-sm font-bold text-gray-600 mb-2">列表:</h4><div id="iou-list-container" class="space-y-2 border rounded-lg bg-white p-3 shadow-inner"></div></div></div>
     <div id="member-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4"><div class="bg-white w-full max-w-xs rounded-xl p-4 shadow-lg"><h4 class="font-bold mb-3 text-center">管理成員與頭像</h4><div id="member-list" class="space-y-2 mb-3 max-h-60 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="new-payer-name" placeholder="新成員名稱" class="flex-1 border p-1 text-sm rounded"><button onclick="addPayer()" class="bg-matcha text-white px-3 rounded text-sm">新增</button></div><button onclick="closeModal('member-modal')" class="w-full mt-3 bg-gray-200 py-1 rounded text-sm">關閉</button></div></div>
-    <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('lightbox-modal')"><div class="absolute top-4 right-4 text-white/80 z-50 cursor-pointer bg-white/10 rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition"><i class="fa-solid fa-times"></i></div><div id="lightbox-container" class="zoom-container w-full h-full flex items-center justify-center" onclick="event.stopPropagation()"><img id="lightbox-image" src="" class="max-w-full max-h-full object-contain shadow-2xl rounded" onclick="toggleZoom(this)"></div></div>
-
+    <div id="lightbox-modal" class="modal hidden fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300" onclick="if(event.target === this) closeModal('lightbox-modal')">
+        
+        <button onclick="closeModal('lightbox-modal')" class="absolute top-6 right-6 text-white/80 z-50 bg-white/10 rounded-full w-12 h-12 flex items-center justify-center hover:bg-white/20 transition backdrop-blur-md">
+            <i class="fa-solid fa-times text-xl"></i>
+        </button>
+        
+        <div id="lightbox-container" class="zoom-container w-full h-full flex items-center justify-center overflow-hidden" onclick="if(event.target === this) closeModal('lightbox-modal')">
+            <img id="lightbox-image" src="" class="max-w-full max-h-full object-contain shadow-2xl rounded transition-transform duration-300" onclick="event.stopPropagation(); toggleZoom(this)">
+        </div>
+    </div>
     <!-- NAV BAR -->
     <nav class="fixed bottom-0 left-0 w-full bg-[#f9f7f2]/95 border-t border-gray-200 pt-2 pb-safe px-6 z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] backdrop-blur-sm" style="padding-bottom: calc(10px + var(--sab));">
         <div class="flex justify-between items-center w-full mx-auto pb-1 max-w-lg">
@@ -781,51 +789,49 @@
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
         const DEFAULT_TODOS = ["衣服", "褲子", "內衣/褲", "襪子", "(毛)帽子", "外套", "墨鏡", "(拖)鞋", "毛巾(?)", "口罩", "化妝品", "保養品", "雨傘", "環保袋", "藥品", "衛生棉", "耳塞", "U型枕", "餐盒", "充電器", "行動電源", "Gopro", "自拍棒", "行李秤", "防曬乳", "酒精", "日幣", "錢包", "護照"];
-        // --- PHRASE DATA ---
+        
         const PHRASES = {
-            'food': [
-                { ja: 'メニューをください', p: 'Menu wo kudasai', zh: '請給我菜單' },
-                { ja: 'これをお願いします', p: 'Kore wo onegaishimasu', zh: '我要這個' },
-                { ja: 'お水ください', p: 'Omizu kudasai', zh: '請給我水' },
-                { ja: 'お会計お願いします', p: 'Okaikei onegaishimasu', zh: '我要結帳' },
-                { ja: '美味しいです', p: 'Oishii desu', zh: '很好吃' },
-                { ja: 'テイクアウトで', p: 'Teikuauto de', zh: '我要外帶' }
-            ],
-            'shopping': [
-                { ja: '試着してもいいですか', p: 'Shichaku shitemo ii desu ka', zh: '可以試穿嗎？' },
-                { ja: 'これの大きいサイズはありますか', p: 'Kore no ookii saizu wa arimasu ka', zh: '有大一點的尺寸嗎？' },
-                { ja: 'いくらですか', p: 'Ikura desu ka', zh: '多少錢？' },
-                { ja: '免税できますか', p: 'Menzei dekimasu ka', zh: '可以退稅嗎？' },
-                { ja: '袋はいりません', p: 'Fukuro wa irimasen', zh: '不用袋子' }
-            ],
-            'stay': [
-                { ja: 'チェックインお願いします', p: 'Chekkuin onegaishimasu', zh: '我要辦理入住' },
-                { ja: '荷物を預かってもらえますか', p: 'Nimotsu wo azukatte moraemasu ka', zh: '可以寄放行李嗎？' },
-                { ja: 'Wi-Fiのパスワードは何ですか', p: 'Wi-Fi no pasuwādo wa nan desu ka', zh: 'Wi-Fi密碼是多少？' }
-            ],
-            'transport': [
-                { ja: '駅はどこですか', p: 'Eki wa doko desu ka', zh: '車站在哪裡？' },
-                { ja: '新宿まで行きたいです', p: 'Shinjuku made ikitai desu', zh: '我想去新宿' },
-                { ja: 'この電車は渋谷に行きますか', p: 'Kono densha wa Shibuya ni ikimasu ka', zh: '這班車去澀谷嗎？' },
-                { ja: '切符売り場はどこですか', p: 'Kippu uriba wa doko desu ka', zh: '售票處在哪裡？' }
-            ],
-            'vege': [
-                { ja: '私はベジタリアンです', p: 'Watashi wa bejitarian desu', zh: '我是素食者' },
-                { ja: '肉と魚は食べられません', p: 'Niku to sakana wa taberaremasen', zh: '我不吃肉和魚' },
-                { ja: '出汁に魚は使われていますか', p: 'Dashi ni sakana wa tsukawarete imasu ka', zh: '高湯裡有魚嗎？' },
-                { ja: '卵と乳製品は大丈夫です', p: 'Tamago to nyuseihin wa daijoubu desu', zh: '蛋和奶製品可以吃' },
-                { ja: '肉が入っていない料理はありますか', p: 'Niku ga haitte inai ryouri wa arimasu ka', zh: '有不含肉的料理嗎？' }
-            ]
+            'food': [{ ja: 'メニューをください', p: 'Menu wo kudasai', zh: '請給我菜單' },{ ja: 'これをお願いします', p: 'Kore wo onegaishimasu', zh: '我要這個' },{ ja: 'お水ください', p: 'Omizu kudasai', zh: '請給我水' },{ ja: 'お会計お願いします', p: 'Okaikei onegaishimasu', zh: '我要結帳' },{ ja: '美味しいです', p: 'Oishii desu', zh: '很好吃' },{ ja: 'テイクアウトで', p: 'Teikuauto de', zh: '我要外帶' }],
+            'shopping': [{ ja: '試着してもいいですか', p: 'Shichaku shitemo ii desu ka', zh: '可以試穿嗎？' },{ ja: 'これの大きいサイズはありますか', p: 'Kore no ookii saizu wa arimasu ka', zh: '有大一點的尺寸嗎？' },{ ja: 'いくらですか', p: 'Ikura desu ka', zh: '多少錢？' },{ ja: '免税できますか', p: 'Menzei dekimasu ka', zh: '可以退稅嗎？' },{ ja: '袋はいりません', p: 'Fukuro wa irimasen', zh: '不用袋子' }],
+            'stay': [{ ja: 'チェックインお願いします', p: 'Chekkuin onegaishimasu', zh: '我要辦理入住' },{ ja: '荷物を預かってもらえますか', p: 'Nimotsu wo azukatte moraemasu ka', zh: '可以寄放行李嗎？' },{ ja: 'Wi-Fiのパスワードは何ですか', p: 'Wi-Fi no pasuwādo wa nan desu ka', zh: 'Wi-Fi密碼是多少？' }],
+            'transport': [{ ja: '駅はどこですか', p: 'Eki wa doko desu ka', zh: '車站在哪裡？' },{ ja: '新宿まで行きたいです', p: 'Shinjuku made ikitai desu', zh: '我想去新宿' },{ ja: 'この電車は渋谷に行きますか', p: 'Kono densha wa Shibuya ni ikimasu ka', zh: '這班車去澀谷嗎？' },{ ja: '切符売り場はどこですか', p: 'Kippu uriba wa doko desu ka', zh: '售票處在哪裡？' }],
+            'vege': [{ ja: '私はベジタリアンです', p: 'Watashi wa bejitarian desu', zh: '我是素食者' },{ ja: '肉と魚は食べられません', p: 'Niku to sakana wa taberaremasen', zh: '我不吃肉和魚' },{ ja: '出汁に魚は使われていますか', p: 'Dashi ni sakana wa tsukawarete imasu ka', zh: '高湯裡有魚嗎？' },{ ja: '卵と乳製品は大丈夫です', p: 'Tamago to nyuseihin wa daijoubu desu', zh: '蛋和奶製品可以吃' },{ ja: '肉が入っていない料理はありますか', p: 'Niku ga haitte inai ryouri wa arimasu ka', zh: '有不含肉的料理嗎？' }]
         };
 
         let flights=[], itinerary=[], mustEatList=[], expenses=[], guides=[], shoppingList=[], payers=[], payerProfiles={}, manualDebts=[], memoText="", todos=[], shoppingOwners=["我的清單"];
         let vjwData={isOpen:true,items:[]}, publicFundConfig={total:0,currency:'JPY'};
         let currentShopOwnerIdx=0, inlineCategoryChart=null, inlineMemberChart=null, settlementChart=null, memberDetailChart=null, gistId="", gistToken="";
         let tempThemes=[], currentPhotoBase64=null, currentGuidePhoto=null, currentShopPhoto=null, currentTransPhoto=null, tempDayPhotos=[], selectedPayers=[], selectedCat='餐飲';
-        
-        let tempTrans = []; 
-        let currentFlightPhoto = null; 
-        let currentAccDayId = null; 
+        let tempTrans = []; let currentFlightPhoto = null; let currentAccDayId = null; 
+
+        // --- 📥 智能同步輔助函式 ---
+        function getDataCount(dataObj) {
+            if (!dataObj) {
+                return flights.length + itinerary.length + mustEatList.length + 
+                       expenses.length + shoppingList.length + guides.length;
+            }
+            return (dataObj.flights?.length || 0) + 
+                   (dataObj.itinerary?.length || 0) + 
+                   (dataObj.mustEatList?.length || 0) + 
+                   (dataObj.expenses?.length || 0) + 
+                   (dataObj.shoppingList?.length || 0) + 
+                   (dataObj.guides?.length || 0);
+        }
+
+        function applyCloudData(c) {
+            localStorage.setItem('flights',JSON.stringify(c.flights||[]));
+            localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
+            localStorage.setItem('mustEatList',JSON.stringify(c.mustEatList||[]));
+            localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
+            localStorage.setItem('guides',JSON.stringify(c.guides||[]));
+            localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
+            localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
+            localStorage.setItem('memo',c.memo||"");
+            localStorage.setItem('vjwData', JSON.stringify(c.vjwData || { isOpen: true, items: [] }));
+            updateCloudStatus("同步完成"); 
+            window.refreshUI(); 
+            alert("✅ 成功下載：已更新為雲端資料 (因為它比較多！)");
+        }
 
         // --- CORE ---
         function reloadLocalData() {
@@ -850,18 +856,14 @@
             gistId = localStorage.getItem('gist_id') || ""; gistToken = localStorage.getItem('gist_token') || "";
             mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
             
-            // Migration for expenses to support paidBy/splitBy
             expenses.forEach(e => {
                 if (!e.splitBy) {
                     e.splitBy = (e.payer || "").split(',').filter(x=>x);
-                    e.paidBy = e.splitBy[0] || "我"; // Default to first person or me
+                    e.paidBy = e.splitBy[0] || "我"; 
                 }
             });
-        if(document.getElementById('gemini-api-key-input')) {
-                document.getElementById('gemini-api-key-input').value = localStorage.getItem('gemini_api_key') || "";
-            }
-
         }
+
         function saveData() {
             try {
                 localStorage.setItem('flights', JSON.stringify(flights));
@@ -885,26 +887,48 @@
             }
         }
 
-        // --- GIST SYNC ---
+        // --- GIST SYNC (智能同步修正版) ---
         function forceDownload() {
             if(!gistId) return updateCloudStatus("未連線");
-            updateCloudStatus("下載中...");
+            updateCloudStatus("檢查中...");
+            
             fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {headers: {'Authorization': `token ${gistToken}`}})
             .then(r=>r.json()).then(async d=>{
                 let content = d.files["travel_data.json"].content;
                 if(d.files["travel_data.json"].truncated) { const r=await fetch(d.files["travel_data.json"].raw_url); content=await r.text(); }
-                const c = JSON.parse(content);
-                localStorage.setItem('flights',JSON.stringify(c.flights||[]));
-                localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
-                localStorage.setItem('mustEatList',JSON.stringify(c.mustEatList||[]));
-                localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
-                localStorage.setItem('guides',JSON.stringify(c.guides||[]));
-                localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
-                localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
-                localStorage.setItem('memo',c.memo||"");
-                localStorage.setItem('vjwData', JSON.stringify(c.vjwData || { isOpen: true, items: [] }));
-                updateCloudStatus("同步成功"); window.refreshUI(); alert("同步成功");
-            }).catch(()=>updateCloudStatus("下載失敗"));
+                const cloudData = JSON.parse(content);
+
+                const cloudCount = getDataCount(cloudData); // 雲端筆數
+                const localCount = getDataCount();          // 本機筆數
+
+                console.log(`雲端: ${cloudCount} 筆 vs 本機: ${localCount} 筆`);
+
+                if (cloudCount > localCount) {
+                    // 狀況 A: 雲端資料比較多 -> 詢問是否下載
+                    if(confirm(`☁️ 發現雲端資料比較多！\n(雲端 ${cloudCount} 筆 > 本機 ${localCount} 筆)\n\n建議「下載」並覆蓋目前的畫面，確定嗎？`)) {
+                        applyCloudData(cloudData);
+                    } else {
+                        updateCloudStatus("取消同步");
+                    }
+                } 
+                else if (localCount > cloudCount) {
+                    // 狀況 B: 本機資料比較多 -> 詢問是否上傳 (保護你的新資料)
+                    if(confirm(`📱 發現你剛新增了資料！\n(本機 ${localCount} 筆 > 雲端 ${cloudCount} 筆)\n\n建議「上傳」備份到雲端，確定嗎？`)) {
+                        forceUpload(); 
+                    } else {
+                        updateCloudStatus("本機較新");
+                    }
+                } 
+                else {
+                    // 狀況 C: 一樣多 -> 不需要動作，但更新狀態
+                    console.log("資料同步中");
+                    updateCloudStatus("已同步");
+                }
+            }).catch((e)=>{
+                console.error(e);
+                updateCloudStatus("連線失敗");
+                // 這裡不 alert 錯誤，避免剛打開 App 就一直跳錯誤視窗干擾體驗
+            });
         }
         async function forceUpload(isManual = false) {
             if(!gistId) return;
@@ -912,25 +936,11 @@
             // 如果是手動按紅色按鈕，跳出確認視窗
             if (isManual) {
                 const check = confirm("⚠️ 警告：確定要將「目前的內容」強制上傳嗎？\n\n這將會【覆蓋並刪除】雲端上原本的資料！\n(建議先按「同步(下載)」確認雲端資料，再執行此操作)");
-                if (!check) return; // 如果按取消，就停止執行
+                if (!check) return; 
             }
 
             updateCloudStatus("上傳中...");
-            
-            // 資料包 (記得包含 vjwData)
-            const payload = { 
-                flights, 
-                itinerary, 
-                mustEatList, 
-                expenses, 
-                guides, 
-                shoppingList, 
-                payers, 
-                publicFundConfig, 
-                memo: memoText, 
-                vjwData, // ✅ 這裡有同步 VJW
-                lastUpdate: new Date() 
-            };
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, lastUpdate: new Date() };
             
             try { 
                 await fetch(`https://api.github.com/gists/${gistId}`, { 
@@ -947,764 +957,82 @@
             }
         }
 
-        // 2. 狀態更新函式 (保持不變)
         function updateCloudStatus(msg) { 
             document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
         }
 
-        // 3. 儲存設定函式 (包含 Gist ID, Token 和 Gemini Key)
         function saveGistConfig() { 
-            // 抓取原本的 Gist 資料
             gistId = document.getElementById('gist-id-input').value; 
             gistToken = document.getElementById('gist-token-input').value; 
-            
-            // 抓取新的 Gemini Key
-            const geminiKey = document.getElementById('gemini-api-key-input').value; 
-
-            // 存入瀏覽器記憶體
             localStorage.setItem('gist_id', gistId); 
             localStorage.setItem('gist_token', gistToken); 
-            localStorage.setItem('gemini_api_key', geminiKey); // ✅ 儲存 AI Key
+            alert("設定已儲存！"); 
+            forceDownload(); 
+        }        
 
-            alert("設定已儲存！(包含 AI Key)"); 
-            forceDownload(); // 存完設定後，先嘗試下載一次同步
-        }        window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
-        // --- UI UTILS ---
-        function openModal(id){
-            history.pushState({modal: id}, null, ""); 
-            document.getElementById(id).classList.remove('hidden');
-            setTimeout(()=>document.getElementById(id).classList.add('visible'),10);
-        }
+        window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
 
-        // 修改：手動點擊 X 關閉視窗時，使用 history.back() 模擬按返回鍵
-        // 這樣可以把剛剛 pushState 加進去的歷史紀錄消掉，避免使用者下次按返回鍵時鬼打牆
-        function closeModal(id){
-            if(history.state && history.state.modal === id) {
-                history.back(); // 這行代碼會觸發下方的 window.onpopstate
-            } else {
-                // 如果沒有歷史紀錄 (例如重整網頁後)，就直接用 CSS 關閉
-                const el=document.getElementById(id);
-                if(el){ el.classList.remove('visible'); setTimeout(()=>el.classList.add('hidden'),200); }
-            }
-        }
-
-        // 新增：監聽瀏覽器/手機的「返回鍵」事件
-        window.onpopstate = function(event) {
-            // 取得當前歷史紀錄中應該開啟的視窗 ID (如果有的話)
-            const activeModalId = event.state ? event.state.modal : null;
-            
-            // 掃描所有目前顯示中的視窗
-            document.querySelectorAll('.modal.visible').forEach(el => {
-                // 如果這個視窗不是當前歷史紀錄要顯示的 (代表我們按了返回)，就關閉它
-                if (el.id !== activeModalId) { 
-                    el.classList.remove('visible');
-                    setTimeout(() => el.classList.add('hidden'), 200);
-                }
-            });
-        };
-
-      function switchTab(t){ 
-            document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); 
-            document.getElementById('view-'+t).classList.remove('hidden'); 
-            document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); 
-            document.querySelector(`[data-target="${t}"]`).classList.add('active');  
-                     if (t !== 'guide') { 
-                const backBtn = document.getElementById('btn-back-to-plan');
-                if(backBtn && !backBtn.classList.contains('hidden')) {
-                     backBtn.classList.add('hidden');
-                }
-            }
-            if (t === 'plan') {
-                const el = document.getElementById('quick-nav-container');
-                // 只有當頁面在最頂端時才強制捲動，不然保留使用者的閱讀位置會更直覺
-                if (window.scrollY < 100 && el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            } else {
-                window.scrollTo(0,0); 
-            }
-        }
-// --- 升級版圖片處理 (高畫質) + 自動上傳 GitHub ---
-        // 1. 上傳核心函式
+        // --- UI UTILS & GitHub Images & Modals (保持不變的基礎代碼) ---
+        function openModal(id){ history.pushState({modal: id}, null, ""); document.getElementById(id).classList.remove('hidden'); setTimeout(()=>document.getElementById(id).classList.add('visible'),10); }
+        function closeModal(id){ if(history.state && history.state.modal === id) { history.back(); } else { const el=document.getElementById(id); if(el){ el.classList.remove('visible'); setTimeout(()=>el.classList.add('hidden'),200); } } }
+        window.onpopstate = function(event) { const activeModalId = event.state ? event.state.modal : null; document.querySelectorAll('.modal.visible').forEach(el => { if (el.id !== activeModalId) { el.classList.remove('visible'); setTimeout(() => el.classList.add('hidden'), 200); } }); };
+        function switchTab(t){ document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); document.getElementById('view-'+t).classList.remove('hidden'); document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); document.querySelector(`[data-target="${t}"]`).classList.add('active'); if (t !== 'guide') { const backBtn = document.getElementById('btn-back-to-plan'); if(backBtn && !backBtn.classList.contains('hidden')) { backBtn.classList.add('hidden'); } } if (t === 'plan') { const el = document.getElementById('quick-nav-container'); if (window.scrollY < 100 && el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } else { window.scrollTo(0,0); } }
+        
         async function uploadImageToGitHub(base64Content) {
-            // 【請在這裡修改你的 GitHub 資訊】
-            const username = 'kaiwen926';   // 你的 GitHub 帳號
-            const repo = 'tokyo.com';       // 你的儲存庫名稱
-            const folder = 'images';        // 存照片的資料夾
-
-            // 自動抓取你在「資訊」頁籤設定的 Token
-            const token = localStorage.getItem('gist_token'); 
-
-            if (!token) {
-                alert("請先在「資訊 > 雲端同步設定」填寫 Token，才能上傳照片！");
-                return null;
-            }
-
-            updateCloudStatus("圖片上傳中..."); // 顯示上傳狀態
-
-            const timestamp = new Date().getTime();
-            const fileName = `${folder}/img_${timestamp}.jpg`;
-            const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${fileName}`;
-
+            const username = 'kaiwen926'; const repo = 'tokyo.com'; const folder = 'images'; const token = localStorage.getItem('gist_token'); 
+            if (!token) { alert("請先在「資訊 > 雲端同步設定」填寫 Token，才能上傳照片！"); return null; }
+            updateCloudStatus("圖片上傳中..."); 
+            const timestamp = new Date().getTime(); const fileName = `${folder}/img_${timestamp}.jpg`; const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${fileName}`;
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Upload from App ${new Date().toLocaleDateString()}`,
-                        content: base64Content // 這裡傳入的是純 Base64 (不含 header)
-                    })
-                });
-
+                const response = await fetch(apiUrl, { method: 'PUT', headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Upload from App ${new Date().toLocaleDateString()}`, content: base64Content }) });
                 if (!response.ok) throw new Error('GitHub API Error');
-
-                const data = await response.json();
-                updateCloudStatus("上傳成功");
-                // 回傳原本的 raw 網址 (CDN 比較快)
-                return data.content.download_url;
-
-            } catch (error) {
-                console.error(error);
-                alert("上傳失敗！請檢查 Token 是否有勾選 'repo' 權限，或是儲存庫名稱是否正確。");
-                updateCloudStatus("上傳失敗");
-                return null;
-            }
+                const data = await response.json(); updateCloudStatus("上傳成功"); return data.content.download_url;
+            } catch (error) { console.error(error); alert("上傳失敗！請檢查 Token。"); updateCloudStatus("上傳失敗"); return null; }
         }
 
-        // 2. 修改後的處理函式 (壓縮 -> 上傳 -> 回傳網址)
-        function processImage(input, cb) { 
-            if(input.files[0]){
-                const r=new FileReader();
-                r.onload=e=>{
-                    const i=new Image();
-                    i.onload=()=>{
-                        const c=document.createElement('canvas');
-                        const x=c.getContext('2d');
-                        const max=1200; // 限制最大寬度，加速處理
-                        let w=i.width,h=i.height;
-                        if(w>h&&w>max){h*=max/w;w=max}else if(h>max){w*=max/h;h=max}
-                        c.width=w;c.height=h;
-                        x.drawImage(i,0,0,w,h);
-                        
-                        // 取得 Base64 字串 (品質 0.8)
-                        const fullBase64 = c.toDataURL('image/jpeg',0.8);
-                        const cleanBase64 = fullBase64.split(',')[1]; // 去掉 data:image... 開頭
-
-                        // --- 關鍵修改：呼叫上傳函式 ---
-                        uploadImageToGitHub(cleanBase64).then(imageUrl => {
-                            if (imageUrl) {
-                                cb(imageUrl); // 成功：回傳網址
-                            } else {
-                                // 失敗：回傳原本的 Base64 讓使用者至少能看 (但會佔空間)
-                                // cb(fullBase64); 
-                            }
-                        });
-                    };
-                    i.src=e.target.result
-                };
-                r.readAsDataURL(input.files[0])
-            } 
-        }
+        function processImage(input, cb) { if(input.files[0]){ const r=new FileReader(); r.onload=e=>{ const i=new Image(); i.onload=()=>{ const c=document.createElement('canvas'); const x=c.getContext('2d'); const max=1200; let w=i.width,h=i.height; if(w>h&&w>max){h*=max/w;w=max}else if(h>max){w*=max/h;h=max} c.width=w;c.height=h; x.drawImage(i,0,0,w,h); const fullBase64 = c.toDataURL('image/jpeg',0.8); const cleanBase64 = fullBase64.split(',')[1]; uploadImageToGitHub(cleanBase64).then(imageUrl => { if (imageUrl) { cb(imageUrl); } }); }; i.src=e.target.result }; r.readAsDataURL(input.files[0]) } }
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-        // --- ACCOMMODATION PHOTOS LOGIC ---
-        function openAccModal(dayId) {
-            currentAccDayId = dayId;
-            const day = itinerary.find(d => d.id === dayId);
-            if (!day) return;
-            
-            document.getElementById('acc-modal-title').innerText = day.accommodation || day.date;
-            renderAccPhotos();
-            openModal('acc-modal');
-        }
-
-        function renderAccPhotos() {
-            const day = itinerary.find(d => d.id === currentAccDayId);
-            if (!day) return;
-
-            const photos = day.accPhotos || []; 
-            const container = document.getElementById('acc-photos-grid');
-            
-            if (photos.length === 0) {
-                container.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-8 text-sm">還沒有照片<br>點擊下方按鈕新增</div>';
-            } else {
-                container.innerHTML = photos.map((p, i) => `
-                    <div class="relative group aspect-[4/3] rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                        <img src="${p}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-500" onclick="viewPhoto('${p}')">
-                        <button onclick="deleteAccPhoto(${i})" class="absolute top-1 right-1 bg-red-500/80 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow hover:bg-red-600 transition z-10">
-                            <i class="fa-solid fa-times"></i>
-                        </button>
-                    </div>
-                `).join('');
-            }
-        }
-
-        function addAccPhoto(input) {
-            processImage(input, (base64) => {
-                const dayIdx = itinerary.findIndex(d => d.id === currentAccDayId);
-                if (dayIdx > -1) {
-                    if (!itinerary[dayIdx].accPhotos) itinerary[dayIdx].accPhotos = [];
-                    itinerary[dayIdx].accPhotos.push(base64);
-                    saveData();
-                    renderAccPhotos();
-                    renderItinerary(); 
-                }
-            });
-            input.value = ''; 
-        }
-
-        function deleteAccPhoto(index) {
-            if (confirm("確定刪除這張照片？")) {
-                const dayIdx = itinerary.findIndex(d => d.id === currentAccDayId);
-                if (dayIdx > -1 && itinerary[dayIdx].accPhotos) {
-                    itinerary[dayIdx].accPhotos.splice(index, 1);
-                    saveData();
-                    renderAccPhotos();
-                    renderItinerary();
-                }
-            }
-        }
-
-        // --- TRANSLATE & VOICE & PHRASES (極簡版) ---
-        
-        function toggleVoiceInput() {
-            if (!('webkitSpeechRecognition' in window)) return alert("您的瀏覽器不支援語音 (請用 Chrome/Safari)");
-            
-            const recognition = new webkitSpeechRecognition();
-            recognition.lang = 'auto'; 
-            
-            const btn = document.getElementById('btn-mic');
-            const icon = btn.querySelector('i');
-            
-            recognition.onstart = () => { 
-                btn.classList.add('bg-red-500', 'text-white', 'animate-pulse');
-                icon.className = 'fa-solid fa-microphone-lines'; 
-                document.getElementById('trans-input').placeholder = "正在聆聽... 請說話";
-            };
-            
-            recognition.onend = () => { 
-                btn.classList.remove('bg-red-500', 'text-white', 'animate-pulse');
-                icon.className = 'fa-solid fa-microphone'; 
-                document.getElementById('trans-input').placeholder = "輸入文字或點擊麥克風...";
-            };
-            
-            recognition.onresult = (e) => { 
-                const text = e.results[0][0].transcript;
-                document.getElementById('trans-input').value = text;
-                openGoogleTranslate(text);
-            };
-            
-            recognition.start();
-        }
-
-        function openGoogleTranslate(text = null) { 
-            const txt = text || document.getElementById('trans-input').value; 
-            if(!txt) return alert("沒有文字可以翻譯");
-            window.open(`https://translate.google.com/?sl=auto&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); 
-        }
-
-        function renderPhrases(cat) {
-            document.querySelectorAll('.phrase-btn').forEach(btn => {
-                if(btn.dataset.cat === cat) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-            
-            const list = PHRASES[cat] || [];
-            const container = document.getElementById('phrase-container');
-            
-            container.innerHTML = list.map(item => `
-                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2 hover:shadow-sm transition relative">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="flex-1">
-                            <div class="font-bold text-gray-800 text-base mb-1">${item.ja}</div>
-                            <div class="text-[10px] text-gray-400 font-serif italic mb-1">${item.p}</div>
-                            <div class="text-xs text-fuji font-bold">${item.zh}</div>
-                        </div>
-                        <button onclick="speak('${item.ja}')" class="shrink-0 w-8 h-8 rounded-full bg-white border border-fuji/30 text-fuji flex items-center justify-center shadow-sm active:scale-95 transition hover:bg-fuji hover:text-white" title="播放發音">
-                            <i class="fa-solid fa-volume-high"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-       function speak(text) {
-            if (!window.speechSynthesis) {
-                alert("您的瀏覽器不支援發音功能");
-                return;
-            }
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP'; 
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
-         function searchDayWeather() {
-           const rawLoc = document.getElementById('day-accommodation-edit').value;
-            let loc = (typeof cleanLocationName === 'function') ? cleanLocationName(rawLoc) : rawLoc;
-            if(!loc) loc = "東京";
-            // if(!date) return alert("請先輸入日期");
-            
-            const query = `site:tenki.jp ${loc} ${date} 天気`;
-            window.open(`https://tenki.jp/search/?keyword=${encodeURIComponent(loc)}`, '_blank');
-        }
-        
-        // --- 多筆交通邏輯 ---
-        function renderTransRows() {
-        const icons = {
-                'fa-train-subway': '鐵路', 'fa-bus': '巴士', 'fa-plane': '飛機',
-                'fa-taxi': '計程車', 'fa-ship': '船', 'fa-person-walking': '步行','fa-bicycle': '腳踏車'
-            };
-            const c = document.getElementById('day-trans-list');
-            c.innerHTML = tempTrans.map((t, i) => {
-                const currIcon = t.icon || 'fa-train-subway'; // 預設圖標
-                // 產生選項 HTML
-                const options = Object.entries(icons).map(([k,v]) => 
-                    `<option value="${k}" ${currIcon===k?'selected':''}>${v}</option>`
-                ).join('');
-
-                return `
-                <div class="bg-white p-2 rounded border border-gray-200 relative group mb-2 shadow-sm">
-                    <button onclick="tempTrans.splice(${i},1);renderTransRows()" class="absolute top-1 right-1 text-gray-300 hover:text-red-400 w-6 h-6 flex items-center justify-center rounded-full bg-gray-50 z-10"><i class="fa-solid fa-times"></i></button>
-                    
-                    <div class="flex gap-2 mb-2 pr-6 items-center">
-                        <!-- 1. Icon 下拉選單 -->
-                        <div class="relative shrink-0 w-20">
-                            <i class="fa-solid ${currIcon} absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
-                            <select onchange="tempTrans[${i}].icon=this.value; renderTransRows()" class="w-full pl-6 pr-1 py-1.5 border border-gray-200 rounded text-xs bg-gray-50 outline-none appearance-none font-bold text-gray-600 cursor-pointer focus:border-blue-300">
-                                ${options}
-                            </select>
-                        </div>
-                        <input type="time" class="w-20 p-1.5 border border-gray-200 rounded text-xs bg-gray-50 text-center outline-none focus:border-blue-300" value="${t.time || ''}" onchange="tempTrans[${i}].time=this.value">
-                        <input type="text" placeholder="行程 (如: 新幹線)" class="flex-1 p-1.5 border-b-2 border-blue-100 font-bold text-sm outline-none bg-transparent focus:border-blue-300 transition" value="${t.content || ''}" onchange="tempTrans[${i}].content=this.value">
-                    </div>                 
-                    <div class="flex gap-2 items-center">
-                        <input type="text" placeholder="備註 (如: 買票、月台)" class="flex-1 p-1.5 border rounded text-xs text-gray-500 bg-gray-50 outline-none focus:border-blue-300" value="${t.note || ''}" onchange="tempTrans[${i}].note=this.value">
-                           <label class="cursor-pointer flex items-center gap-1 text-xs text-blue-400 bg-blue-50 px-2 py-1.5 rounded hover:bg-blue-100 transition shrink-0">
-                            <i class="fa-solid fa-camera"></i> ${t.photo ? '換圖' : '車票'}
-                            <input type="file" accept="image/*" class="hidden" onchange="processImage(this, (b64) => { tempTrans[${i}].photo = b64; renderTransRows(); })">
-                        </label>
-                        ${t.photo ? `<button onclick="viewPhoto('${t.photo}')" class="text-xs text-blue-500 underline shrink-0">預覽</button>` : ''}
-                    </div>
-                </div>
-            `}).join('');
-        }
-
-        function addTransRow() {
-            tempTrans.push({ time: '', content: '', note: '', photo: null });
-            renderTransRows();
-        }
-
-        function checkUrl(str) {
-            if(!str) return null;
-            if(str.startsWith('http') || str.startsWith('www')) return str;
-            return null;
-        }
-
-        function quickExpense(note, cat) {
-            document.getElementById('ex-note').value = note;
-            selectedCat = cat;
-            openExpenseModal();
-        }
-
-        function jumpToGuide(title) {
-            switchTab('guide');
-            const backBtn = document.getElementById('btn-back-to-plan');
-            if(backBtn) backBtn.classList.remove('hidden');
-            const g = guides.find(i => i.title === title);
-            if(g) {
-                setTimeout(() => {
-                    const el = document.getElementById(`guide-${g.id}`);
-                    if (el) {
-                        el.scrollIntoView({behavior: "smooth", block: "center"});
-                        el.classList.add('animate-highlight');
-                        setTimeout(() => el.classList.remove('animate-highlight'), 2000);
-                    }
-                }, 300);
-            }
-        }
-        function goBackToPlan() {
-            switchTab('plan');
-            document.getElementById('btn-back-to-plan').classList.add('hidden');
-        }
-        function linkifyContent(text) {
-             let html = text.replace(/\n/g, '<br>');
-             guides.forEach(g => {
-                 if (g.title.length > 1) { 
-                     const regex = new RegExp(`(${g.title})`, 'g');
-                     html = html.replace(regex, `<span class="guide-link" onclick="jumpToGuide('$1')">$1</span>`);
-                 }
-             });
-             return html.split('<br>').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join('');
-        }
-function renderItinerary() {
-            const c = document.getElementById('itinerary-container');
-            const navC = document.getElementById('quick-nav-container'); 
-            if (!c) return;
-            c.innerHTML = '';
-
-            // 1. 上方快速導航 (雲朵)
-            if (navC && itinerary.length > 0) {
-                const stickersHtml = itinerary.map((day, idx) => {
-                    const themes = [
-                        { cloud: 'text-pink-200', text: 'text-pink-600' },    
-                        { cloud: 'text-yellow-200', text: 'text-yellow-700' },
-                        { cloud: 'text-blue-200', text: 'text-blue-600' },    
-                        { cloud: 'text-green-200', text: 'text-green-600' },  
-                        { cloud: 'text-purple-200', text: 'text-purple-600' },
-                        { cloud: 'text-orange-200', text: 'text-orange-700' },
-                        { cloud: 'text-cyan-200', text: 'text-cyan-700' }      
-                    ];
-                    const theme = themes[idx % 7];
-                    
-                    return `
-                    <button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})"
-                            class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300">
-                        <i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1">
-                            <span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span>
-                            <span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span>
-                        </div>
-                    </button>`;
-                }).join('');
-                navC.innerHTML = `
-                    <div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">
-                        ${stickersHtml}
-                    </div>
-                `;
-            }
-
-            // 2. 渲染每一天
-            itinerary.forEach((day, idx) => {
-                let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
-                const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null);
-                
-                // 顏色主題
-                const stickerThemes = [
-                    { bg: 'bg-pink-50', border: 'border-pink-200', textMain: 'text-pink-700', textSub: 'text-pink-400' },
-                    { bg: 'bg-yellow-50', border: 'border-yellow-200', textMain: 'text-yellow-800', textSub: 'text-yellow-500' },
-                    { bg: 'bg-blue-50', border: 'border-blue-200', textMain: 'text-blue-700', textSub: 'text-blue-400' },
-                    { bg: 'bg-green-50', border: 'border-green-200', textMain: 'text-green-700', textSub: 'text-green-500' },
-                    { bg: 'bg-purple-50', border: 'border-purple-200', textMain: 'text-purple-700', textSub: 'text-purple-400' },
-                    { bg: 'bg-orange-50', border: 'border-orange-200', textMain: 'text-orange-800', textSub: 'text-orange-500' },
-                    { bg: 'bg-cyan-50', border: 'border-cyan-200', textMain: 'text-cyan-700', textSub: 'text-cyan-500' }
-                ];
-                const theme = stickerThemes[idx % 7];
-
-                // 日期與標題拆分
-                const fullText = day.date || "";
-                let dateText = fullText.split(' ')[0]; 
-                let titleText = fullText.substring(dateText.length).trim(); 
-                if (!titleText) titleText = fullText; 
-
-                // 天氣
-                const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html";
-                const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
-                
-                // 氣溫
-                let tempBadgeHtml = '';
-                if (day.temp) {
-                    const tempVal = parseInt(day.temp);
-                    let tempClass = 'temp-warm';
-                    if (!isNaN(tempVal)) {
-                        if (tempVal >= 28) tempClass = 'temp-hot';
-                        else if (tempVal >= 20) tempClass = 'temp-warm';
-                        else if (tempVal >= 10) tempClass = 'temp-cool';
-                        else tempClass = 'temp-cold';
-                    }
-                    const displayTemp = day.temp.replace(/c/ig, '').trim(); 
-                    tempBadgeHtml = `<span class="temp-badge ${tempClass} px-2 min-w-[3rem] text-center inline-block shadow-sm border border-white/50">${displayTemp}°C</span>`;
-                }
-
-                // 天氣吊飾
-                const weatherGroupHtml = (day.weather || day.temp) ? 
-                    `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline mt-1 flex flex-col items-center" title="搜尋天氣">
-                        ${tempBadgeHtml}
-                        <div class="weather-badge group-hover/weather:scale-110 transition-transform text-lg shadow-md border-2 border-white mt-0.5">${wIcon}</div>
-                    </a>` : '';
-
-                const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
-                
-                const accHtml = day.accommodation ? 
-                    `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200">
-                        <div class="flex items-start gap-2">
-                            <button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片">
-                                <i class="fa-solid fa-bed"></i>
-                                ${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}
-                            </button>
-                            <div class="flex-1 min-w-0 pt-1">
-                                ${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}
-                                ${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}
-                            </div>
-                        </div>
-                    </div>` : '';
-
-                const renderMealItem = (type, icon, color) => { 
-                    const m = day.meals?.[type]; 
-                    if(!m || !m.name) return ''; 
-                    const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1 font-bold">${m.name}</a>` : `<span class="ml-1 font-bold">${m.name}</span>`; 
-                    const notePart = m.note ? `<span class="text-[10px] text-gray-400 ml-2 border-l pl-2 border-gray-300">${m.note}</span>` : '';
-                    return `<div class="flex items-center gap-1 p-1">
-                        <i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition flex-shrink-0" 
-                           onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i>
-                        <div class="flex-1 min-w-0 truncate">${linkPart}${notePart}</div>
-                    </div>`;
-                };
-                const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? 
-                    `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">
-                        ${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}
-                        ${renderMealItem('l', 'fa-utensils', 'text-green-400')}
-                        ${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}
-                    </div>` : '';
-
-                let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []);
-                const transHtml = transData.map(t => `
-                    <div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition">
-                        <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
-                            <i class="fa-solid ${t.icon || 'fa-train-subway'} text-blue-400 w-5 text-center"></i>
-                            ${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}
-                            <span class="text-gray-700">${t.content || '交通移動'}</span>
-                        </div>
-                        ${t.note ? `<div class="ml-9 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}
-                        ${t.photo ? `<div class="mt-1 ml-9"><button onclick="viewPhoto('${t.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1 font-bold"><i class="fa-solid fa-ticket"></i> 查看車票/憑證</button></div>` : ''}
-                    </div>
-                `).join('');
-
-                const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
-
-                const isHighlight = day.highlight;
-                const titleStickerBg = isHighlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]';
-                const titleStickerBorder = isHighlight ? 'border-sakura' : 'border-[#e6dbbf]';
-                const titleStickerText = isHighlight ? 'text-sakura' : 'text-[#827355]';
-
-                c.innerHTML += `
-                    <div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
-                        
-                        <div class="absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14">
-                            
-                            <div onclick="document.getElementById('quick-nav-container').scrollIntoView({behavior: 'smooth', block: 'center'})" 
-                                 class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors z-20"
-                                 title="回到上方雲朵">
-                                <span class="text-[9px] font-black font-sans tracking-widest ${theme.textSub} mb-[-2px]">DAY</span>
-                                <span class="text-2xl font-black font-maru leading-none ${theme.textMain}">${idx + 1}</span>
-                                <span class="text-[10px] font-bold font-hand ${theme.textMain} opacity-80 mt-[-2px] truncate max-w-full">${dateText}</span>
-                            </div>
-                            
-                            <div class="h-4 w-0.5 bg-gray-300 -mt-1 relative z-10"></div>
-                            ${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300 relative z-10"><i class="fa-solid fa-cloud"></i></div>'}
-                        </div>
-
-                        <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative group/card hover:border-fuji/30 transition-colors">
-                            
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="relative transform -rotate-1 hover:rotate-0 transition-transform duration-300 cursor-pointer" onclick="openDayEditor('${day.id}')">
-                                    <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/40 backdrop-blur-[1px] border border-white/20 rounded-sm shadow-sm z-20"></div>
-                                    <div class="relative ${titleStickerBg} border-2 ${titleStickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem] text-center">
-                                        <h4 class="text-xl font-black font-maru tracking-widest ${titleStickerText} leading-tight">
-                                            ${titleText}
-                                        </h4>
-                                    </div>
-                                </div>
-                                
-                                <button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2 hover:bg-gray-50 rounded-full">
-                                    <i class="fa-solid fa-pen text-sm"></i>
-                                </button>
-                            </div>
-
-                            <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">
-                                ${contentHtml}
-                            </ul>
-                            
-                            ${photosHtml}
-                            ${accHtml}
-                            ${transHtml}
-                            ${mealsHtml}
-                            ${noteHtml}
-                        </div>
-                    </div>`;
-            });
-        }
-            function openDayEditor(id){ 
-            const d=itinerary.find(i=>i.id===id); 
-            if(!d)return; 
-            document.getElementById('day-date-edit').value=d.date; 
-            document.getElementById('day-temp-edit').value = d.temp || ""; 
-            document.getElementById('day-id-edit').value=d.id; 
-            document.getElementById('day-date-edit').value=d.date; 
-            document.getElementById('day-weather-edit').value=d.weather||""; 
-            document.getElementById('day-highlight-edit').checked=d.highlight; 
-            document.getElementById('day-content-edit').value=d.content; 
-            document.getElementById('day-accommodation-edit').value=d.accommodation; 
-            document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; 
-            document.getElementById('day-accommodation-note-edit').value = d.accommodationNote || '';
-            // 交通資料載入 (處理多筆/單筆/無資料)
-            tempTrans = [];
-            if (d.transportation) {
-                if (Array.isArray(d.transportation)) {
-                    tempTrans = JSON.parse(JSON.stringify(d.transportation));
-                } else if (d.transportation.content || d.transportation.photo) {
-                    tempTrans = [JSON.parse(JSON.stringify(d.transportation))];
-                }
-            }
-            renderTransRows();
-
-            document.getElementById('day-note-edit').value=d.dayNote||''; 
-            tempDayPhotos = d.photos ? [...d.photos] : []; 
-            renderDayPhotosPreview(); 
-            ['b','l','d'].forEach(t => {
-                document.getElementById('meal-'+t+'-name').value = d.meals?.[t]?.name || ''; 
-                document.getElementById('meal-'+t+'-link').value = d.meals?.[t]?.link || '';
-                document.getElementById('meal-'+t+'-note').value = d.meals?.[t]?.note || ''; // 新增這行
-            }); 
-            
-            openModal('day-modal'); 
-        }
-        function saveDay(){ 
-            const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); 
-            if(idx<0)return; 
-            const i=itinerary[idx]; 
-            i.date=document.getElementById('day-date-edit').value; 
-            i.temp = document.getElementById('day-temp-edit').value;
-            i.weather=document.getElementById('day-weather-edit').value; 
-            i.highlight=document.getElementById('day-highlight-edit').checked; 
-            i.content=document.getElementById('day-content-edit').value; 
-            i.accommodation=document.getElementById('day-accommodation-edit').value; 
-            i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; 
-            i.accommodationNote = document.getElementById('day-accommodation-note-edit').value; 
-            // 儲存交通陣列
-            i.transportation = tempTrans.filter(t => t.content || t.photo || t.note);
-
-            i.dayNote=document.getElementById('day-note-edit').value; 
-            i.photos=[...tempDayPhotos]; 
-            i.meals = {
-                b: {
-                    name: document.getElementById('meal-b-name').value, 
-                    link: document.getElementById('meal-b-link').value,
-                    note: document.getElementById('meal-b-note').value // 新增
-                },
-                l: {
-                    name: document.getElementById('meal-l-name').value, 
-                    link: document.getElementById('meal-l-link').value,
-                    note: document.getElementById('meal-l-note').value // 新增
-                },
-                d: {
-                    name: document.getElementById('meal-d-name').value, 
-                    link: document.getElementById('meal-d-link').value,
-                    note: document.getElementById('meal-d-note').value // 新增
-                }
-            }; 
-            saveData(); 
-            renderItinerary(); 
-            closeModal('day-modal'); 
-        }
+        // --- 功能函式 (行程、記帳、購物、導覽、VJW) ---
+        function openAccModal(dayId) { currentAccDayId = dayId; const day = itinerary.find(d => d.id === dayId); if (!day) return; document.getElementById('acc-modal-title').innerText = day.accommodation || day.date; renderAccPhotos(); openModal('acc-modal'); }
+        function renderAccPhotos() { const day = itinerary.find(d => d.id === currentAccDayId); if (!day) return; const photos = day.accPhotos || []; const container = document.getElementById('acc-photos-grid'); if (photos.length === 0) { container.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-8 text-sm">還沒有照片<br>點擊下方按鈕新增</div>'; } else { container.innerHTML = photos.map((p, i) => `<div class="relative group aspect-[4/3] rounded-lg overflow-hidden shadow-sm border border-gray-200"><img src="${p}" class="w-full h-full object-cover cursor-pointer hover:scale-105 transition duration-500" onclick="viewPhoto('${p}')"><button onclick="deleteAccPhoto(${i})" class="absolute top-1 right-1 bg-red-500/80 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow hover:bg-red-600 transition z-10"><i class="fa-solid fa-times"></i></button></div>`).join(''); } }
+        function addAccPhoto(input) { processImage(input, (base64) => { const dayIdx = itinerary.findIndex(d => d.id === currentAccDayId); if (dayIdx > -1) { if (!itinerary[dayIdx].accPhotos) itinerary[dayIdx].accPhotos = []; itinerary[dayIdx].accPhotos.push(base64); saveData(); renderAccPhotos(); renderItinerary(); } }); input.value = ''; }
+        function deleteAccPhoto(index) { if (confirm("確定刪除這張照片？")) { const dayIdx = itinerary.findIndex(d => d.id === currentAccDayId); if (dayIdx > -1 && itinerary[dayIdx].accPhotos) { itinerary[dayIdx].accPhotos.splice(index, 1); saveData(); renderAccPhotos(); renderItinerary(); } } }
+        function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) return alert("您的瀏覽器不支援語音"); const recognition = new webkitSpeechRecognition(); recognition.lang = 'auto'; const btn = document.getElementById('btn-mic'); const icon = btn.querySelector('i'); recognition.onstart = () => { btn.classList.add('bg-red-500', 'text-white', 'animate-pulse'); icon.className = 'fa-solid fa-microphone-lines'; document.getElementById('trans-input').placeholder = "正在聆聽..."; }; recognition.onend = () => { btn.classList.remove('bg-red-500', 'text-white', 'animate-pulse'); icon.className = 'fa-solid fa-microphone'; document.getElementById('trans-input').placeholder = "輸入文字..."; }; recognition.onresult = (e) => { const text = e.results[0][0].transcript; document.getElementById('trans-input').value = text; openGoogleTranslate(text); }; recognition.start(); }
+        function openGoogleTranslate(text = null) { const txt = text || document.getElementById('trans-input').value; if(!txt) return alert("沒有文字"); window.open(`https://translate.google.com/?sl=auto&tl=ja&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
+        function renderPhrases(cat) { document.querySelectorAll('.phrase-btn').forEach(btn => { if(btn.dataset.cat === cat) btn.classList.add('active'); else btn.classList.remove('active'); }); const list = PHRASES[cat] || []; const container = document.getElementById('phrase-container'); container.innerHTML = list.map(item => `<div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2 hover:shadow-sm transition relative"><div class="flex justify-between items-start gap-2"><div class="flex-1"><div class="font-bold text-gray-800 text-base mb-1">${item.ja}</div><div class="text-[10px] text-gray-400 font-serif italic mb-1">${item.p}</div><div class="text-xs text-fuji font-bold">${item.zh}</div></div><button onclick="speak('${item.ja}')" class="shrink-0 w-8 h-8 rounded-full bg-white border border-fuji/30 text-fuji flex items-center justify-center shadow-sm active:scale-95 transition hover:bg-fuji hover:text-white"><i class="fa-solid fa-volume-high"></i></button></div></div>`).join(''); }
+        function speak(text) { if (!window.speechSynthesis) return alert("不支援發音"); window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'ja-JP'; u.rate = 0.8; window.speechSynthesis.speak(u); }
+        function searchDayWeather() { const rawLoc = document.getElementById('day-accommodation-edit').value; let loc = (typeof cleanLocationName === 'function') ? cleanLocationName(rawLoc) : rawLoc; if(!loc) loc = "東京"; window.open(`https://tenki.jp/search/?keyword=${encodeURIComponent(loc)}`, '_blank'); }
+        function renderTransRows() { const icons = { 'fa-train-subway': '鐵路', 'fa-bus': '巴士', 'fa-plane': '飛機', 'fa-taxi': '計程車', 'fa-ship': '船', 'fa-person-walking': '步行','fa-bicycle': '腳踏車' }; const c = document.getElementById('day-trans-list'); c.innerHTML = tempTrans.map((t, i) => { const currIcon = t.icon || 'fa-train-subway'; const options = Object.entries(icons).map(([k,v]) => `<option value="${k}" ${currIcon===k?'selected':''}>${v}</option>`).join(''); return `<div class="bg-white p-2 rounded border border-gray-200 relative group mb-2 shadow-sm"><button onclick="tempTrans.splice(${i},1);renderTransRows()" class="absolute top-1 right-1 text-gray-300 hover:text-red-400 w-6 h-6 flex items-center justify-center rounded-full bg-gray-50 z-10"><i class="fa-solid fa-times"></i></button><div class="flex gap-2 mb-2 pr-6 items-center"><div class="relative shrink-0 w-20"><i class="fa-solid ${currIcon} absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i><select onchange="tempTrans[${i}].icon=this.value; renderTransRows()" class="w-full pl-6 pr-1 py-1.5 border border-gray-200 rounded text-xs bg-gray-50 outline-none appearance-none font-bold text-gray-600 cursor-pointer focus:border-blue-300">${options}</select></div><input type="time" class="w-20 p-1.5 border border-gray-200 rounded text-xs bg-gray-50 text-center outline-none focus:border-blue-300" value="${t.time || ''}" onchange="tempTrans[${i}].time=this.value"><input type="text" placeholder="行程" class="flex-1 p-1.5 border-b-2 border-blue-100 font-bold text-sm outline-none bg-transparent focus:border-blue-300 transition" value="${t.content || ''}" onchange="tempTrans[${i}].content=this.value"></div><div class="flex gap-2 items-center"><input type="text" placeholder="備註" class="flex-1 p-1.5 border rounded text-xs text-gray-500 bg-gray-50 outline-none focus:border-blue-300" value="${t.note || ''}" onchange="tempTrans[${i}].note=this.value"><label class="cursor-pointer flex items-center gap-1 text-xs text-blue-400 bg-blue-50 px-2 py-1.5 rounded hover:bg-blue-100 transition shrink-0"><i class="fa-solid fa-camera"></i> ${t.photo ? '換圖' : '車票'}<input type="file" accept="image/*" class="hidden" onchange="processImage(this, (b64) => { tempTrans[${i}].photo = b64; renderTransRows(); })"></label>${t.photo ? `<button onclick="viewPhoto('${t.photo}')" class="text-xs text-blue-500 underline shrink-0">預覽</button>` : ''}</div></div>`}).join(''); }
+        function addTransRow() { tempTrans.push({ time: '', content: '', note: '', photo: null }); renderTransRows(); }
+        function checkUrl(str) { if(!str) return null; if(str.startsWith('http') || str.startsWith('www')) return str; return null; }
+        function quickExpense(note, cat) { document.getElementById('ex-note').value = note; selectedCat = cat; openExpenseModal(); }
+        function jumpToGuide(title) { switchTab('guide'); const backBtn = document.getElementById('btn-back-to-plan'); if(backBtn) backBtn.classList.remove('hidden'); const g = guides.find(i => i.title === title); if(g) { setTimeout(() => { const el = document.getElementById(`guide-${g.id}`); if (el) { el.scrollIntoView({behavior: "smooth", block: "center"}); el.classList.add('animate-highlight'); setTimeout(() => el.classList.remove('animate-highlight'), 2000); } }, 300); } }
+        function goBackToPlan() { switchTab('plan'); document.getElementById('btn-back-to-plan').classList.add('hidden'); }
+        function linkifyContent(text) { let html = text.replace(/\n/g, '<br>'); guides.forEach(g => { if (g.title.length > 1) { const regex = new RegExp(`(${g.title})`, 'g'); html = html.replace(regex, `<span class="guide-link" onclick="jumpToGuide('$1')">$1</span>`); } }); return html.split('<br>').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join(''); }
+        function renderItinerary() { const c = document.getElementById('itinerary-container'); const navC = document.getElementById('quick-nav-container'); if (!c) return; c.innerHTML = ''; if (navC && itinerary.length > 0) { const stickersHtml = itinerary.map((day, idx) => { const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ]; const theme = themes[idx % 7]; return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`; }).join(''); navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div>`; } itinerary.forEach((day, idx) => { let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content; const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null); const stickerThemes = [ { bg: 'bg-pink-50', border: 'border-pink-200', textMain: 'text-pink-700', textSub: 'text-pink-400' }, { bg: 'bg-yellow-50', border: 'border-yellow-200', textMain: 'text-yellow-800', textSub: 'text-yellow-500' }, { bg: 'bg-blue-50', border: 'border-blue-200', textMain: 'text-blue-700', textSub: 'text-blue-400' }, { bg: 'bg-green-50', border: 'border-green-200', textMain: 'text-green-700', textSub: 'text-green-500' }, { bg: 'bg-purple-50', border: 'border-purple-200', textMain: 'text-purple-700', textSub: 'text-purple-400' }, { bg: 'bg-orange-50', border: 'border-orange-200', textMain: 'text-orange-800', textSub: 'text-orange-500' }, { bg: 'bg-cyan-50', border: 'border-cyan-200', textMain: 'text-cyan-700', textSub: 'text-cyan-500' } ]; const theme = stickerThemes[idx % 7]; const fullText = day.date || ""; let dateText = fullText.split(' ')[0]; let titleText = fullText.substring(dateText.length).trim(); if (!titleText) titleText = fullText; const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html"; const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : ''; let tempBadgeHtml = ''; if (day.temp) { const tempVal = parseInt(day.temp); let tempClass = 'temp-warm'; if (!isNaN(tempVal)) { if (tempVal >= 28) tempClass = 'temp-hot'; else if (tempVal >= 20) tempClass = 'temp-warm'; else if (tempVal >= 10) tempClass = 'temp-cool'; else tempClass = 'temp-cold'; } const displayTemp = day.temp.replace(/c/ig, '').trim(); tempBadgeHtml = `<span class="temp-badge ${tempClass} px-2 min-w-[3rem] text-center inline-block shadow-sm border border-white/50">${displayTemp}°C</span>`; } const weatherGroupHtml = (day.weather || day.temp) ? `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline mt-1 flex flex-col items-center" title="搜尋天氣">${tempBadgeHtml}<div class="weather-badge group-hover/weather:scale-110 transition-transform text-lg shadow-md border-2 border-white mt-0.5">${wIcon}</div></a>` : ''; const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : ''; const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200"><div class="flex items-start gap-2"><button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片"><i class="fa-solid fa-bed"></i>${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}</button><div class="flex-1 min-w-0 pt-1">${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}</div></div></div>` : ''; const renderMealItem = (type, icon, color) => { const m = day.meals?.[type]; if(!m || !m.name) return ''; const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1 font-bold">${m.name}</a>` : `<span class="ml-1 font-bold">${m.name}</span>`; const notePart = m.note ? `<span class="text-[10px] text-gray-400 ml-2 border-l pl-2 border-gray-300">${m.note}</span>` : ''; return `<div class="flex items-center gap-1 p-1"><i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition flex-shrink-0" onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i><div class="flex-1 min-w-0 truncate">${linkPart}${notePart}</div></div>`; }; const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}${renderMealItem('l', 'fa-utensils', 'text-green-400')}${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}</div>` : ''; let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []); const transHtml = transData.map(t => `<div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition"><div class="font-bold text-gray-500 flex items-center gap-2 mb-1"><i class="fa-solid ${t.icon || 'fa-train-subway'} text-blue-400 w-5 text-center"></i>${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}<span class="text-gray-700">${t.content || '交通移動'}</span></div>${t.note ? `<div class="ml-9 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}${t.photo ? `<div class="mt-1 ml-9"><button onclick="viewPhoto('${t.photo}')" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1 font-bold"><i class="fa-solid fa-ticket"></i> 查看車票/憑證</button></div>` : ''}</div>`).join(''); const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : ''; const isHighlight = day.highlight; const titleStickerBg = isHighlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]'; const titleStickerBorder = isHighlight ? 'border-sakura' : 'border-[#e6dbbf]'; const titleStickerText = isHighlight ? 'text-sakura' : 'text-[#827355]'; c.innerHTML += `<div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group"><div class="absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14"><div onclick="document.getElementById('quick-nav-container').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors z-20" title="回到上方雲朵"><span class="text-[9px] font-black font-sans tracking-widest ${theme.textSub} mb-[-2px]">DAY</span><span class="text-2xl font-black font-maru leading-none ${theme.textMain}">${idx + 1}</span><span class="text-[10px] font-bold font-hand ${theme.textMain} opacity-80 mt-[-2px] truncate max-w-full">${dateText}</span></div><div class="h-4 w-0.5 bg-gray-300 -mt-1 relative z-10"></div>${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300 relative z-10"><i class="fa-solid fa-cloud"></i></div>'}</div><div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative group/card hover:border-fuji/30 transition-colors"><div class="flex justify-between items-start mb-4"><div class="relative transform -rotate-1 hover:rotate-0 transition-transform duration-300 cursor-pointer" onclick="openDayEditor('${day.id}')"><div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/40 backdrop-blur-[1px] border border-white/20 rounded-sm shadow-sm z-20"></div><div class="relative ${titleStickerBg} border-2 ${titleStickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem] text-center"><h4 class="text-xl font-black font-maru tracking-widest ${titleStickerText} leading-tight">${titleText}</h4></div></div><button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2 hover:bg-gray-50 rounded-full"><i class="fa-solid fa-pen text-sm"></i></button></div><ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>${photosHtml}${accHtml}${transHtml}${mealsHtml}${noteHtml}</div></div>`; }); }
+        function openDayEditor(id){ const d=itinerary.find(i=>i.id===id); if(!d)return; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-temp-edit').value = d.temp || ""; document.getElementById('day-id-edit').value=d.id; document.getElementById('day-date-edit').value=d.date; document.getElementById('day-weather-edit').value=d.weather||""; document.getElementById('day-highlight-edit').checked=d.highlight; document.getElementById('day-content-edit').value=d.content; document.getElementById('day-accommodation-edit').value=d.accommodation; document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl; document.getElementById('day-accommodation-note-edit').value = d.accommodationNote || ''; tempTrans = []; if (d.transportation) { if (Array.isArray(d.transportation)) { tempTrans = JSON.parse(JSON.stringify(d.transportation)); } else if (d.transportation.content || d.transportation.photo) { tempTrans = [JSON.parse(JSON.stringify(d.transportation))]; } } renderTransRows(); document.getElementById('day-note-edit').value=d.dayNote||''; tempDayPhotos = d.photos ? [...d.photos] : []; renderDayPhotosPreview(); ['b','l','d'].forEach(t => { document.getElementById('meal-'+t+'-name').value = d.meals?.[t]?.name || ''; document.getElementById('meal-'+t+'-link').value = d.meals?.[t]?.link || ''; document.getElementById('meal-'+t+'-note').value = d.meals?.[t]?.note || ''; }); openModal('day-modal'); }
+        function saveDay(){ const idx=itinerary.findIndex(i=>i.id===document.getElementById('day-id-edit').value); if(idx<0)return; const i=itinerary[idx]; i.date=document.getElementById('day-date-edit').value; i.temp = document.getElementById('day-temp-edit').value; i.weather=document.getElementById('day-weather-edit').value; i.highlight=document.getElementById('day-highlight-edit').checked; i.content=document.getElementById('day-content-edit').value; i.accommodation=document.getElementById('day-accommodation-edit').value; i.accommodationUrl=document.getElementById('day-accommodation-url-edit').value; i.accommodationNote = document.getElementById('day-accommodation-note-edit').value; i.transportation = tempTrans.filter(t => t.content || t.photo || t.note); i.dayNote=document.getElementById('day-note-edit').value; i.photos=[...tempDayPhotos]; i.meals = { b: { name: document.getElementById('meal-b-name').value, link: document.getElementById('meal-b-link').value, note: document.getElementById('meal-b-note').value }, l: { name: document.getElementById('meal-l-name').value, link: document.getElementById('meal-l-link').value, note: document.getElementById('meal-l-note').value }, d: { name: document.getElementById('meal-d-name').value, link: document.getElementById('meal-d-link').value, note: document.getElementById('meal-d-note').value } }; saveData(); renderItinerary(); closeModal('day-modal'); }
         function addNewDay(){itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",weather:""}); saveData(); renderItinerary();}
         function deleteDay(){if(confirm("Del?")){itinerary=itinerary.filter(d=>d.id!==document.getElementById('day-id-edit').value); saveData(); renderItinerary(); closeModal('day-modal');}}
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded"><button onclick="tempDayPhotos.splice(${i},1);renderDayPhotosPreview()" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs">x</button></div>`).join(''); }
 
         // --- GUIDE ---
-        function renderGuides(){
-            const l=document.getElementById('guide-list'); l.innerHTML='';
-            if(window.guideSortable) window.guideSortable.destroy(); 
-            
-            guides.forEach(g=>{
-                l.innerHTML+=`<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group transition-colors duration-500">
-                    <div class="drag-handle absolute top-0 left-0 h-full w-10 bg-black/5 flex items-center justify-center z-20 cursor-grab hover:bg-black/10 transition-colors"><i class="fa-solid fa-grip-vertical text-gray-400"></i></div>
-                    <button onclick="event.stopPropagation(); openGuideModal(${g.id})" class="absolute top-2 right-2 z-50 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-white"><i class="fa-solid fa-pen text-gray-500"></i></button>
-                    ${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover ml-10" style="width:calc(100% - 2.5rem)" onclick="viewPhoto('${g.photo}')">`:''} 
-                    <div class="p-4 pl-14">
-                        <h3 class="font-bold text-lg font-hand text-xl">${g.title}</h3>
-                        <div class="flex gap-2 mb-2 mt-1">
-                            ${g.price ? `<span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded"><i class="fa-solid fa-tag"></i> ${g.price}</span>` : ''}
-                            ${g.time ? `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded"><i class="fa-regular fa-clock"></i> ${g.time}</span>` : ''}
-                        </div>
-                        <p class="text-sm whitespace-pre-line text-gray-600 leading-relaxed">${g.desc}</p>
-                    </div></div>`;
-            });
-            window.guideSortable = new Sortable(l, { handle: '.drag-handle', animation: 150, onEnd: function (evt) { const item = guides.splice(evt.oldIndex, 1)[0]; guides.splice(evt.newIndex, 0, item); saveData(); } });
-        }
+        function renderGuides(){ const l=document.getElementById('guide-list'); l.innerHTML=''; if(window.guideSortable) window.guideSortable.destroy(); guides.forEach(g=>{ l.innerHTML+=`<div id="guide-${g.id}" data-id="${g.id}" class="hand-card p-0 overflow-hidden relative group transition-colors duration-500"><div class="drag-handle absolute top-0 left-0 h-full w-10 bg-black/5 flex items-center justify-center z-20 cursor-grab hover:bg-black/10 transition-colors"><i class="fa-solid fa-grip-vertical text-gray-400"></i></div><button onclick="event.stopPropagation(); openGuideModal(${g.id})" class="absolute top-2 right-2 z-50 bg-white/80 rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-white"><i class="fa-solid fa-pen text-gray-500"></i></button>${g.photo?`<img src="${g.photo}" class="w-full h-40 object-cover ml-10" style="width:calc(100% - 2.5rem)" onclick="viewPhoto('${g.photo}')">`:''} <div class="p-4 pl-14"><h3 class="font-bold text-lg font-hand text-xl">${g.title}</h3><div class="flex gap-2 mb-2 mt-1">${g.price ? `<span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded"><i class="fa-solid fa-tag"></i> ${g.price}</span>` : ''}${g.time ? `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded"><i class="fa-regular fa-clock"></i> ${g.time}</span>` : ''}</div><p class="text-sm whitespace-pre-line text-gray-600 leading-relaxed">${g.desc}</p></div></div>`; }); window.guideSortable = new Sortable(l, { handle: '.drag-handle', animation: 150, onEnd: function (evt) { const item = guides.splice(evt.oldIndex, 1)[0]; guides.splice(evt.newIndex, 0, item); saveData(); } }); }
         function openGuideModal(id=null) { currentGuidePhoto=null; document.getElementById('guide-photo-preview').classList.add('hidden'); document.getElementById('guide-photo-text').classList.remove('hidden'); if(id){const g=guides.find(i=>i.id==id); document.getElementById('guide-id').value=g.id; document.getElementById('guide-title').value=g.title; document.getElementById('guide-desc').value=g.desc; document.getElementById('guide-price').value=g.price||""; document.getElementById('guide-time').value=g.time||""; if(g.photo){currentGuidePhoto=g.photo; document.getElementById('guide-photo-preview').src=g.photo; document.getElementById('guide-photo-preview').classList.remove('hidden'); document.getElementById('guide-photo-text').classList.add('hidden');}} else { ['guide-id','guide-title','guide-desc','guide-price','guide-time'].forEach(k=>document.getElementById(k).value=''); } openModal('guide-modal'); }
         function saveGuide() { const id=document.getElementById('guide-id').value, t=document.getElementById('guide-title').value; if(!t)return; const newItem = {id:id?parseInt(id):Date.now(), title:t, desc:document.getElementById('guide-desc').value, price:document.getElementById('guide-price').value, time:document.getElementById('guide-time').value, photo:currentGuidePhoto||(id?guides.find(i=>i.id==id).photo:null)}; if(id){const idx=guides.findIndex(i=>i.id==id);if(idx>-1)guides[idx]=newItem;}else{guides.push(newItem);} saveData(); renderGuides(); closeModal('guide-modal'); }
 
         // --- FLIGHTS ---
-        function renderFlights() { 
-            document.getElementById('flight-list-container').innerHTML = flights.map(f => {
-                const planeIcon = f.url 
-                    ? `<a href="${f.url}" target="_blank" class="cursor-pointer hover:scale-110 transition-transform inline-block" title="前往官網"><i class="fa-solid fa-plane text-fuji text-2xl rotate-[-45deg]"></i></a>`
-                    : `<i class="fa-solid fa-plane text-fuji text-2xl rotate-[-45deg]"></i>`;
-                const codeDisplay = f.photo
-                    ? `<div onclick="viewPhoto('${f.photo}')" class="font-bold text-fuji text-xl handwritten cursor-pointer hover:text-blue-600 border-b-2 border-dashed border-fuji/30 inline-block px-2" title="查看機票截圖">${f.code} <i class="fa-solid fa-image text-[10px] align-top opacity-50"></i></div>`
-                    : `<div class="font-bold text-fuji text-xl handwritten">${f.code}</div>`;
-
-                return `
-                <div class="bg-white rounded-[24px] p-5 shadow-soft relative hand-card group">
-                    <button onclick="editFlight(${f.id})" class="absolute top-3 right-3 text-gray-300 hover:text-fuji transition"><i class="fa-solid fa-pen"></i></button>
-                    <div class="flex justify-between items-center mb-4 px-2">
-                        <span class="text-4xl font-black handwritten text-pencil">${f.dep}</span>
-                        ${planeIcon}
-                        <span class="text-4xl font-black handwritten text-pencil">${f.arr}</span>
-                    </div>
-                    <div class="bg-fuji-light/50 rounded-2xl py-3 px-4 text-center border border-fuji/10">
-                        ${codeDisplay}
-                    <div class="text-lg font-bold text-gray-600 mt-2">${f.date} ${f.time}</div>
-                        
-                    </div>
-                </div>`;
-            }).join(''); 
-        }
-        function saveFlight(){ 
-            const id=document.getElementById('flight-id').value; 
-            const f={
-                id:id?parseInt(id):Date.now(), 
-                dep:document.getElementById('flight-dep').value, 
-                arr:document.getElementById('flight-arr').value, 
-                code:document.getElementById('flight-code').value, 
-                time:document.getElementById('flight-time').value, 
-                date:document.getElementById('flight-date').value, 
-                url:document.getElementById('flight-url').value,
-                photo: currentFlightPhoto
-            }; 
-            if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} 
-            saveData(); renderFlights(); closeModal('flight-modal'); 
-        }
-
-        function editFlight(id){ 
-            const f=flights.find(i=>i.id==id); 
-            if(f){
-                document.getElementById('flight-id').value=f.id;
-                document.getElementById('flight-dep').value=f.dep;
-                document.getElementById('flight-arr').value=f.arr;
-                document.getElementById('flight-code').value=f.code;
-                document.getElementById('flight-date').value=f.date;
-                document.getElementById('flight-time').value=f.time;
-                document.getElementById('flight-url').value=f.url;
-                currentFlightPhoto = f.photo;
-                if(f.photo) {
-                    document.getElementById('flight-photo-preview').src = f.photo;
-                    document.getElementById('flight-photo-preview').classList.remove('hidden');
-                } else {
-                    document.getElementById('flight-photo-preview').classList.add('hidden');
-                    document.getElementById('flight-photo-preview').src = "";
-                }
-                
-                openModal('flight-modal');
-            } 
-        }
-
-        function openFlightModal(){ 
-            ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); 
-            currentFlightPhoto = null;
-            document.getElementById('flight-photo-preview').classList.add('hidden');
-            document.getElementById('flight-photo-preview').src = "";
-        openModal('flight-modal'); 
-        }
-
-// --- WALLET & CHARTS & SETTLEMENT ---
+        function renderFlights() { document.getElementById('flight-list-container').innerHTML = flights.map(f => { const planeIcon = f.url ? `<a href="${f.url}" target="_blank" class="cursor-pointer hover:scale-110 transition-transform inline-block" title="前往官網"><i class="fa-solid fa-plane text-fuji text-2xl rotate-[-45deg]"></i></a>` : `<i class="fa-solid fa-plane text-fuji text-2xl rotate-[-45deg]"></i>`; const codeDisplay = f.photo ? `<div onclick="viewPhoto('${f.photo}')" class="font-bold text-fuji text-xl handwritten cursor-pointer hover:text-blue-600 border-b-2 border-dashed border-fuji/30 inline-block px-2" title="查看機票截圖">${f.code} <i class="fa-solid fa-image text-[10px] align-top opacity-50"></i></div>` : `<div class="font-bold text-fuji text-xl handwritten">${f.code}</div>`; return `<div class="bg-white rounded-[24px] p-5 shadow-soft relative hand-card group"><button onclick="editFlight(${f.id})" class="absolute top-3 right-3 text-gray-300 hover:text-fuji transition"><i class="fa-solid fa-pen"></i></button><div class="flex justify-between items-center mb-4 px-2"><span class="text-4xl font-black handwritten text-pencil">${f.dep}</span>${planeIcon}<span class="text-4xl font-black handwritten text-pencil">${f.arr}</span></div><div class="bg-fuji-light/50 rounded-2xl py-3 px-4 text-center border border-fuji/10">${codeDisplay}<div class="text-lg font-bold text-gray-600 mt-2">${f.date} ${f.time}</div></div></div>`; }).join(''); }
+        function saveFlight(){ const id=document.getElementById('flight-id').value; const f={ id:id?parseInt(id):Date.now(), dep:document.getElementById('flight-dep').value, arr:document.getElementById('flight-arr').value, code:document.getElementById('flight-code').value, time:document.getElementById('flight-time').value, date:document.getElementById('flight-date').value, url:document.getElementById('flight-url').value, photo: currentFlightPhoto }; if(id){const idx=flights.findIndex(i=>i.id==id);if(idx>-1)flights[idx]=f;}else{flights.push(f);} saveData(); renderFlights(); closeModal('flight-modal'); }
+        function editFlight(id){ const f=flights.find(i=>i.id==id); if(f){ document.getElementById('flight-id').value=f.id; document.getElementById('flight-dep').value=f.dep; document.getElementById('flight-arr').value=f.arr; document.getElementById('flight-code').value=f.code; document.getElementById('flight-date').value=f.date; document.getElementById('flight-time').value=f.time; document.getElementById('flight-url').value=f.url; currentFlightPhoto = f.photo; if(f.photo) { document.getElementById('flight-photo-preview').src = f.photo; document.getElementById('flight-photo-preview').classList.remove('hidden'); } else { document.getElementById('flight-photo-preview').classList.add('hidden'); document.getElementById('flight-photo-preview').src = ""; } openModal('flight-modal'); } }
+        function openFlightModal(){ ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); currentFlightPhoto = null; document.getElementById('flight-photo-preview').classList.add('hidden'); document.getElementById('flight-photo-preview').src = ""; openModal('flight-modal'); }
+// // --- WALLET & CHARTS (修復版：移除錯誤F、含所有看圖功能) ---
         function renderExpenses() {
-            const list = document.getElementById('expense-list'); list.innerHTML = '';
+            const list = document.getElementById('expense-list'); 
+            list.innerHTML = '';
             const rate = parseFloat(document.getElementById('exchange-rate').value);
             const pfTotal = publicFundConfig.total || 0;
             let pfSpent = 0;
@@ -1717,21 +1045,32 @@ function renderItinerary() {
                 // 計算公費支出
                 if (paidBy === '公費') pfSpent += (e.curr === 'JPY' ? amt : amt / rate);
 
-                // --- 修改重點：判斷是否為個人花銷 ---
-                // 定義：非公費支付，且分攤人陣列不存在(舊資料) 或 長度小於等於1
+                // 判斷是否為個人花銷
                 const isPersonal = (paidBy !== '公費') && (!e.splitBy || e.splitBy.length <= 1);
-
-                // 如果是個人花銷，直接 return 不執行下方的 list.innerHTML += ... 
-                // 這樣就不會顯示在「最近消費」列表，但上方的消費分析卡片(dashboard)仍會計算
                 if (isPersonal) return;
 
                 const splitDisplay = e.splitBy && e.splitBy.length > 0 ? e.splitBy.join(', ') : (e.payer||"");
 
-                list.innerHTML += `<div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden" onclick="openExpenseModal(${e.id})">
-                    <div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid ${cat.icon}"></i></div>
-                    <div class="flex-1">
+                // ✨ 判斷有沒有照片
+                const hasPhoto = e.photo && e.photo.length > 0;
+                
+                // Icon 的點擊事件：有照片->看圖；沒照片->打開編輯
+                const iconAction = hasPhoto ? `event.stopPropagation(); viewPhoto('${e.photo}')` : `openExpenseModal(${e.id})`;
+                const iconStyle = hasPhoto ? `cursor-zoom-in ring-2 ring-offset-1 ring-transparent hover:ring-blue-300 hover:scale-110 transition-all` : ``;
+                const badgeHtml = hasPhoto ? `<div class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-4 h-4 rounded-full flex items-center justify-center border-2 border-white text-[8px] shadow-sm"><i class="fa-solid fa-image"></i></div>` : ``;
+
+                list.innerHTML += `
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3 relative overflow-hidden group hover:bg-gray-50 transition" onclick="openExpenseModal(${e.id})">
+                    <div onclick="${iconAction}" class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-sm relative ${iconStyle}">
+                        <i class="fa-solid ${cat.icon}"></i>
+                        ${badgeHtml}
+                    </div>
+                    <div class="flex-1 min-w-0">
                         <div class="font-bold text-gray-700 text-sm truncate">${e.note || cat.id}</div>
-                        <div class="text-[10px] text-gray-400"><span class="font-bold text-fuji">${paidBy}</span> 先付 <i class="fa-solid fa-caret-right text-gray-300"></i> ${splitDisplay}</div>
+                        <div class="text-[10px] text-gray-400">
+                            <span class="font-bold text-fuji">${paidBy}</span> 先付 
+                            <i class="fa-solid fa-caret-right text-gray-300"></i> ${splitDisplay}
+                        </div>
                     </div>
                     <div class="text-right">
                         <div class="font-bold font-mono text-gray-800">${e.curr} ${amt.toLocaleString()}</div>
@@ -1740,12 +1079,15 @@ function renderItinerary() {
                 </div>`;
             });
             
+            // 更新上方公費卡片
             const pfRemaining = pfTotal - pfSpent;
             document.getElementById('pf-total').innerText = `¥${pfTotal.toLocaleString()}`;
             document.getElementById('pf-remaining').innerText = `¥${Math.round(pfRemaining).toLocaleString()}`;
             document.getElementById('pf-remaining').className = `text-3xl font-mono font-bold tracking-tight ${pfRemaining < 0 ? 'text-red-300' : 'text-white'}`;
+            
+            // 更新 Dashboard
             const dash = document.getElementById('wallet-dashboard-container'); dash.innerHTML = ''; 
-                payers.forEach(p => {
+            payers.forEach(p => {
                 if (p === '公費') return;
                 let totalConsumed = 0;
                 expenses.forEach(e => { 
@@ -1761,31 +1103,39 @@ function renderItinerary() {
             });
             
             updateInlineCharts(rate);
-        }// NEW: Open Individual Analysis
+        }
+
+        // --- 詳細消費分析 (含看圖功能) ---
         function openMemberAnalysis(memberName) {
              const rate = parseFloat(document.getElementById('exchange-rate').value);
              const catData = {};
              let total = 0;
-             let expenseListHtml = ''; // 用來儲存詳細清單的 HTML
+             let expenseListHtml = ''; 
 
-             // 排序讓新資料在上面
              expenses.sort((a,b) => b.id - a.id).forEach(e => {
                  if(e.splitBy && e.splitBy.includes(memberName)) {
                      const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
                      const share = amt / e.splitBy.length;
-                     
-                     // 累積分類數據 (給圓餅圖用)
                      catData[e.cat] = (catData[e.cat] || 0) + share;
                      total += share;
-                     // --- 新增：生成詳細支出項目的 HTML ---
+                     
                      const cat = expenseCategories.find(c => c.id === e.cat) || expenseCategories[5];
-                      const isPersonal = (e.paidBy !== '公費') && (!e.splitBy || e.splitBy.length <= 1);
-                      const personalBadge = isPersonal ? `<span class="text-[10px] bg-gray-200 text-gray-500 px-1 rounded ml-1">個人</span>` : '';
-                      // 修改：加大了圖示(w-10 h-10)、字體(text-base)、金額(text-lg)與間距(py-3)
-                      expenseListHtml += `
+                     const isPersonal = (e.paidBy !== '公費') && (!e.splitBy || e.splitBy.length <= 1);
+                     const personalBadge = isPersonal ? `<span class="text-[10px] bg-gray-200 text-gray-500 px-1 rounded ml-1">個人</span>` : '';
+                     
+                     // 看圖邏輯
+                     const hasPhoto = e.photo && e.photo.length > 0;
+                     const iconAction = hasPhoto ? `event.stopPropagation(); viewPhoto('${e.photo}')` : '';
+                     const iconStyle = hasPhoto ? `cursor-zoom-in ring-2 ring-offset-1 ring-transparent hover:ring-blue-300 hover:scale-110 transition-all` : ``;
+                     const badgeHtml = hasPhoto ? `<div class="absolute -bottom-1 -right-1 bg-blue-500 text-white w-4 h-4 rounded-full flex items-center justify-center border-2 border-white text-[8px] shadow-sm"><i class="fa-solid fa-image"></i></div>` : ``;
+
+                     expenseListHtml += `
                         <div onclick="openExpenseModal(${e.id})" class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-100 transition px-3 rounded-lg group">
                             <div class="flex items-center gap-4 min-w-0">
-                                <div class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-base"><i class="fa-solid ${cat.icon}"></i></div>
+                                <div onclick="${iconAction}" class="w-10 h-10 rounded-full ${cat.color} flex items-center justify-center flex-shrink-0 text-base relative ${iconStyle}">
+                                    <i class="fa-solid ${cat.icon}"></i>
+                                    ${badgeHtml}
+                                </div>
                                 <div class="min-w-0">
                                     <div class="text-base font-bold text-gray-700 truncate">${e.note || cat.id} ${personalBadge}</div>
                                     <div class="text-xs text-gray-500">${e.paidBy} 先付 ${e.curr==='JPY'?'¥'+e.amt:''}</div>
@@ -1795,250 +1145,45 @@ function renderItinerary() {
                                 <div class="text-lg font-bold font-mono text-gray-700">NT$${Math.round(share).toLocaleString()}</div>
                                 <div class="text-xs text-fuji opacity-0 group-hover:opacity-100 transition">修改</div>
                             </div>
-                        </div>
-                      `;
+                        </div>`;
                  }
              });
 
              document.getElementById('analysis-title').innerText = `${memberName} 的消費分析`;
              document.getElementById('analysis-total').innerText = `NT$${Math.round(total).toLocaleString()}`;
              
-             // Details Text (分類統計 + 詳細清單)
              const detailsContainer = document.getElementById('analysis-details');
              const sortedCats = Object.entries(catData).sort((a,b) => b[1] - a[1]);
-             
              const categorySummaryHtml = sortedCats.map(([cat, amount]) => {
                  const percentage = total > 0 ? ((amount / total) * 100).toFixed(1) : 0;
-                 return `<div class="flex justify-between border-b border-gray-200 pb-1 mb-1 last:border-0">
-                    <span class="text-gray-600">${cat}</span>
-                    <span class="font-bold text-gray-800">NT$${Math.round(amount).toLocaleString()} <span class="text-[10px] text-gray-400 font-normal">(${percentage}%)</span></span>
-                 </div>`;
+                 return `<div class="flex justify-between border-b border-gray-200 pb-1 mb-1 last:border-0"><span class="text-gray-600">${cat}</span><span class="font-bold text-gray-800">NT$${Math.round(amount).toLocaleString()} <span class="text-[10px] text-gray-400 font-normal">(${percentage}%)</span></span></div>`;
              }).join('');
 
-             // 將 分類統計 與 詳細清單 組合
-             detailsContainer.innerHTML = `
-                <div id="analysis-cat-summary" class="mb-4 transition-all duration-300 overflow-hidden">${categorySummaryHtml}</div>
-                
-                <div id="analysis-list-wrapper" class="pt-2 border-t-2 border-dashed border-gray-200 flex flex-col flex-1 min-h-0">
-                    <h4 onclick="toggleAnalysisExpand()" 
-                        class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1 cursor-pointer hover:text-fuji transition select-none group py-1">
-                        <i class="fa-solid fa-list"></i> 詳細支出紀錄 (點擊放大) 
-                        <i id="analysis-arrow" class="fa-solid fa-chevron-down ml-auto transition-transform duration-300"></i>
-                    </h4>                 
-                    <div id="analysis-list-body" class="space-y-0.5 overflow-y-auto pr-1 custom-scrollbar transition-all duration-300 flex-1 min-h-[150px]">
-                        ${expenseListHtml || '<div class="text-center text-gray-300 py-4 text-xs">尚無紀錄</div>'}
-                    </div>
-                </div>
-             `;
+             detailsContainer.innerHTML = `<div id="analysis-cat-summary" class="mb-4 transition-all duration-300 overflow-hidden">${categorySummaryHtml}</div><div id="analysis-list-wrapper" class="pt-2 border-t-2 border-dashed border-gray-200 flex flex-col flex-1 min-h-0"><h4 onclick="toggleAnalysisExpand()" class="text-xs font-bold text-gray-400 mb-2 flex items-center gap-1 cursor-pointer hover:text-fuji transition select-none group py-1"><i class="fa-solid fa-list"></i> 詳細支出紀錄 (點擊放大) <i id="analysis-arrow" class="fa-solid fa-chevron-down ml-auto transition-transform duration-300"></i></h4><div id="analysis-list-body" class="space-y-0.5 overflow-y-auto pr-1 custom-scrollbar transition-all duration-300 flex-1 min-h-[150px]">${expenseListHtml || '<div class="text-center text-gray-300 py-4 text-xs">尚無紀錄</div>'}</div></div>`;
 
-             // Render Chart (保持原本的圓餅圖邏輯)
              const ctx = document.getElementById('memberDetailChart').getContext('2d');
              if(memberDetailChart) memberDetailChart.destroy();
-             
-             memberDetailChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(catData),
-                    datasets: [{
-                        data: Object.values(catData),
-                        backgroundColor: ['#f8c3cd', '#bccc9a', '#7b90d2', '#b5651d', '#eff6ff', '#e5e7eb'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } }
-                    }
-                }
-             });
+             memberDetailChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#f8c3cd', '#bccc9a', '#7b90d2', '#b5651d', '#eff6ff', '#e5e7eb'], borderWidth: 0 }] }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } } });
              openModal('member-analysis-modal');
         }
-       function toggleAnalysisExpand() {
-          const modalContainer = document.querySelector('#member-analysis-modal');
-           const card = modalContainer.querySelector('.hand-card'); 
-           const chartDiv = document.getElementById('memberDetailChart').parentElement;
-           const summaryDiv = document.getElementById('analysis-cat-summary');
-           
-           const detailsDiv = document.getElementById('analysis-details'); // 灰色背景區塊
-           const listWrapper = document.getElementById('analysis-list-wrapper'); // 列表外層
-           const arrow = document.getElementById('analysis-arrow');
 
-           const isExpanded = card.classList.contains('!w-[95vw]');
-
-           if (isExpanded) {
-                // --- 還原模式 (變回小視窗) ---
-                card.classList.remove('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col');
-                card.classList.add('max-w-sm'); 
-                
-                chartDiv.classList.remove('hidden');
-                summaryDiv.classList.remove('hidden');
-                
-                // 還原灰色區塊的高度限制
-                detailsDiv.classList.remove('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full');
-                detailsDiv.classList.add('max-h-40', 'overflow-y-auto');
-                
-                // 還原列表外層
-                listWrapper.classList.remove('flex-1', 'h-full', 'overflow-hidden');
-                
-                arrow.classList.remove('rotate-180');
-
-           } else {
-                // --- 放大模式 (解決空白問題) ---
-                card.classList.remove('max-w-sm'); 
-                card.classList.add('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col'); 
-                
-                chartDiv.classList.add('hidden');
-                summaryDiv.classList.add('hidden');
-                
-                // 移除灰色區塊的高度限制，讓它填滿剩餘空間
-                detailsDiv.classList.remove('max-h-40', 'overflow-y-auto');
-                detailsDiv.classList.add('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full');
-                
-                // 讓列表外層也填滿空間
-                listWrapper.classList.add('flex-1', 'h-full', 'overflow-hidden');
-                
-                arrow.classList.add('rotate-180');
-           }
-        }
-        function updateInlineCharts(rate) {
-            // 1. Category Breakdown
-            const catData = {};
-            expenses.forEach(e => {
-                const amt = e.curr === 'JPY' ? e.amt * rate : e.amt;
-                catData[e.cat] = (catData[e.cat] || 0) + amt;
-            });
-            
-            const ctxCat = document.getElementById('inlineCategoryChart').getContext('2d');
-            if(inlineCategoryChart) inlineCategoryChart.destroy();
-            inlineCategoryChart = new Chart(ctxCat, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(catData),
-                    datasets: [{ data: Object.values(catData), backgroundColor: ['#f8c3cd', '#bccc9a', '#7b90d2', '#b5651d', '#eff6ff', '#e5e7eb'], borderWidth: 0 }]
-                },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-
-            // 2. Member Consumption (Spending share)
-            const memberData = {};
-            payers.forEach(p => memberData[p] = 0);
-            expenses.forEach(e => {
-                const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
-                if(e.splitBy && e.splitBy.length > 0) {
-                        const share = amt / e.splitBy.length;
-                        e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; });
-                }
-            });
-            
-            const ctxMem = document.getElementById('inlineMemberChart').getContext('2d');
-            if(inlineMemberChart) inlineMemberChart.destroy();
-            inlineMemberChart = new Chart(ctxMem, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(memberData),
-                    datasets: [{ label: 'NT$ 消費', data: Object.values(memberData), backgroundColor: '#7b90d2', borderRadius: 4 }]
-                },
-                options: { maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }, plugins: { legend: { display: false } } }
-            });
-        }
-        
-        // --- SETTLEMENT LOGIC ---
-        function calculateSettlement() {
-            const rate = parseFloat(document.getElementById('exchange-rate').value);
-            const balances = {};
-            payers.forEach(p => balances[p] = 0);
-
-            // Calculate Net Balance: (Amount Paid) - (Fair Share Consumed)
-            expenses.forEach(e => {
-                const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt);
-                const payer = e.paidBy || "我";
-                const consumers = e.splitBy || [];
-                
-                if (balances[payer] !== undefined) balances[payer] += amt; // Payer gets credit
-                
-                if (consumers.length > 0) {
-                    const share = amt / consumers.length;
-                    consumers.forEach(c => {
-                        if (balances[c] !== undefined) balances[c] -= share; // Consumer gets debit
-                    });
-                }
-            });
-
-            // Manual Debts (IOUs)
-            manualDebts.forEach(d => {
-                if (balances[d.creditor] !== undefined) balances[d.creditor] += parseFloat(d.amount);
-                if (balances[d.debtor] !== undefined) balances[d.debtor] -= parseFloat(d.amount);
-            });
-            
-            // Generate Transfers
-            let debtors = [];
-            let creditors = [];
-            
-            Object.keys(balances).forEach(p => {
-                if(p === '公費') return; // Skip public fund in P2P logic
-                if (balances[p] < -1) debtors.push({ name: p, amount: balances[p] }); // Tolerance of 1 dollar
-                else if (balances[p] > 1) creditors.push({ name: p, amount: balances[p] });
-            });
-
-            debtors.sort((a, b) => a.amount - b.amount); // Ascending (most negative first)
-            creditors.sort((a, b) => b.amount - a.amount); // Descending (most positive first)
-
-            let planHtml = '';
-            let i = 0, j = 0;
-            while (i < debtors.length && j < creditors.length) {
-                let debt = Math.abs(debtors[i].amount);
-                let credit = creditors[j].amount;
-                let transfer = Math.min(debt, credit);
-                
-                planHtml += `<div class="flex justify-between border-b border-blue-200 pb-1 mb-1 last:border-0"><span class="font-bold text-gray-700">${debtors[i].name}</span> <span class="text-gray-400 text-xs mx-1">給</span> <span class="font-bold text-gray-700">${creditors[j].name}</span> <span class="font-mono font-bold text-blue-600">NT$${Math.round(transfer)}</span></div>`;
-                
-                debtors[i].amount += transfer;
-                creditors[j].amount -= transfer;
-                
-                if (Math.abs(debtors[i].amount) < 1) i++;
-                if (creditors[j].amount < 1) j++;
-            }
-            
-            if (!planHtml) planHtml = '<div class="text-center text-gray-400">目前帳目平衡，無需轉帳。</div>';
-            
-            document.getElementById('settlement-plan').innerHTML = planHtml;
-            document.getElementById('settlement-details').innerHTML = Object.entries(balances).map(([k,v]) => `<div>${k}: ${v>=0?'+':''}${Math.round(v)}</div>`).join('');
-
-            // Chart
-            const ctxSet = document.getElementById('settlementChart').getContext('2d');
-            if(settlementChart) settlementChart.destroy();
-            settlementChart = new Chart(ctxSet, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(balances),
-                    datasets: [{ 
-                        label: '淨餘額 (NT$)', 
-                        data: Object.values(balances), 
-                        backgroundColor: Object.values(balances).map(v => v >= 0 ? '#bccc9a' : '#f8c3cd'),
-                        borderRadius: 4 
-                    }]
-                },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
-            });
-
-            openModal('settlement-modal');
-        }
-
+        function toggleAnalysisExpand() { const modalContainer = document.querySelector('#member-analysis-modal'); const card = modalContainer.querySelector('.hand-card'); const chartDiv = document.getElementById('memberDetailChart').parentElement; const summaryDiv = document.getElementById('analysis-cat-summary'); const detailsDiv = document.getElementById('analysis-details'); const listWrapper = document.getElementById('analysis-list-wrapper'); const arrow = document.getElementById('analysis-arrow'); const isExpanded = card.classList.contains('!w-[95vw]'); if (isExpanded) { card.classList.remove('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col'); card.classList.add('max-w-sm'); chartDiv.classList.remove('hidden'); summaryDiv.classList.remove('hidden'); detailsDiv.classList.remove('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full'); detailsDiv.classList.add('max-h-40', 'overflow-y-auto'); listWrapper.classList.remove('flex-1', 'h-full', 'overflow-hidden'); arrow.classList.remove('rotate-180'); } else { card.classList.remove('max-w-sm'); card.classList.add('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col'); chartDiv.classList.add('hidden'); summaryDiv.classList.add('hidden'); detailsDiv.classList.remove('max-h-40', 'overflow-y-auto'); detailsDiv.classList.add('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full'); listWrapper.classList.add('flex-1', 'h-full', 'overflow-hidden'); arrow.classList.add('rotate-180'); } }
+        function updateInlineCharts(rate) { const catData = {}; expenses.forEach(e => { const amt = e.curr === 'JPY' ? e.amt * rate : e.amt; catData[e.cat] = (catData[e.cat] || 0) + amt; }); const ctxCat = document.getElementById('inlineCategoryChart').getContext('2d'); if(inlineCategoryChart) inlineCategoryChart.destroy(); inlineCategoryChart = new Chart(ctxCat, { type: 'doughnut', data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#f8c3cd', '#bccc9a', '#7b90d2', '#b5651d', '#eff6ff', '#e5e7eb'], borderWidth: 0 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } }); const memberData = {}; payers.forEach(p => memberData[p] = 0); expenses.forEach(e => { const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt); if(e.splitBy && e.splitBy.length > 0) { const share = amt / e.splitBy.length; e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; }); } }); const ctxMem = document.getElementById('inlineMemberChart').getContext('2d'); if(inlineMemberChart) inlineMemberChart.destroy(); inlineMemberChart = new Chart(ctxMem, { type: 'bar', data: { labels: Object.keys(memberData), datasets: [{ label: 'NT$ 消費', data: Object.values(memberData), backgroundColor: '#7b90d2', borderRadius: 4 }] }, options: { maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }, plugins: { legend: { display: false } } } }); }
+        function calculateSettlement() { const rate = parseFloat(document.getElementById('exchange-rate').value); const balances = {}; payers.forEach(p => balances[p] = 0); expenses.forEach(e => { const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt); const payer = e.paidBy || "我"; const consumers = e.splitBy || []; if (balances[payer] !== undefined) balances[payer] += amt; if (consumers.length > 0) { const share = amt / consumers.length; consumers.forEach(c => { if (balances[c] !== undefined) balances[c] -= share; }); } }); manualDebts.forEach(d => { if (balances[d.creditor] !== undefined) balances[d.creditor] += parseFloat(d.amount); if (balances[d.debtor] !== undefined) balances[d.debtor] -= parseFloat(d.amount); }); let debtors = []; let creditors = []; Object.keys(balances).forEach(p => { if(p === '公費') return; if (balances[p] < -1) debtors.push({ name: p, amount: balances[p] }); else if (balances[p] > 1) creditors.push({ name: p, amount: balances[p] }); }); debtors.sort((a, b) => a.amount - b.amount); creditors.sort((a, b) => b.amount - a.amount); let planHtml = ''; let i = 0, j = 0; while (i < debtors.length && j < creditors.length) { let debt = Math.abs(debtors[i].amount); let credit = creditors[j].amount; let transfer = Math.min(debt, credit); planHtml += `<div class="flex justify-between border-b border-blue-200 pb-1 mb-1 last:border-0"><span class="font-bold text-gray-700">${debtors[i].name}</span> <span class="text-gray-400 text-xs mx-1">給</span> <span class="font-bold text-gray-700">${creditors[j].name}</span> <span class="font-mono font-bold text-blue-600">NT$${Math.round(transfer)}</span></div>`; debtors[i].amount += transfer; creditors[j].amount -= transfer; if (Math.abs(debtors[i].amount) < 1) i++; if (creditors[j].amount < 1) j++; } if (!planHtml) planHtml = '<div class="text-center text-gray-400">目前帳目平衡，無需轉帳。</div>'; document.getElementById('settlement-plan').innerHTML = planHtml; document.getElementById('settlement-details').innerHTML = Object.entries(balances).map(([k,v]) => `<div>${k}: ${v>=0?'+':''}${Math.round(v)}</div>`).join(''); const ctxSet = document.getElementById('settlementChart').getContext('2d'); if(settlementChart) settlementChart.destroy(); settlementChart = new Chart(ctxSet, { type: 'bar', data: { labels: Object.keys(balances), datasets: [{ label: '淨餘額 (NT$)', data: Object.values(balances), backgroundColor: Object.values(balances).map(v => v >= 0 ? '#bccc9a' : '#f8c3cd'), borderRadius: 4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } }); openModal('settlement-modal'); }
         function openPublicFundModal() { document.getElementById('pf-total-input').value = publicFundConfig.total || 0; openModal('pf-settings-modal'); }
         function savePublicFundSettings() { publicFundConfig.total = parseFloat(document.getElementById('pf-total-input').value) || 0; saveData(); renderExpenses(); closeModal('pf-settings-modal'); }
-
-        function switchCategory(id) {
-            selectedCat = id;
-            renderCategoryUI();
-        }
-
-        function renderCategoryUI() {
-            document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => 
-                `<div onclick="switchCategory('${c.id}')" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${selectedCat===c.id?'ring-2 ring-black scale-110 '+c.color:'bg-gray-50 text-gray-400 hover:bg-gray-100'}">
-                    <i class="fa-solid ${c.icon}"></i>
-                </div>`
-            ).join('');
+        function switchCategory(id) { selectedCat = id; renderCategoryUI(); }
+        function renderCategoryUI() { document.getElementById('expense-categories').innerHTML = expenseCategories.map(c => `<div onclick="switchCategory('${c.id}')" class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all ${selectedCat===c.id?'ring-2 ring-black scale-110 '+c.color:'bg-gray-50 text-gray-400 hover:bg-gray-100'}"><i class="fa-solid ${c.icon}"></i></div>` ).join(''); }
+        
+        // --- 記帳視窗 (含移除照片) ---
+        function removeExpensePhoto() {
+            if(confirm("確定要移除這張收據照片嗎？")) {
+                currentPhotoBase64 = null; 
+                document.getElementById('ex-photo-preview-mini').src = "";
+                document.getElementById('ex-photo-preview-mini').classList.add('hidden'); 
+                document.getElementById('btn-remove-ex-photo').classList.add('hidden');   
+                document.getElementById('ex-photo').value = ""; 
+            }
         }
 
         function openExpenseModal(id=null) { 
@@ -2046,391 +1191,69 @@ function renderItinerary() {
             payerSelect.innerHTML = payers.map(p => `<option value="${p}">${p}</option>`).join('');
             
             document.getElementById('btn-delete-expense').classList.add('hidden');
+            document.getElementById('btn-remove-ex-photo').classList.add('hidden'); 
             
             if(id) { 
-                // 編輯模式
                 const ex = expenses.find(e => e.id == id); 
                 document.getElementById('ex-id').value = ex.id; 
                 document.getElementById('ex-amount').value = ex.amt; 
                 document.getElementById('ex-currency').value = ex.curr; 
                 document.getElementById('ex-note').value = ex.note; 
-                
                 payerSelect.value = ex.paidBy || "我";
                 selectedCat = ex.cat; 
                 selectedPayers = ex.splitBy || []; 
                 document.getElementById('btn-delete-expense').classList.remove('hidden'); 
                 
+                currentPhotoBase64 = ex.photo; 
                 if(ex.photo){
-                    document.getElementById('ex-photo-preview-mini').src=ex.photo;
+                    document.getElementById('ex-photo-preview-mini').src = ex.photo;
                     document.getElementById('ex-photo-preview-mini').classList.remove('hidden');
+                    document.getElementById('btn-remove-ex-photo').classList.remove('hidden'); 
                 } else {
                     document.getElementById('ex-photo-preview-mini').classList.add('hidden');
                 }
-            }
-            else { 
-                // 新增模式
+            } else { 
                 document.getElementById('ex-id').value = ''; 
                 document.getElementById('ex-amount').value = ''; 
-                
-                // 簡單判斷：如果是從購物清單來的(通常備註有字)，就不要清空，否則清空
-                if(!document.getElementById('ex-note').value) {
-                     document.getElementById('ex-note').value = '';
-                }
-                
+                if(!document.getElementById('ex-note').value) { document.getElementById('ex-note').value = ''; }
                 document.getElementById('ex-currency').value = 'JPY';
                 payerSelect.value = "我";
                 if (!payers.includes("我") && payers.length > 0) payerSelect.value = payers[0];
                 selectedPayers = payers.filter(p => p !== '公費'); 
-                
-                // 只有未設定分類時才重置，避免點擊重置
                 if(!selectedCat) selectedCat = '餐飲'; 
-                
                 currentPhotoBase64 = null;
                 document.getElementById('ex-photo-preview-mini').src = "";
                 document.getElementById('ex-photo-preview-mini').classList.add('hidden');
             }
-            
-            // 呼叫獨立函式渲染分類
             renderCategoryUI();
             renderSplitButtons(); 
             openModal('expense-modal'); 
         }
 
-        function renderSplitButtons() {
-            document.getElementById('ex-split-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join('');
-        }
-        
+        function renderSplitButtons() { document.getElementById('ex-split-container').innerHTML = payers.map(p => `<button onclick="togglePayer('${p}')" class="px-3 py-1.5 rounded-full text-xs border font-bold transition-all ${selectedPayers.includes(p) ? 'bg-ink text-white border-ink' : 'bg-white text-gray-500'}">${p}</button>`).join(''); }
         function togglePayer(p) { if(selectedPayers.includes(p)) selectedPayers=selectedPayers.filter(x=>x!==p); else selectedPayers.push(p); renderSplitButtons(); }
-        function toggleAllPayers() {
-            const allHumanPayers = payers.filter(p => p !== '公費');
-            if (selectedPayers.length === allHumanPayers.length) selectedPayers = [];
-            else selectedPayers = [...allHumanPayers];
-            renderSplitButtons();
-        }
-
-        function saveExpense() { 
-            const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); 
-            if(!amt) return; 
-            
-            // Handle Payer Input from Dropdown
-            let paidBy = document.getElementById('ex-paid-by').value;
-
-            const ex = {
-                id:id?parseInt(id):Date.now(), 
-                cat:selectedCat, 
-                note:document.getElementById('ex-note').value, 
-                curr:document.getElementById('ex-currency').value, 
-                amt, 
-                paidBy: paidBy,
-                splitBy: selectedPayers.length > 0 ? selectedPayers : [paidBy], // If no splitters, assume personal expense
-                payer: selectedPayers.join(','), // Legacy support
-                photo: currentPhotoBase64
-            }; 
-            
-            if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} 
-            saveData(); renderExpenses(); closeModal('expense-modal'); 
-        }
-        function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }
-// --- SHOPPING (分類資料夾 + 縮圖) ---
-        // 確保分類展開狀態的變數存在
+        function toggleAllPayers() { const allHumanPayers = payers.filter(p => p !== '公費'); if (selectedPayers.length === allHumanPayers.length) selectedPayers = []; else selectedPayers = [...allHumanPayers]; renderSplitButtons(); }
+        function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt) return; let paidBy = document.getElementById('ex-paid-by').value; const ex = { id:id?parseInt(id):Date.now(), cat:selectedCat, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, paidBy: paidBy, splitBy: selectedPayers.length > 0 ? selectedPayers : [paidBy], payer: selectedPayers.join(','), photo: currentPhotoBase64 }; if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
+        function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }        // --- SHOPPING ---
         window.expandedCategories = window.expandedCategories || new Set();
-
-            function renderShoppingList() {
-            const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; 
-            const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner);
-            const container = document.getElementById('shopping-list-container');
-            container.innerHTML = ''; // 清空容器
-
-            const grouped = {};
-            items.forEach(item => {
-                const cat = item.category || '未分類';
-                if(!grouped[cat]) grouped[cat] = [];
-                grouped[cat].push(item);
-            });
-
-            // 定義標籤顏色風格
-            const catStyles = { 
-                '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 
-                'Outlet': 'border-sky-400 bg-sky-50 text-sky-600', 
-                '7-11': 'border-orange-400 bg-orange-50 text-orange-600', 
-                '全家': 'border-green-500 bg-green-50 text-green-700',
-                'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', 
-                '伴手禮': 'border-red-400 bg-red-50 text-red-600', 
-                '電器': 'border-gray-500 bg-gray-100 text-gray-600', 
-                '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 
-                'AEON': 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-600', 
-                '超市': 'border-emerald-400 bg-emerald-50 text-emerald-600', 
-                '唐吉軻德': 'border-yellow-400 bg-yellow-50 text-yellow-700',
-                '未分類': 'border-gray-300 bg-gray-50 text-gray-500' 
-            };
-             const autoPalettes = [
-                'border-teal-400 bg-teal-50 text-teal-600',
-                'border-indigo-400 bg-indigo-50 text-indigo-600',
-                'border-lime-400 bg-lime-50 text-lime-700',
-                'border-cyan-400 bg-cyan-50 text-cyan-600',
-                'border-rose-400 bg-rose-50 text-rose-600',
-                'border-amber-400 bg-amber-50 text-amber-700',
-                'border-violet-400 bg-violet-50 text-violet-600'
-            ];
-                Object.keys(grouped).sort().forEach(cat => {
-                const catItems = grouped[cat];
-                const doneCount = catItems.filter(i => i.done).length;
-                const isExpanded = expandedCategories.has(cat);
-                let styleClass = catStyles[cat];
-                if (!styleClass) {
-                    // 簡單的 hash 算法，把字串轉成數字
-                    let hash = 0;
-                    for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
-                    // 取絕對值後對調色盤數量取餘數，決定用哪一組顏色
-                    const colorIdx = Math.abs(hash) % autoPalettes.length;
-                    styleClass = autoPalettes[colorIdx];
-                }
-                const itemsHtml = catItems.map(s => renderShopItem(s)).join('');
-                let html = `
-                <div class="mb-3 transition-all duration-300 w-full max-w-full">
-                    <!-- 標題區域 -->
-                    <div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" 
-                         onclick="toggleShopCat('${cat}')"
-                         style="background-color: white;">
-                        <div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div>
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-tag text-sm opacity-70"></i>
-                            <h5 class="font-bold text-sm tracking-wide">${cat}</h5>
-                            <span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span>
-                        </div>
-                        <i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i>
-                    </div>
-                    
-                    <!-- 內容區域：所有商品現在都包含在 itemsHtml 變數中 -->
-                    <div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">
-                        ${itemsHtml}
-                    </div>
-                </div>`;
-                container.innerHTML += html;
-            })
-        document.getElementById('shop-owner-name').innerText = owner;
-        }
-        function renderShopItem(s) {
-            const isDone = s.done;
-            return `
-            <div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal(${s.id})">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})">
-                        <i class="fa-solid fa-check text-xs"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div>
-                        <div class="text-[11px] text-gray-400 mt-0.5 font-mono">
-                            ${s.price ? `¥${s.price} ` : ''}
-                            ${s.qty && s.qty > 1 ? `<span class="text-gray-300">x</span> ${s.qty}` : ''}
-                        </div>
-                    </div>
-                </div>
-                ${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}
-            </div>`;
-        }
-        function toggleShopCat(cat) {
-            if (expandedCategories.has(cat)) expandedCategories.delete(cat);
-            else expandedCategories.add(cat);
-            renderShoppingList();
-        }
-        function openShoppingModal(id=null){ 
-            ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); 
-            document.getElementById('shop-qty').value=1; 
-            currentShopPhoto=null; 
-            document.getElementById('shop-photo-preview').classList.add('hidden'); 
-            
-            if(id){
-                const s=shoppingList.find(i=>i.id===id);
-                document.getElementById('shop-id').value=s.id;
-                document.getElementById('shop-name').value=s.name;
-                document.getElementById('shop-qty').value=s.qty;
-                document.getElementById('shop-price').value=s.price;
-                document.getElementById('shop-category').value=s.category||'';
-                if(s.photo){
-                    currentShopPhoto=s.photo;
-                    document.getElementById('shop-photo-preview').src=s.photo;
-                    document.getElementById('shop-photo-preview').classList.remove('hidden')
-                }
-            } 
-            openModal('shopping-modal'); 
-        }
-
-        // 6. 儲存商品
-        function saveShoppingItem(){ 
-            const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; 
-            if(!name)return; 
-            const item={ 
-                id:id?parseInt(id):Date.now(), 
-                name, 
-                qty:document.getElementById('shop-qty').value, 
-                price:document.getElementById('shop-price').value, 
-                category:document.getElementById('shop-category').value, 
-                photo:currentShopPhoto, 
-                done:false, 
-                owner: shoppingOwners[currentShopOwnerIdx] 
-            }; 
-            
-            if(id){
-                const idx=shoppingList.findIndex(i=>i.id==id);
-                item.done=shoppingList[idx].done; // 保持已完成狀態
-                shoppingList[idx]=item;
-            } else {
-                shoppingList.push(item);
-            } 
-            saveData(); 
-            renderShoppingList(); 
-            closeModal('shopping-modal'); 
-        }
-
-        // 7. 刪除商品
-        function deleteShoppingItem(){ 
-            if(confirm("確定要刪除這個商品嗎？")){
-                shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value);
-                saveData();
-                renderShoppingList();
-                closeModal('shopping-modal');
-            } 
-        }
-
-        // 8. 觸發購買動作 (勾選)
-        function triggerShopAction(id, isDone) {
-            if(isDone) {
-                // 取消勾選
-                const s = shoppingList.find(i=>i.id===id);
-                s.done = false;
-                saveData(); 
-                renderShoppingList();
-            } else {
-                // 勾選 -> 彈出確認視窗
-                document.getElementById('confirm-shop-id').value = id;
-                openModal('shop-confirm-modal');
-            }
-        }
-
-        // 9. 確認購買動作 (記帳或純標記)
-        function confirmShopAction(action) {
-            const id = parseInt(document.getElementById('confirm-shop-id').value);
-            const s = shoppingList.find(i=>i.id===id);
-            if(!s) return;
-
-            if (action === 'expense') {
-                closeModal('shop-confirm-modal');
-                const categoryNote = s.category ? ` (${s.category})` : '';
-                document.getElementById('ex-note').value = s.name + categoryNote;
-                document.getElementById('ex-amount').value = s.price * s.qty;
-                
-                // 設定記帳預設值
-                selectedCat = '購物';
-                selectedPayers = ['我']; 
-                
-                openExpenseModal(); // 打開記帳視窗
-                
-                s.done = true; // 標記為已買
-                saveData(); 
-                renderShoppingList();
-            } else if (action === 'done_only') {
-                s.done = true;
-                saveData(); 
-                renderShoppingList();
-                closeModal('shop-confirm-modal');
-            } else if (action === 'cancel') {
-                closeModal('shop-confirm-modal');
-            }
-        }
+        function renderShoppingList() { const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner); const container = document.getElementById('shopping-list-container'); container.innerHTML = ''; const grouped = {}; items.forEach(item => { const cat = item.category || '未分類'; if(!grouped[cat]) grouped[cat] = []; grouped[cat].push(item); }); const catStyles = { '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 'Outlet': 'border-sky-400 bg-sky-50 text-sky-600', '7-11': 'border-orange-400 bg-orange-50 text-orange-600', '全家': 'border-green-500 bg-green-50 text-green-700', 'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', '伴手禮': 'border-red-400 bg-red-50 text-red-600', '電器': 'border-gray-500 bg-gray-100 text-gray-600', '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 'AEON': 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-600', '超市': 'border-emerald-400 bg-emerald-50 text-emerald-600', '唐吉軻德': 'border-yellow-400 bg-yellow-50 text-yellow-700', '未分類': 'border-gray-300 bg-gray-50 text-gray-500' }; const autoPalettes = [ 'border-teal-400 bg-teal-50 text-teal-600', 'border-indigo-400 bg-indigo-50 text-indigo-600', 'border-lime-400 bg-lime-50 text-lime-700', 'border-cyan-400 bg-cyan-50 text-cyan-600', 'border-rose-400 bg-rose-50 text-rose-600', 'border-amber-400 bg-amber-50 text-amber-700', 'border-violet-400 bg-violet-50 text-violet-600' ]; Object.keys(grouped).sort().forEach(cat => { const catItems = grouped[cat]; const doneCount = catItems.filter(i => i.done).length; const isExpanded = expandedCategories.has(cat); let styleClass = catStyles[cat]; if (!styleClass) { let hash = 0; for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash); const colorIdx = Math.abs(hash) % autoPalettes.length; styleClass = autoPalettes[colorIdx]; } const itemsHtml = catItems.map(s => renderShopItem(s)).join(''); let html = `<div class="mb-3 transition-all duration-300 w-full max-w-full"><div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" onclick="toggleShopCat('${cat}')" style="background-color: white;"><div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div><div class="flex items-center gap-2"><i class="fa-solid fa-tag text-sm opacity-70"></i><h5 class="font-bold text-sm tracking-wide">${cat}</h5><span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span></div><i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i></div><div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">${itemsHtml}</div></div>`; container.innerHTML += html; }); document.getElementById('shop-owner-name').innerText = owner; }
+        function renderShopItem(s) { const isDone = s.done; return `<div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal(${s.id})"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})"><i class="fa-solid fa-check text-xs"></i></div><div class="min-w-0"><div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div><div class="text-[11px] text-gray-400 mt-0.5 font-mono">${s.price ? `¥${s.price} ` : ''}${s.qty && s.qty > 1 ? `<span class="text-gray-300">x</span> ${s.qty}` : ''}</div></div></div>${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}</div>`; }
+        function toggleShopCat(cat) { if (expandedCategories.has(cat)) expandedCategories.delete(cat); else expandedCategories.add(cat); renderShoppingList(); }
+        function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); document.getElementById('shop-qty').value=1; currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); if(id){ const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; document.getElementById('shop-category').value=s.category||''; if(s.photo){ currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden') } } openModal('shopping-modal'); }
+        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:document.getElementById('shop-category').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){ const idx=shoppingList.findIndex(i=>i.id==id); item.done=shoppingList[idx].done; shoppingList[idx]=item; } else { shoppingList.push(item); } saveData(); renderShoppingList(); closeModal('shopping-modal'); }
+        function deleteShoppingItem(){ if(confirm("確定要刪除這個商品嗎？")){ shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value); saveData(); renderShoppingList(); closeModal('shopping-modal'); } }
+        function triggerShopAction(id, isDone) { if(isDone) { const s = shoppingList.find(i=>i.id===id); s.done = false; saveData(); renderShoppingList(); } else { document.getElementById('confirm-shop-id').value = id; openModal('shop-confirm-modal'); } }
+        function confirmShopAction(action) { const id = parseInt(document.getElementById('confirm-shop-id').value); const s = shoppingList.find(i=>i.id===id); if(!s) return; if (action === 'expense') { closeModal('shop-confirm-modal'); const categoryNote = s.category ? ` (${s.category})` : ''; document.getElementById('ex-note').value = s.name + categoryNote; document.getElementById('ex-amount').value = s.price * s.qty; selectedCat = '購物'; selectedPayers = ['我']; openExpenseModal(); s.done = true; saveData(); renderShoppingList(); } else if (action === 'done_only') { s.done = true; saveData(); renderShoppingList(); closeModal('shop-confirm-modal'); } else if (action === 'cancel') { closeModal('shop-confirm-modal'); } }
         function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
         function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
         function setShopCat(val) { document.getElementById('shop-category').value = val; }
-        function openShopOwnerModal(){ 
-            document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map((n, i) => `
-                <div class="bg-gray-50 p-2 border rounded text-sm flex justify-between items-center mb-2">
-                    <span class="font-bold text-gray-700">${n}</span>
-                    <button onclick="deleteShopList(${i})" class="text-red-400 hover:text-red-600 px-2 transition">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>`
-            ).join(''); 
-            openModal('manage-shop-lists-modal'); 
-        }
-
-        function deleteShopList(index) {
-            if(confirm("確定刪除這個清單嗎？(清單內的商品仍會保留在資料庫中，但暫時無法查看，除非新增回相同名稱)")) {
-                // 如果刪除的是當前正在看的，將索引歸零
-                if (currentShopOwnerIdx === index) currentShopOwnerIdx = 0;
-                // 如果刪除的索引在當前索引之前，當前索引需減一以保持指向原本的清單
-                else if (index < currentShopOwnerIdx) currentShopOwnerIdx--;
-                shoppingOwners.splice(index, 1);
-                if(shoppingOwners.length === 0) shoppingOwners.push("我的清單");
-                saveData();
-                openShopOwnerModal(); // 重新渲染管理介面
-                renderShoppingList(); // 重新渲染主畫面清單
-            }
-        }
-
-        function addShopList(){ 
-            const n=document.getElementById('new-shop-list-name').value; 
-            if(n){
-                shoppingOwners.push(n);
-                saveData();
-                openShopOwnerModal();
-                renderShoppingList();
-                document.getElementById('new-shop-list-name').value='';
-            } 
-        }
-        // --- OTHER LISTS (MUST EAT 折疊 + CHECKLIST 卡片) ---
-      function renderMustEatList() {
-            const c = document.getElementById('must-eat-list'); c.innerHTML = '';
-            mustEatList.forEach(locItem => {
-                // 修改處：顯示備註 (note)
-                const themesHtml = locItem.themes.map(t => `
-                    <div class="bg-white p-3 rounded-lg border border-matcha/20 mb-2 flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="${t.isVeg?'text-green-600 font-bold':''} text-gray-700 text-sm">${t.isVeg?'<i class="fa-solid fa-leaf mr-1"></i>':''}${t.name}</div>
-                            ${t.note ? `<div class="text-[10px] text-gray-400 mt-1">${t.note}</div>` : ''}
-                        </div>
-                        ${t.url?`<a href="${t.url}" target="_blank" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-matcha hover:bg-matcha hover:text-white transition shrink-0 ml-2"><i class="fa-solid fa-link text-xs"></i></a>`:''}
-                    </div>`).join('');
-                
-                c.innerHTML += `
-                    <div class="mb-3 bg-[#fffdf5] rounded-xl border-l-4 border-matcha shadow-sm overflow-hidden">
-                        <div class="flex justify-between items-center p-4 cursor-pointer hover:bg-[#fcfcf0]" onclick="toggleMustEat('${locItem.id}')">
-                            <h4 class="text-lg font-black handwritten text-gray-700 flex items-center gap-2"><i class="fa-solid fa-location-dot text-matcha"></i> ${locItem.location}</h4>
-                            <div class="flex items-center gap-3"><span class="text-[10px] text-matcha font-bold bg-matcha/10 px-2 py-1 rounded-full border border-matcha/20">${locItem.themes.length} 間</span><i id="icon-${locItem.id}" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i></div>
-                        </div>
-                        <div id="details-${locItem.id}" class="hidden bg-white/50 p-4 border-t border-matcha/10 animate-slide-in relative">
-                             <div class="flex justify-end mb-2"><button onclick="openMustEatModal('${locItem.id}')" class="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full hover:bg-matcha hover:text-white transition font-bold flex items-center gap-1"><i class="fa-solid fa-pen"></i> 編輯</button></div>
-                             <div class="space-y-1">${themesHtml}</div>
-                        </div>
-                    </div>`;
-            });
-        }
-        function toggleMustEat(id) {
-            const el = document.getElementById(`details-${id}`);
-            const icon = document.getElementById(`icon-${id}`);
-            if (el.classList.contains('hidden')) { el.classList.remove('hidden'); icon.classList.add('rotate-180'); } else { el.classList.add('hidden'); icon.classList.remove('rotate-180'); }
-        }
-        function openMustEatModal(id=null) { 
-            document.getElementById('eat-location').value = ''; tempThemes = []; document.getElementById('eat-loc-id').value = ''; 
-            if(id) { 
-                const item = mustEatList.find(i => i.id === id); 
-                if(item) { document.getElementById('eat-loc-id').value = item.id; document.getElementById('eat-location').value = item.location; tempThemes = JSON.parse(JSON.stringify(item.themes)); } 
-            } else { 
-                tempThemes = [{id: Date.now(), name: '', url: '', isVeg: false, note: ''}]; 
-            } 
-            renderThemeRows(); openModal('must-eat-modal'); 
-        }
-        function renderThemeRows() { 
-            document.getElementById('eat-themes-container').innerHTML = tempThemes.map((t, idx) => `
-            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group mb-2">
-                <button onclick="tempThemes.splice(${idx},1);renderThemeRows()" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
-                <div class="flex items-center gap-2 mb-2 pr-6">
-                    <input type="text" placeholder="餐廳名稱" class="flex-1 bg-transparent border-b border-gray-300 text-sm font-bold" value="${t.name}" oninput="tempThemes[${idx}].name=this.value">
-                    <label class="text-xs text-green-600 whitespace-nowrap"><input type="checkbox" ${t.isVeg ? 'checked' : ''} onchange="tempThemes[${idx}].isVeg=this.checked"> 素食</label>
-                </div>
-                <input type="url" placeholder="網址" class="w-full bg-white border rounded text-xs p-1 mb-1" value="${t.url||''}" oninput="tempThemes[${idx}].url=this.value">
-                <input type="text" placeholder="備註 (如: 必點布丁)" class="w-full bg-white border rounded text-xs p-1" value="${t.note||''}" oninput="tempThemes[${idx}].note=this.value">
-            </div>`).join(''); 
-        }
+        function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map((n, i) => `<div class="bg-gray-50 p-2 border rounded text-sm flex justify-between items-center mb-2"><span class="font-bold text-gray-700">${n}</span><button onclick="deleteShopList(${i})" class="text-red-400 hover:text-red-600 px-2 transition"><i class="fa-solid fa-trash-can"></i></button></div>` ).join(''); openModal('manage-shop-lists-modal'); }
+        function deleteShopList(index) { if(confirm("確定刪除這個清單嗎？")) { if (currentShopOwnerIdx === index) currentShopOwnerIdx = 0; else if (index < currentShopOwnerIdx) currentShopOwnerIdx--; shoppingOwners.splice(index, 1); if(shoppingOwners.length === 0) shoppingOwners.push("我的清單"); saveData(); openShopOwnerModal(); renderShoppingList(); } }
+        function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){ shoppingOwners.push(n); saveData(); openShopOwnerModal(); renderShoppingList(); document.getElementById('new-shop-list-name').value=''; } }
+        function renderMustEatList() { const c = document.getElementById('must-eat-list'); c.innerHTML = ''; mustEatList.forEach(locItem => { const themesHtml = locItem.themes.map(t => `<div class="bg-white p-3 rounded-lg border border-matcha/20 mb-2 flex justify-between items-start"><div class="flex-1"><div class="${t.isVeg?'text-green-600 font-bold':''} text-gray-700 text-sm">${t.isVeg?'<i class="fa-solid fa-leaf mr-1"></i>':''}${t.name}</div>${t.note ? `<div class="text-[10px] text-gray-400 mt-1">${t.note}</div>` : ''}</div>${t.url?`<a href="${t.url}" target="_blank" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-matcha hover:bg-matcha hover:text-white transition shrink-0 ml-2"><i class="fa-solid fa-link text-xs"></i></a>`:''}</div>`).join(''); c.innerHTML += `<div class="mb-3 bg-[#fffdf5] rounded-xl border-l-4 border-matcha shadow-sm overflow-hidden"><div class="flex justify-between items-center p-4 cursor-pointer hover:bg-[#fcfcf0]" onclick="toggleMustEat('${locItem.id}')"><h4 class="text-lg font-black handwritten text-gray-700 flex items-center gap-2"><i class="fa-solid fa-location-dot text-matcha"></i> ${locItem.location}</h4><div class="flex items-center gap-3"><span class="text-[10px] text-matcha font-bold bg-matcha/10 px-2 py-1 rounded-full border border-matcha/20">${locItem.themes.length} 間</span><i id="icon-${locItem.id}" class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300"></i></div></div><div id="details-${locItem.id}" class="hidden bg-white/50 p-4 border-t border-matcha/10 animate-slide-in relative"><div class="flex justify-end mb-2"><button onclick="openMustEatModal('${locItem.id}')" class="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full hover:bg-matcha hover:text-white transition font-bold flex items-center gap-1"><i class="fa-solid fa-pen"></i> 編輯</button></div><div class="space-y-1">${themesHtml}</div></div></div>`; }); }
+        function toggleMustEat(id) { const el = document.getElementById(`details-${id}`); const icon = document.getElementById(`icon-${id}`); if (el.classList.contains('hidden')) { el.classList.remove('hidden'); icon.classList.add('rotate-180'); } else { el.classList.add('hidden'); icon.classList.remove('rotate-180'); } }
+        function openMustEatModal(id=null) { document.getElementById('eat-location').value = ''; tempThemes = []; document.getElementById('eat-loc-id').value = ''; if(id) { const item = mustEatList.find(i => i.id === id); if(item) { document.getElementById('eat-loc-id').value = item.id; document.getElementById('eat-location').value = item.location; tempThemes = JSON.parse(JSON.stringify(item.themes)); } } else { tempThemes = [{id: Date.now(), name: '', url: '', isVeg: false, note: ''}]; } renderThemeRows(); openModal('must-eat-modal'); }
+        function renderThemeRows() { document.getElementById('eat-themes-container').innerHTML = tempThemes.map((t, idx) => `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group mb-2"><button onclick="tempThemes.splice(${idx},1);renderThemeRows()" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button><div class="flex items-center gap-2 mb-2 pr-6"><input type="text" placeholder="餐廳名稱" class="flex-1 bg-transparent border-b border-gray-300 text-sm font-bold" value="${t.name}" oninput="tempThemes[${idx}].name=this.value"><label class="text-xs text-green-600 whitespace-nowrap"><input type="checkbox" ${t.isVeg ? 'checked' : ''} onchange="tempThemes[${idx}].isVeg=this.checked"> 素食</label></div><input type="url" placeholder="網址" class="w-full bg-white border rounded text-xs p-1 mb-1" value="${t.url||''}" oninput="tempThemes[${idx}].url=this.value"><input type="text" placeholder="備註 (如: 必點布丁)" class="w-full bg-white border rounded text-xs p-1" value="${t.note||''}" oninput="tempThemes[${idx}].note=this.value"></div>`).join(''); }
         function addThemeRow() { tempThemes.push({id: Date.now(), name: '', url: '', isVeg: false, note: ''}); renderThemeRows(); }
         function saveMustEatLocation() { const id = document.getElementById('eat-loc-id').value, location = document.getElementById('eat-location').value; if(!location) return alert("請輸入地點名稱"); const data = { id: id || 'loc_'+Date.now(), location, themes: tempThemes.filter(t => t.name) }; if(id) { const idx = mustEatList.findIndex(i => i.id === id); if(idx > -1) mustEatList[idx] = data; } else { mustEatList.push(data); } saveData(); renderMustEatList(); closeModal('must-eat-modal'); }
         function deleteMustEatLocation() { const id = document.getElementById('eat-loc-id').value; if(id && confirm("Del?")) { mustEatList = mustEatList.filter(i => i.id !== id); saveData(); renderMustEatList(); closeModal('must-eat-modal'); } }
@@ -2448,91 +1271,62 @@ function renderItinerary() {
         function deleteIOU(id){ if(confirm("Del?")){manualDebts=manualDebts.filter(i=>i.id!=id);saveData();openIOUModal();}}
         function toggleVJW() { vjwData.isOpen = !vjwData.isOpen; renderVJW(); saveData(); }
         function updateVJWName(id, val) { const item = vjwData.items.find(i => i.id === id); if (item) { item.name = val; saveData(); } }
-      // --- 新增：更新 VJW 名字的函式 (請貼在 renderVJW 上方) ---
-        function updateVJWName(id, val) {
-            const item = vjwData.items.find(i => i.id === id);
-            if (item) {
-                item.name = val;
-                saveData(); // 自動儲存
-            }
-        }
-
-       function renderVJW() { 
-            const c = document.getElementById('vjw-content'); 
-            if(vjwData.isOpen) { 
-                c.classList.remove('max-h-0'); 
-                c.classList.add('max-h-[500px]'); 
-            } else { 
-                c.classList.add('max-h-0'); 
-                c.classList.remove('max-h-[500px]'); 
-            } 
-            
-            document.getElementById('vjw-container').innerHTML = vjwData.items.map(i => `
-                <div class="flex-shrink-0 w-48 bg-white p-2 border rounded relative group">
-                    <button onclick="deleteVJW(${i.id})" class="absolute top-1 right-1 text-gray-300 hover:text-red-400 w-6 h-6 flex items-center justify-center rounded-full bg-gray-50 z-10"><i class="fa-solid fa-times"></i></button>
-                    
-                    <!-- 修改處：加入 onfocus="this.select()" 點擊自動全選 -->
-                    <input type="text" value="${i.name}" 
-                           onfocus="this.select()" 
-                           onchange="updateVJWName(${i.id}, this.value)" 
-                           class="w-full bg-transparent text-center font-bold mb-1 outline-none border-b border-transparent focus:border-blue-300 text-gray-700 placeholder-gray-300 transition" 
-                           placeholder="輸入名字">
-                    
-                    <img src="${i.image}" class="w-full h-40 object-contain cursor-zoom-in" onclick="viewPhoto('${i.image}')">
-                </div>
-            `).join('') + `
-                <div class="flex-shrink-0 w-48 h-48 border-2 border-dashed border-blue-200/50 rounded-lg flex flex-col items-center justify-center cursor-pointer relative hover:bg-blue-50 transition group">
-                    <i class="fa-solid fa-qrcode text-3xl text-blue-200 mb-2 group-hover:scale-110 transition"></i>
-                    <span class="text-xs text-blue-300 font-bold">+ 新增 QR Code</span>
-                    <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, b=>{vjwData.items.push({id:Date.now(),name:'輸入名字',image:b});saveData();renderVJW()})">
-                </div>`; 
-        }
+        function renderVJW() { const c = document.getElementById('vjw-content'); if(vjwData.isOpen) { c.classList.remove('max-h-0'); c.classList.add('max-h-[500px]'); } else { c.classList.add('max-h-0'); c.classList.remove('max-h-[500px]'); } document.getElementById('vjw-container').innerHTML = vjwData.items.map(i => `<div class="flex-shrink-0 w-48 bg-white p-2 border rounded relative group"><button onclick="deleteVJW(${i.id})" class="absolute top-1 right-1 text-gray-300 hover:text-red-400 w-6 h-6 flex items-center justify-center rounded-full bg-gray-50 z-10"><i class="fa-solid fa-times"></i></button><input type="text" value="${i.name}" onfocus="this.select()" onchange="updateVJWName(${i.id}, this.value)" class="w-full bg-transparent text-center font-bold mb-1 outline-none border-b border-transparent focus:border-blue-300 text-gray-700 placeholder-gray-300 transition" placeholder="輸入名字"><img src="${i.image}" class="w-full h-40 object-contain cursor-zoom-in" onclick="viewPhoto('${i.image}')"></div>`).join('') + `<div class="flex-shrink-0 w-48 h-48 border-2 border-dashed border-blue-200/50 rounded-lg flex flex-col items-center justify-center cursor-pointer relative hover:bg-blue-50 transition group"><i class="fa-solid fa-qrcode text-3xl text-blue-200 mb-2 group-hover:scale-110 transition"></i><span class="text-xs text-blue-300 font-bold">+ 新增 QR Code</span><input type="file" class="absolute inset-0 opacity-0 cursor-pointer" onchange="processImage(this, b=>{vjwData.items.push({id:Date.now(),name:'輸入名字',image:b});saveData();renderVJW()})"></div>`; }
         function deleteVJW(id){ if(confirm("Del?")){vjwData.items=vjwData.items.filter(i=>i.id!==id);saveData();renderVJW()} }
         function restoreDefaultTodos() { if(confirm("確定要恢復成內建的預設清單嗎？目前的自訂項目會消失喔！")) {todos = DEFAULT_TODOS.map(text => ({text, done: false}));saveData();renderChecklist();}}
-        document.getElementById('day-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                console.log("點擊空白處，自動存檔...");
-                saveDay(); // 這會存檔並關閉視窗
-            }
-        });
-        // --- GEMINI AI 功能 ---
-        async function callGeminiAI() {
-            const text = document.getElementById('trans-input').value;
-            const apiKey = localStorage.getItem('gemini_api_key');
-            const resultBox = document.getElementById('ai-result');
+        
+        // --- 點擊空白處自動存檔/關閉 (全視窗支援版) ---
+        function enableAutoSaveOnOutsideClick() {
+            const modalMap = [
+                // 1. 編輯類 (點擊空白 = 自動存檔)
+                { id: 'day-modal',      save: saveDay },
+                { id: 'expense-modal',  save: saveExpense },
+                { id: 'shopping-modal', save: saveShoppingItem },
+                { id: 'flight-modal',   save: saveFlight },
+                { id: 'guide-modal',    save: saveGuide },
+                { id: 'iou-modal',      save: saveIOU },
+                { id: 'must-eat-modal', save: saveMustEatLocation },     // 補上：必吃清單
+                { id: 'pf-settings-modal', save: savePublicFundSettings }, // 補上：公費設定
 
-            if (!text) return alert("請先輸入要翻譯的文字！");
-            if (!apiKey) return alert("請先到下方「雲端同步設定」填寫 Gemini API Key！");
+                // 2. 檢視/管理類 (點擊空白 = 直接關閉)
+                { id: 'acc-modal',             save: () => closeModal('acc-modal') },
+                { id: 'member-analysis-modal', save: () => closeModal('member-analysis-modal') }, // 補上：消費分析
+                { id: 'settlement-modal',      save: () => closeModal('settlement-modal') },      // 補上：結算
+                { id: 'member-modal',          save: () => closeModal('member-modal') },          // 補上：成員管理
+                { id: 'manage-shop-lists-modal', save: () => closeModal('manage-shop-lists-modal') }, // 補上：清單管理
+                { id: 'shop-confirm-modal',    save: () => closeModal('shop-confirm-modal') },    // 補上：購買確認
+                { id: 'cleaner-modal',         save: () => closeModal('cleaner-modal') }          // 補上：照片清理
+            ];
 
-            resultBox.classList.remove('hidden');
-            resultBox.innerHTML = '<div class="flex items-center gap-2 text-purple-400"><i class="fa-solid fa-circle-notch fa-spin"></i> <span>AI 思考中...</span></div>';
-
-            // 針對日本旅遊優化的 Prompt
-            const prompt = `你是我的日本旅遊隨身翻譯助手。請將以下文字翻譯成自然的日文（如果是日文則翻成繁體中文）。如果輸入的是菜單名稱，請簡單解釋這道菜是什麼（例如口味、食材）。\n\n使用者輸入：${text}`;
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-
-                const data = await response.json();
-                
-                if (data.candidates && data.candidates[0].content) {
-                    const reply = data.candidates[0].content.parts[0].text;
-                    // 將 Markdown 的換行轉為 HTML
-                    resultBox.innerHTML = reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b class="text-purple-600">$1</b>');
-                } else {
-                    resultBox.innerText = "翻譯失敗，請重試。";
+            modalMap.forEach(item => {
+                const el = document.getElementById(item.id);
+                if (el) {
+                    // 移除舊的監聽器 (避免重複綁定，雖非必要但較安全)
+                    const newEl = el.cloneNode(true);
+                    el.parentNode.replaceChild(newEl, el);
+                    
+                    // 綁定新的監聽器
+                    newEl.addEventListener('mousedown', function(e) {
+                        // 如果點擊的是背景本身 (this)
+                        if (e.target === this) {
+                            console.log(`點擊空白處，關閉: ${item.id}`);
+                            item.save(); 
+                        }
+                    });
                 }
-            } catch (e) {
-                console.error(e);
-                resultBox.innerText = "連線錯誤，請檢查 API Key 或網路。";
-            }
+            });
         }
-        window.onload = function() {reloadLocalData();if(gistId) { document.getElementById('gist-id-input').value = gistId; document.getElementById('gist-token-input').value = gistToken; updateCloudStatus("連線中..."); forceDownload(); } else { window.refreshUI();}switchTab('plan');}
-    </script>
+        window.onload = function() {
+            reloadLocalData();
+            window.refreshUI(); 
+            if(gistId) { 
+                document.getElementById('gist-id-input').value = gistId; 
+                document.getElementById('gist-token-input').value = gistToken; 
+                updateCloudStatus("連線中..."); 
+                setTimeout(forceDownload, 500);
+            }
+            switchTab('plan');
+            enableAutoSaveOnOutsideClick();
+        }    </script>
 </body>
 </html>
-
