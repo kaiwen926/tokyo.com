@@ -1007,7 +1007,7 @@
         function renderTransRows() { const icons = { 'fa-train-subway': '鐵路', 'fa-bus': '巴士', 'fa-plane': '飛機', 'fa-taxi': '計程車', 'fa-ship': '船', 'fa-person-walking': '步行','fa-bicycle': '腳踏車' }; const c = document.getElementById('day-trans-list'); c.innerHTML = tempTrans.map((t, i) => { const currIcon = t.icon || 'fa-train-subway'; const options = Object.entries(icons).map(([k,v]) => `<option value="${k}" ${currIcon===k?'selected':''}>${v}</option>`).join(''); return `<div class="bg-white p-2 rounded border border-gray-200 relative group mb-2 shadow-sm"><button onclick="tempTrans.splice(${i},1);renderTransRows()" class="absolute top-1 right-1 text-gray-300 hover:text-red-400 w-6 h-6 flex items-center justify-center rounded-full bg-gray-50 z-10"><i class="fa-solid fa-times"></i></button><div class="flex gap-2 mb-2 pr-6 items-center"><div class="relative shrink-0 w-20"><i class="fa-solid ${currIcon} absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i><select onchange="tempTrans[${i}].icon=this.value; renderTransRows()" class="w-full pl-6 pr-1 py-1.5 border border-gray-200 rounded text-xs bg-gray-50 outline-none appearance-none font-bold text-gray-600 cursor-pointer focus:border-blue-300">${options}</select></div><input type="time" class="w-20 p-1.5 border border-gray-200 rounded text-xs bg-gray-50 text-center outline-none focus:border-blue-300" value="${t.time || ''}" onchange="tempTrans[${i}].time=this.value"><input type="text" placeholder="行程" class="flex-1 p-1.5 border-b-2 border-blue-100 font-bold text-sm outline-none bg-transparent focus:border-blue-300 transition" value="${t.content || ''}" onchange="tempTrans[${i}].content=this.value"></div><div class="flex gap-2 items-center"><input type="text" placeholder="備註" class="flex-1 p-1.5 border rounded text-xs text-gray-500 bg-gray-50 outline-none focus:border-blue-300" value="${t.note || ''}" onchange="tempTrans[${i}].note=this.value"><label class="cursor-pointer flex items-center gap-1 text-xs text-blue-400 bg-blue-50 px-2 py-1.5 rounded hover:bg-blue-100 transition shrink-0"><i class="fa-solid fa-camera"></i> ${t.photo ? '換圖' : '車票'}<input type="file" accept="image/*" class="hidden" onchange="processImage(this, (b64) => { tempTrans[${i}].photo = b64; renderTransRows(); })"></label>${t.photo ? `<button onclick="viewPhoto('${t.photo}')" class="text-xs text-blue-500 underline shrink-0">預覽</button>` : ''}</div></div>`}).join(''); }
         function addTransRow() { tempTrans.push({ time: '', content: '', note: '', photo: null }); renderTransRows(); }
         function checkUrl(str) { if(!str) return null; if(str.startsWith('http') || str.startsWith('www')) return str; return null; }
-        function quickExpense(note, cat) { document.getElementById('ex-note').value = note; selectedCat = cat; openExpenseModal(); }
+        function quickExpense(note, cat) { openExpenseModal(null, true);document.getElementById('ex-note').value = note; selectedCat = cat; renderCategoryUI();}
         function jumpToGuide(title) { switchTab('guide'); const backBtn = document.getElementById('btn-back-to-plan'); if(backBtn) backBtn.classList.remove('hidden'); const g = guides.find(i => i.title === title); if(g) { setTimeout(() => { const el = document.getElementById(`guide-${g.id}`); if (el) { el.scrollIntoView({behavior: "smooth", block: "center"}); el.classList.add('animate-highlight'); setTimeout(() => el.classList.remove('animate-highlight'), 2000); } }, 300); } }
         function goBackToPlan() { switchTab('plan'); document.getElementById('btn-back-to-plan').classList.add('hidden'); }
         function linkifyContent(text) { let html = text.replace(/\n/g, '<br>'); guides.forEach(g => { if (g.title.length > 1) { const regex = new RegExp(`(${g.title})`, 'g'); html = html.replace(regex, `<span class="guide-link" onclick="jumpToGuide('$1')">$1</span>`); } }); return html.split('<br>').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join(''); }
@@ -1185,47 +1185,57 @@
                 document.getElementById('ex-photo').value = ""; 
             }
         }
-
-        function openExpenseModal(id=null) { 
-            const payerSelect = document.getElementById('ex-paid-by');
-            payerSelect.innerHTML = payers.map(p => `<option value="${p}">${p}</option>`).join('');
-            
-            document.getElementById('btn-delete-expense').classList.add('hidden');
-            document.getElementById('btn-remove-ex-photo').classList.add('hidden'); 
+function openExpenseModal(id=null, keepInput=false) { 
+            const payerSelect = document.getElementById('ex-paid-by'); 
+            payerSelect.innerHTML = payers.map(p => `<option value="${p}">${p}</option>`).join(''); 
+            document.getElementById('btn-delete-expense').classList.add('hidden'); 
+            document.getElementById('btn-remove-ex-photo').classList.add('hidden');
             
             if(id) { 
+                // --- 編輯模式 (保持不變) ---
                 const ex = expenses.find(e => e.id == id); 
                 document.getElementById('ex-id').value = ex.id; 
                 document.getElementById('ex-amount').value = ex.amt; 
                 document.getElementById('ex-currency').value = ex.curr; 
                 document.getElementById('ex-note').value = ex.note; 
-                payerSelect.value = ex.paidBy || "我";
+                payerSelect.value = ex.paidBy || "我"; 
                 selectedCat = ex.cat; 
                 selectedPayers = ex.splitBy || []; 
                 document.getElementById('btn-delete-expense').classList.remove('hidden'); 
                 
                 currentPhotoBase64 = ex.photo; 
-                if(ex.photo){
-                    document.getElementById('ex-photo-preview-mini').src = ex.photo;
-                    document.getElementById('ex-photo-preview-mini').classList.remove('hidden');
+                if(ex.photo){ 
+                    document.getElementById('ex-photo-preview-mini').src = ex.photo; 
+                    document.getElementById('ex-photo-preview-mini').classList.remove('hidden'); 
                     document.getElementById('btn-remove-ex-photo').classList.remove('hidden'); 
-                } else {
-                    document.getElementById('ex-photo-preview-mini').classList.add('hidden');
-                }
+                } else { 
+                    document.getElementById('ex-photo-preview-mini').classList.add('hidden'); 
+                } 
             } else { 
+                // --- 新增模式 (修正這裡) ---
                 document.getElementById('ex-id').value = ''; 
-                document.getElementById('ex-amount').value = ''; 
-                if(!document.getElementById('ex-note').value) { document.getElementById('ex-note').value = ''; }
-                document.getElementById('ex-currency').value = 'JPY';
-                payerSelect.value = "我";
-                if (!payers.includes("我") && payers.length > 0) payerSelect.value = payers[0];
-                selectedPayers = payers.filter(p => p !== '公費'); 
-                if(!selectedCat) selectedCat = '餐飲'; 
-                currentPhotoBase64 = null;
-                document.getElementById('ex-photo-preview-mini').src = "";
-                document.getElementById('ex-photo-preview-mini').classList.add('hidden');
-            }
-            renderCategoryUI();
+                
+                // 🔥 關鍵修改：如果不是從捷徑來的(keepInput=false)，就強制清空！
+                if (!keepInput) {
+                    document.getElementById('ex-amount').value = ''; 
+                    document.getElementById('ex-note').value = ''; 
+                    selectedCat = '餐飲'; // 恢復預設分類
+                    // 恢復預設分攤人 (自己)
+                    selectedPayers = payers.filter(p => p !== '公費');
+                }
+
+                document.getElementById('ex-currency').value = 'JPY'; 
+                payerSelect.value = "我"; 
+                if (!payers.includes("我") && payers.length > 0) payerSelect.value = payers[0]; 
+                
+                // 如果沒有特別指定(keepInput=false)，才重置分攤人
+                if (!keepInput) selectedPayers = payers.filter(p => p !== '公費'); 
+                
+                currentPhotoBase64 = null; 
+                document.getElementById('ex-photo-preview-mini').src = ""; 
+                document.getElementById('ex-photo-preview-mini').classList.add('hidden'); 
+            } 
+            renderCategoryUI(); 
             renderSplitButtons(); 
             openModal('expense-modal'); 
         }
@@ -1243,7 +1253,34 @@
         function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:document.getElementById('shop-category').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){ const idx=shoppingList.findIndex(i=>i.id==id); item.done=shoppingList[idx].done; shoppingList[idx]=item; } else { shoppingList.push(item); } saveData(); renderShoppingList(); closeModal('shopping-modal'); }
         function deleteShoppingItem(){ if(confirm("確定要刪除這個商品嗎？")){ shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value); saveData(); renderShoppingList(); closeModal('shopping-modal'); } }
         function triggerShopAction(id, isDone) { if(isDone) { const s = shoppingList.find(i=>i.id===id); s.done = false; saveData(); renderShoppingList(); } else { document.getElementById('confirm-shop-id').value = id; openModal('shop-confirm-modal'); } }
-        function confirmShopAction(action) { const id = parseInt(document.getElementById('confirm-shop-id').value); const s = shoppingList.find(i=>i.id===id); if(!s) return; if (action === 'expense') { closeModal('shop-confirm-modal'); const categoryNote = s.category ? ` (${s.category})` : ''; document.getElementById('ex-note').value = s.name + categoryNote; document.getElementById('ex-amount').value = s.price * s.qty; selectedCat = '購物'; selectedPayers = ['我']; openExpenseModal(); s.done = true; saveData(); renderShoppingList(); } else if (action === 'done_only') { s.done = true; saveData(); renderShoppingList(); closeModal('shop-confirm-modal'); } else if (action === 'cancel') { closeModal('shop-confirm-modal'); } }
+        function confirmShopAction(action) { 
+            const id = parseInt(document.getElementById('confirm-shop-id').value); 
+            const s = shoppingList.find(i=>i.id===id); 
+            if(!s) return; 
+            
+            if (action === 'expense') { 
+                closeModal('shop-confirm-modal'); 
+                const categoryNote = s.category ? ` (${s.category})` : ''; 
+                
+                // 修改：先打開視窗，並傳入 true (保留內容)，然後再填值
+                openExpenseModal(null, true); 
+                
+                document.getElementById('ex-note').value = s.name + categoryNote; 
+                document.getElementById('ex-amount').value = s.price * s.qty; 
+                selectedCat = '購物'; 
+                selectedPayers = ['我']; 
+                
+                // 因為 openExpenseModal 已經執行過 render，這裡我們更新變數後要再 render 一次 UI
+                renderCategoryUI();
+                renderSplitButtons();
+
+                s.done = true; 
+                saveData(); 
+                renderShoppingList(); 
+            } 
+            else if (action === 'done_only') { s.done = true; saveData(); renderShoppingList(); closeModal('shop-confirm-modal'); } 
+            else if (action === 'cancel') { closeModal('shop-confirm-modal'); } 
+        }
         function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
         function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
         function setShopCat(val) { document.getElementById('shop-category').value = val; }
