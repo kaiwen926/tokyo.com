@@ -902,65 +902,53 @@
     }
 
     // --- GIST SYNC ---
-    function forceDownload(isAuto = false) {
-        if(!gistId) return updateCloudStatus("未連線");
-        if(!isAuto) updateCloudStatus("檢查中...");
-        
-        // ✨ 修改處：加入 headers 禁止快取 (Cache-Control)，確保抓到最新版
-        fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {
+function forceDownload(isAuto = false) {
+            if(!gistId) return updateCloudStatus("未連線");
+            if(!isAuto) updateCloudStatus("檢查中...");
+            
+            // 加入 timestamp 防止快取
+            fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {
                 headers: {
                     'Authorization': `token ${gistToken}`
                 }
             })
-        .then(r => r.json())
-        .then(async d => {
-            let content = d.files["travel_data.json"].content;
-            if(d.files["travel_data.json"].truncated) { 
-                // 若檔案太大被截斷，強制抓取原始檔並加上時間參數防快取
-                const r = await fetch(d.files["travel_data.json"].raw_url + '?t=' + Date.now()); 
-                content = await r.text(); 
-            }
-            const cloudData = JSON.parse(content);
-            
-            // ✨ 修改處：改用「時間戳記 (Time)」比對，而非資料筆數
-            const cloudTime = new Date(cloudData.lastUpdate || 0).getTime();
-            const localLastUpdate = localStorage.getItem('lastUpdate');
-            const localTime = localLastUpdate ? new Date(localLastUpdate).getTime() : 0;
-
-            console.log(`雲端: ${cloudTime} vs 本機: ${localTime}`);
-
-            // 邏輯：雲端時間 > 本機時間 = 下載
-            if (cloudTime > localTime) {
-                if(!isAuto || confirm(`☁️ 發現雲端有更新的資料！\n(修改於: ${new Date(cloudTime).toLocaleString()})\n\n要下載覆蓋嗎？`)) {
-                    applyCloudData(cloudData);
-                } else {
-                    updateCloudStatus("雲端較新");
+            .then(r => r.json())
+            .then(async d => {
+                let content = d.files["travel_data.json"].content;
+                if(d.files["travel_data.json"].truncated) { 
+                    const r = await fetch(d.files["travel_data.json"].raw_url + '?t=' + Date.now()); 
+                    content = await r.text(); 
                 }
-            } 
-            // 邏輯：本機時間 > 雲端時間 = 提示上傳
-            else if (localTime > cloudTime) {
-                if (!isAuto) {
-                    if(confirm(`📱 本機資料比較新！\n要上傳覆蓋雲端嗎？`)) {
-                        forceUpload(true); 
-                    }
+                const cloudData = JSON.parse(content);
+                
+                const cloudTime = new Date(cloudData.lastUpdate || 0).getTime();
+                const localLastUpdate = localStorage.getItem('lastUpdate');
+                const localTime = localLastUpdate ? new Date(localLastUpdate).getTime() : 0;
+
+                console.log(`雲端: ${cloudTime} vs 本機: ${localTime}`);
+
+                if (cloudTime > localTime) {
+                    console.log("自動同步：下載雲端資料");
+                    applyCloudData(cloudData); 
+                } 
+                // 情況 2: 本機比較新 -> 直接上傳
+                else if (localTime > cloudTime) {
+                    console.log("自動同步：上傳本機資料");
+                    // 這裡設為 true 代表強制上傳，不跳詢問
+                    forceUpload(true); 
+                } 
+                // 情況 3: 一樣新
+                else {
+                    updateCloudStatus("已同步");
                 }
-                updateCloudStatus("本機較新");
-            } 
-            else {
-                updateCloudStatus("已同步");
-            }
-        }).catch(e => {
-            console.error(e);
-            updateCloudStatus("連線失敗");
-        });
-    }
+            }).catch(e => {
+                console.error(e);
+                updateCloudStatus("連線失敗");
+            });
+        }
 
     async function forceUpload(isManual = false) {
         if(!gistId) return;
-        if (isManual) {
-            const check = confirm("⚠️ 確定要將「目前的內容」強制上傳嗎？\n這將覆蓋雲端資料！");
-            if (!check) return; 
-        }
         updateCloudStatus("上傳中...");
         
         // ✨ 修改處：上傳時必定帶上 lastUpdate 時間
