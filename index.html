@@ -700,21 +700,8 @@
             <div class="mb-3">
                 <label class="text-xs text-gray-400">分類 (可直接輸入)</label>
                 <input type="text" id="shop-category" placeholder="例: 藥妝, Outlet, 超商..." class="w-full border rounded p-2 text-sm bg-white mb-2">
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="setShopCat('藥妝')" class="text-xs bg-pink-50 text-pink-500 px-2 py-1 rounded-full border border-pink-100">藥妝</button>
-                    <button onclick="setShopCat('Outlet')" class="text-xs bg-sky-50 text-sky-500 px-2 py-1 rounded-full border border-sky-100">Outlet</button>
-                    <button onclick="setShopCat('7-11')" class="text-xs bg-orange-50 text-orange-500 px-2 py-1 rounded-full border border-orange-100">7-11</button>
-                    <button onclick="setShopCat('全家')" class="text-xs bg-green-50 text-green-600 px-2 py-1 rounded-full border border-green-200">全家</button>
-                    <button onclick="setShopCat('Lawson')" class="text-xs bg-blue-50 text-blue-500 px-2 py-1 rounded-full border border-blue-100">Lawson</button>
-                    <button onclick="setShopCat('伴手禮')" class="text-xs bg-red-50 text-red-500 px-2 py-1 rounded-full border border-red-100">伴手禮</button>
-                    <button onclick="setShopCat('電器')" class="text-xs bg-gray-50 text-gray-500 px-2 py-1 rounded-full border border-gray-100">電器</button>
-                    <button onclick="setShopCat('服飾')" class="text-xs bg-purple-50 text-purple-500 px-2 py-1 rounded-full border border-purple-100">服飾</button>
-                    <button onclick="setShopCat('AEON')" class="text-xs bg-fuchsia-50 text-fuchsia-600 px-2 py-1 rounded-full border border-fuchsia-200">AEON</button>
-                    <button onclick="setShopCat('超市')" class="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-200">超市</button>
-                    <button onclick="setShopCat('唐吉軻德')" class="text-xs bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full border border-yellow-200">唐吉軻德</button>
-                </div>
+                <div id="shop-cat-chips" class="flex flex-wrap gap-2"></div>            </div>
             </div>
-
             <div class="flex gap-2 mb-3">
                 <div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div>
                 <div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div>
@@ -1465,11 +1452,46 @@ function renderItinerary() {
         function renderShoppingList() { const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner); const container = document.getElementById('shopping-list-container'); container.innerHTML = ''; const grouped = {}; items.forEach(item => { const cat = item.category || '未分類'; if(!grouped[cat]) grouped[cat] = []; grouped[cat].push(item); }); const catStyles = { '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 'Outlet': 'border-sky-400 bg-sky-50 text-sky-600', '7-11': 'border-orange-400 bg-orange-50 text-orange-600', '全家': 'border-green-500 bg-green-50 text-green-700', 'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', '伴手禮': 'border-red-400 bg-red-50 text-red-600', '電器': 'border-gray-500 bg-gray-100 text-gray-600', '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 'AEON': 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-600', '超市': 'border-emerald-400 bg-emerald-50 text-emerald-600', '唐吉軻德': 'border-yellow-400 bg-yellow-50 text-yellow-700', '未分類': 'border-gray-300 bg-gray-50 text-gray-500' }; const autoPalettes = [ 'border-teal-400 bg-teal-50 text-teal-600', 'border-indigo-400 bg-indigo-50 text-indigo-600', 'border-lime-400 bg-lime-50 text-lime-700', 'border-cyan-400 bg-cyan-50 text-cyan-600', 'border-rose-400 bg-rose-50 text-rose-600', 'border-amber-400 bg-amber-50 text-amber-700', 'border-violet-400 bg-violet-50 text-violet-600' ]; Object.keys(grouped).sort().forEach(cat => { const catItems = grouped[cat]; const doneCount = catItems.filter(i => i.done).length; const isExpanded = expandedCategories.has(cat); let styleClass = catStyles[cat]; if (!styleClass) { let hash = 0; for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash); const colorIdx = Math.abs(hash) % autoPalettes.length; styleClass = autoPalettes[colorIdx]; } const itemsHtml = catItems.map(s => renderShopItem(s)).join(''); let html = `<div class="mb-3 transition-all duration-300 w-full max-w-full"><div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" onclick="toggleShopCat('${cat}')" style="background-color: white;"><div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div><div class="flex items-center gap-2"><i class="fa-solid fa-tag text-sm opacity-70"></i><h5 class="font-bold text-sm tracking-wide">${cat}</h5><span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span></div><i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i></div><div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">${itemsHtml}</div></div>`; container.innerHTML += html; }); document.getElementById('shop-owner-name').innerText = owner; }
         function renderShopItem(s) { const isDone = s.done; return `<div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal(${s.id})"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})"><i class="fa-solid fa-check text-xs"></i></div><div class="min-w-0"><div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div><div class="text-[11px] text-gray-400 mt-0.5 font-mono">${s.price ? `¥${s.price} ` : ''}${s.qty && s.qty > 1 ? `<span class="text-gray-300">x</span> ${s.qty}` : ''}</div></div></div>${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}</div>`; }
         function toggleShopCat(cat) { if (expandedCategories.has(cat)) expandedCategories.delete(cat); else expandedCategories.add(cat); renderShoppingList(); }
-        function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); document.getElementById('shop-qty').value=1; currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); if(id){ const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; document.getElementById('shop-category').value=s.category||''; if(s.photo){ currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden') } } openModal('shopping-modal'); }
+        function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); document.getElementById('shop-qty').value=1; currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); renderShopCatButtons();if(id){ const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; document.getElementById('shop-category').value=s.category||''; if(s.photo){ currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden') } } openModal('shopping-modal'); }
         function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:document.getElementById('shop-category').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){ const idx=shoppingList.findIndex(i=>i.id==id); item.done=shoppingList[idx].done; shoppingList[idx]=item; } else { shoppingList.push(item); } saveData(); renderShoppingList(); closeModal('shopping-modal'); }
         function deleteShoppingItem(){ if(confirm("確定要刪除這個商品嗎？")){ shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value); saveData(); renderShoppingList(); closeModal('shopping-modal'); } }
         function triggerShopAction(id, isDone) { if(isDone) { const s = shoppingList.find(i=>i.id===id); s.done = false; saveData(); renderShoppingList(); } else { document.getElementById('confirm-shop-id').value = id; openModal('shop-confirm-modal'); } }
+  // ✨ 新增：自動產生分類按鈕 (包含你自己輸入過的)
+    function renderShopCatButtons() {
+        const container = document.getElementById('shop-cat-chips');
+        if (!container) return;
+
+        // 1. 定義內建分類
+        const defaultCats = ['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', 'AEON', '超市', '唐吉軻德'];
         
+        // 2. 從目前的購物清單中，找出你自己新增的分類 (去除重複、去除空白、去除已在內建清單的)
+        const customCats = [...new Set(shoppingList.map(i => i.category).filter(c => c && c.trim() !== '' && !defaultCats.includes(c)))];
+        
+        // 3. 合併清單
+        const allCats = [...defaultCats, ...customCats];
+
+        // 4. 定義顏色樣式 (為了讓按鈕漂亮一點)
+        const styleMap = {
+            '藥妝': 'bg-pink-50 text-pink-500 border-pink-100',
+            'Outlet': 'bg-sky-50 text-sky-500 border-sky-100',
+            '7-11': 'bg-orange-50 text-orange-500 border-orange-100',
+            '全家': 'bg-green-50 text-green-600 border-green-200',
+            'Lawson': 'bg-blue-50 text-blue-500 border-blue-100',
+            '伴手禮': 'bg-red-50 text-red-500 border-red-100',
+            '電器': 'bg-gray-50 text-gray-500 border-gray-100',
+            '服飾': 'bg-purple-50 text-purple-500 border-purple-100',
+            'AEON': 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200',
+            '超市': 'bg-emerald-50 text-emerald-600 border-emerald-200',
+            '唐吉軻德': 'bg-yellow-50 text-yellow-600 border-yellow-200'
+        };
+
+        // 5. 產生 HTML
+        container.innerHTML = allCats.map(cat => {
+            // 如果是自訂分類，給一個通用的藍綠色樣式
+            const style = styleMap[cat] || 'bg-teal-50 text-teal-600 border-teal-200';
+            return `<button onclick="setShopCat('${cat}')" class="text-xs px-2 py-1 rounded-full border transition hover:scale-105 active:scale-95 ${style}">${cat}</button>`;
+        }).join('');
+    }      
         function confirmShopAction(action) { 
             const id = parseInt(document.getElementById('confirm-shop-id').value); 
             const s = shoppingList.find(i=>i.id===id); 
