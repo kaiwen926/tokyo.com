@@ -908,13 +908,10 @@
         
         // ✨ 修改處：加入 headers 禁止快取 (Cache-Control)，確保抓到最新版
         fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {
-            headers: {
-                'Authorization': `token ${gistToken}`,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            }
-        })
+                headers: {
+                    'Authorization': `token ${gistToken}`
+                }
+            })
         .then(r => r.json())
         .then(async d => {
             let content = d.files["travel_data.json"].content;
@@ -954,7 +951,6 @@
             }
         }).catch(e => {
             console.error(e);
-            alert("錯誤詳情:\n" + e.message);
             updateCloudStatus("連線失敗");
         });
     }
@@ -994,13 +990,14 @@
     }
 
     function saveGistConfig() { 
-        gistId = document.getElementById('gist-id-input').value; 
-        gistToken = document.getElementById('gist-token-input').value; 
-        localStorage.setItem('gist_id', gistId); 
-        localStorage.setItem('gist_token', gistToken); 
-        alert("設定已儲存！"); 
-        forceDownload(); 
-    }        
+        gistId = document.getElementById('gist-id-input').value.trim();
+        gistToken = document.getElementById('gist-token-input').value.trim();
+        
+        localStorage.setItem('gist_id', gistId);
+        localStorage.setItem('gist_token', gistToken);
+        alert("設定已儲存！即將嘗試連線...");
+        forceDownload();
+    }
 
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
 
