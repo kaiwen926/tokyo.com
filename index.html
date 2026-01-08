@@ -702,22 +702,46 @@
                 <input type="text" id="shop-category" placeholder="例: 藥妝, Outlet, 超商..." class="w-full border rounded p-2 text-sm bg-white mb-2">
                 <div id="shop-cat-chips" class="flex flex-wrap gap-2"></div>            </div>
             </div>
-            <div class="flex gap-2 mb-3">
-                <div class="flex-1"><label class="text-xs text-gray-400">數量</label><input type="number" id="shop-qty" value="1" class="w-full border rounded p-2 text-sm"></div>
-                <div class="flex-[2]"><label class="text-xs text-gray-400">單價 (JPY)</label><input type="number" id="shop-price" placeholder="0" class="w-full border rounded p-2 text-sm"></div>
+            <div class="flex gap-3 mt-4 h-36">
+                <div class="w-5/12 relative border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 flex flex-col items-center justify-center cursor-pointer group hover:bg-white hover:border-red-300 transition overflow-hidden h-full">
+                    
+                    <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-placeholder').classList.add('hidden'); })">
+                    
+                    <div id="shop-photo-placeholder" class="text-center group-hover:scale-105 transition-transform duration-300 px-1">
+                        <div class="w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto mb-1 text-gray-400 group-hover:text-red-400">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-400 group-hover:text-red-400 block leading-tight">拍商品</span>
+                    </div>
+                    
+                    <img id="shop-photo-preview" class="hidden absolute inset-0 w-full h-full object-cover bg-white pointer-events-none">
+                </div>
+
+                <div class="w-7/12 flex flex-col gap-2 h-full">
+                    
+                    <div class="flex gap-2 h-1/2">
+                        <div class="flex-1 bg-gray-50 p-1 rounded-xl border border-gray-100 flex flex-col justify-center">
+                            <label class="text-[9px] text-gray-400 font-bold block text-center mb-0.5">數量</label>
+                            <input type="number" id="shop-qty" value="1" class="w-full bg-transparent text-center font-black text-lg text-gray-700 outline-none p-0" onclick="this.select()">
+                        </div>
+                        <div class="flex-1 bg-gray-50 p-1 rounded-xl border border-gray-100 flex flex-col justify-center">
+                            <label class="text-[9px] text-gray-400 font-bold block text-center mb-0.5">單價 (JPY)</label>
+                            <input type="number" id="shop-price" placeholder="0" class="w-full bg-transparent text-center font-black text-lg text-gray-700 outline-none p-0" onclick="this.select()">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 h-1/2">
+                        <button onclick="deleteShoppingItem()" class="flex-1 bg-gray-100 text-gray-400 rounded-xl text-xs hover:bg-red-100 hover:text-red-500 transition font-bold flex flex-col items-center justify-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> 刪除
+                        </button>
+                        <button onclick="saveShoppingItem()" class="flex-1 bg-red-400 text-white rounded-xl text-xs hover:bg-red-500 transition font-bold shadow-md flex flex-col items-center justify-center gap-1 active:scale-95">
+                            <i class="fa-solid fa-check"></i> 儲存
+                        </button>
+                    </div>
+                </div>
+            </div>    
+                <img id="shop-photo-preview" class="hidden absolute inset-0 w-full h-full object-contain bg-black/5 pointer-events-none">
             </div>
-            
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative mb-4 bg-white">
-                <input type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="processImage(this, (base64) => { currentShopPhoto = base64; document.getElementById('shop-photo-preview').src = base64; document.getElementById('shop-photo-preview').classList.remove('hidden'); document.getElementById('shop-photo-text').classList.add('hidden'); })">
-                <div id="shop-photo-text" class="text-xs text-gray-400"><i class="fa-solid fa-camera mb-1 block"></i> 照片</div>
-                <img id="shop-photo-preview" class="hidden h-32 mx-auto object-contain rounded">
-            </div>
-            
-            <div class="flex gap-2">
-                <button onclick="deleteShoppingItem()" class="flex-1 bg-gray-200 text-gray-500 py-2 rounded-lg">刪除</button>
-                <button onclick="saveShoppingItem()" class="flex-[2] bg-red-400 text-white py-2 rounded-lg font-bold shadow">儲存</button>
-            </div>
-        </div>
     </div>
 
     <!-- SHOPPING CONFIRM MODAL -->
@@ -938,11 +962,10 @@ function forceDownload(isAuto = false) {
         if(!gistId) return;
         updateCloudStatus("上傳中...");
         
-        // ✨ 修改處：上傳時必定帶上 lastUpdate 時間
         const payload = { 
             flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, 
             publicFundConfig, memo: memoText, vjwData, 
-            lastUpdate: new Date().toISOString() // 這裡很重要
+            lastUpdate: new Date().toISOString() 
         };
         
         try { 
@@ -952,14 +975,20 @@ function forceDownload(isAuto = false) {
                 body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) 
             }); 
             updateCloudStatus("上傳成功"); 
-            if(isManual) alert("✅ 上傳成功！");
+            
+            // ❌ 刪除這一行，就不會再跳視窗了！
+            // if(isManual) alert("✅ 上傳成功！"); 
+            
+            // 💡 (選用) 如果你想在後台知道有沒有成功，可以改成這樣：
+            if(isManual) console.log("✅ 上傳成功！"); 
+
         } catch(e){ 
-            console.error(e);
+            console.error(e); 
             updateCloudStatus("上傳失敗"); 
+            // 失敗的時候建議還是留著視窗，不然你會不知道沒存到
             if(isManual) alert("❌ 上傳失敗，請檢查設定。");
         }
     }
-
     function updateCloudStatus(msg) { 
         document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
     }
@@ -1623,7 +1652,14 @@ function renderMustEatList() {
         mustEatList.forEach(loc => {
             if(loc.themes) loc.themes.forEach(t => { if(t.category) allCats.add(t.category); });
         });
+
+        // ✨ 3. [新增] 從「目前編輯中」的清單找分類 (這樣你剛打的字，下一行就能選！)
+        tempThemes.forEach(t => { if(t.category) allCats.add(t.category); });
+        
+        // 4. 產生下拉選單 (DataList)
         const dataListHtml = `<datalist id="food-cat-list">${[...allCats].map(c=>`<option value="${c}">`).join('')}</datalist>`;
+
+        // 5. 產生畫面
         document.getElementById('eat-themes-container').innerHTML = dataListHtml + tempThemes.map((t, idx) => `
             <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 relative group mb-2">
                 <button onclick="tempThemes.splice(${idx},1);renderThemeRows()" class="absolute top-2 right-2 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
@@ -1634,7 +1670,7 @@ function renderMustEatList() {
                 </div>
                 
                 <div class="flex gap-2 mb-1">
-                    <input type="text" list="food-cat-list" placeholder="分類 (選/填)" class="w-1/3 bg-white border rounded text-xs p-1 text-fuji font-bold" value="${t.category||''}" onchange="tempThemes[${idx}].category=this.value">
+                    <input type="text" list="food-cat-list" placeholder="分類 (可選/可打)" class="w-1/3 bg-white border rounded text-xs p-1 text-fuji font-bold" value="${t.category||''}" onchange="tempThemes[${idx}].category=this.value" onfocus="this.value=''">
                     <input type="url" placeholder="Google Maps / 網址" class="flex-1 bg-white border rounded text-xs p-1" value="${t.url||''}" oninput="tempThemes[${idx}].url=this.value">
                 </div>
                 
@@ -1708,11 +1744,7 @@ function renderMustEatList() {
             document.getElementById('gist-id-input').value = gistId; 
             document.getElementById('gist-token-input').value = gistToken; 
             updateCloudStatus("連線中..."); 
-            
-            // 剛打開時檢查一次
             setTimeout(() => forceDownload(true), 500); 
-            
-            // ✨ 修改處：每 10 秒自動檢查一次雲端有沒有新資料
             setInterval(() => forceDownload(true), 10000);
         }
         switchTab('plan');
