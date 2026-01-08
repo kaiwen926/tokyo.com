@@ -1040,17 +1040,140 @@
         function jumpToGuide(title) { switchTab('guide'); const backBtn = document.getElementById('btn-back-to-plan'); if(backBtn) backBtn.classList.remove('hidden'); const g = guides.find(i => i.title === title); if(g) { setTimeout(() => { const el = document.getElementById(`guide-${g.id}`); if (el) { el.scrollIntoView({behavior: "smooth", block: "center"}); el.classList.add('animate-highlight'); setTimeout(() => el.classList.remove('animate-highlight'), 2000); } }, 300); } }
         function goBackToPlan() { switchTab('plan'); document.getElementById('btn-back-to-plan').classList.add('hidden'); }
         function linkifyContent(text) { let html = text.replace(/\n/g, '<br>'); guides.forEach(g => { if (g.title.length > 1) { const regex = new RegExp(`(${g.title})`, 'g'); html = html.replace(regex, `<span class="guide-link" onclick="jumpToGuide('$1')">$1</span>`); } }); return html.split('<br>').map(line => `<li class="flex items-start text-base"><span class="mr-2 mt-2 w-2 h-2 bg-sakura rounded-full flex-shrink-0 border border-red-200"></span><span class="flex-1">${line}</span></li>`).join(''); }
-        function renderItinerary() { const c = document.getElementById('itinerary-container'); const navC = document.getElementById('quick-nav-container'); if (!c) return; c.innerHTML = ''; if (navC && itinerary.length > 0) { const stickersHtml = itinerary.map((day, idx) => { const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ]; const theme = themes[idx % 7]; return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`; }).join(''); navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div>`; } itinerary.forEach((day, idx) => { let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content; const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null); const stickerThemes = [ { bg: 'bg-pink-50', border: 'border-pink-200', textMain: 'text-pink-700', textSub: 'text-pink-400' }, { bg: 'bg-yellow-50', border: 'border-yellow-200', textMain: 'text-yellow-800', textSub: 'text-yellow-500' }, { bg: 'bg-blue-50', border: 'border-blue-200', textMain: 'text-blue-700', textSub: 'text-blue-400' }, { bg: 'bg-green-50', border: 'border-green-200', textMain: 'text-green-700', textSub: 'text-green-500' }, { bg: 'bg-purple-50', border: 'border-purple-200', textMain: 'text-purple-700', textSub: 'text-purple-400' }, { bg: 'bg-orange-50', border: 'border-orange-200', textMain: 'text-orange-800', textSub: 'text-orange-500' }, { bg: 'bg-cyan-50', border: 'border-cyan-200', textMain: 'text-cyan-700', textSub: 'text-cyan-500' } ]; const theme = stickerThemes[idx % 7]; const fullText = day.date || ""; let dateText = fullText.split(' ')[0]; let titleText = fullText.substring(dateText.length).trim(); if (!titleText) titleText = fullText; const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html"; const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : ''; let tempBadgeHtml = ''; if (day.temp) { const tempVal = parseInt(day.temp); let tempClass = 'temp-warm'; if (!isNaN(tempVal)) { if (tempVal >= 28) tempClass = 'temp-hot'; else if (tempVal >= 20) tempClass = 'temp-warm'; else if (tempVal >= 10) tempClass = 'temp-cool'; else tempClass = 'temp-cold'; } const displayTemp = day.temp.replace(/c/ig, '').trim(); tempBadgeHtml = `<span class="temp-badge ${tempClass} px-2 min-w-[3rem] text-center inline-block shadow-sm border border-white/50">${displayTemp}°C</span>`; } const weatherGroupHtml = (day.weather || day.temp) ? `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline mt-1 flex flex-col items-center" title="搜尋天氣">${tempBadgeHtml}<div class="weather-badge group-hover/weather:scale-110 transition-transform text-lg shadow-md border-2 border-white mt-0.5">${wIcon}</div></a>` : ''; const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : ''; const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200"><div class="flex items-start gap-2"><button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片"><i class="fa-solid fa-bed"></i>${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}</button><div class="flex-1 min-w-0 pt-1">${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}</div></div></div>` : ''; const renderMealItem = (type, icon, color) => { const m = day.meals?.[type]; if(!m || !m.name) return ''; const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1 font-bold">${m.name}</a>` : `<span class="ml-1 font-bold">${m.name}</span>`; const notePart = m.note ? `<span class="text-[10px] text-gray-400 ml-2 border-l pl-2 border-gray-300">${m.note}</span>` : ''; return `<div class="flex items-center gap-1 p-1"><i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition flex-shrink-0" onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i><div class="flex-1 min-w-0 truncate">${linkPart}${notePart}</div></div>`; }; const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}${renderMealItem('l', 'fa-utensils', 'text-green-400')}${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}</div>` : ''; 
-            
-            let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []); 
-            const transHtml = transData.map((t, tIdx) => {
-                const btnText = t.photoLabel || '查看車票/憑證';
-                const hasPhotos = (t.photos && t.photos.length > 0) || t.photo;
-                const photoCount = t.photos ? t.photos.length : (t.photo ? 1 : 0);
-                return `<div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition"><div class="font-bold text-gray-500 flex items-center gap-2 mb-1"><i class="fa-solid ${t.icon || 'fa-train-subway'} text-blue-400 w-5 text-center"></i>${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}<span class="text-gray-700">${t.content || '交通移動'}</span></div>${t.note ? `<div class="ml-9 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}${hasPhotos ? `<div class="mt-1 ml-9"><button onclick="openTransPhotosModal('${day.id}', ${tIdx})" class="text-xs bg-white border border-blue-200 text-blue-500 px-2 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1 font-bold"><i class="fa-solid fa-images"></i> ${btnText} (${photoCount})</button></div>` : ''}</div>`; 
+function renderItinerary() {
+        const c = document.getElementById('itinerary-container');
+        const navC = document.getElementById('quick-nav-container');
+        if (!c) return;
+        c.innerHTML = '';
+
+        // 1. 渲染上方的雲朵導航
+        if (navC && itinerary.length > 0) {
+            const stickersHtml = itinerary.map((day, idx) => {
+                const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ];
+                const theme = themes[idx % 7];
+                return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
             }).join('');
+            navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div>`;
+        }
+
+        // 2. 渲染每一天的行程卡片
+        itinerary.forEach((day, idx) => {
+            let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
+            const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null);
             
-            const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : ''; const isHighlight = day.highlight; const titleStickerBg = isHighlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]'; const titleStickerBorder = isHighlight ? 'border-sakura' : 'border-[#e6dbbf]'; const titleStickerText = isHighlight ? 'text-sakura' : 'text-[#827355]'; c.innerHTML += `<div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group"><div class="absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14"><div onclick="document.getElementById('quick-nav-container').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors z-20" title="回到上方雲朵"><span class="text-[9px] font-black font-sans tracking-widest ${theme.textSub} mb-[-2px]">DAY</span><span class="text-2xl font-black font-maru leading-none ${theme.textMain}">${idx + 1}</span><span class="text-[10px] font-bold font-hand ${theme.textMain} opacity-80 mt-[-2px] truncate max-w-full">${dateText}</span></div><div class="h-4 w-0.5 bg-gray-300 -mt-1 relative z-10"></div>${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300 relative z-10"><i class="fa-solid fa-cloud"></i></div>'}</div><div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative group/card hover:border-fuji/30 transition-colors"><div class="flex justify-between items-start mb-4"><div class="relative transform -rotate-1 hover:rotate-0 transition-transform duration-300 cursor-pointer" onclick="openDayEditor('${day.id}')"><div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/40 backdrop-blur-[1px] border border-white/20 rounded-sm shadow-sm z-20"></div><div class="relative ${titleStickerBg} border-2 ${titleStickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem] text-center"><h4 class="text-xl font-black font-maru tracking-widest ${titleStickerText} leading-tight">${titleText}</h4></div></div><button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2 hover:bg-gray-50 rounded-full"><i class="fa-solid fa-pen text-sm"></i></button></div><ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>${photosHtml}${accHtml}${transHtml}${mealsHtml}${noteHtml}</div></div>`; }); }
+            // 配色邏輯
+            const stickerThemes = [ { bg: 'bg-pink-50', border: 'border-pink-200', textMain: 'text-pink-700', textSub: 'text-pink-400' }, { bg: 'bg-yellow-50', border: 'border-yellow-200', textMain: 'text-yellow-800', textSub: 'text-yellow-500' }, { bg: 'bg-blue-50', border: 'border-blue-200', textMain: 'text-blue-700', textSub: 'text-blue-400' }, { bg: 'bg-green-50', border: 'border-green-200', textMain: 'text-green-700', textSub: 'text-green-500' }, { bg: 'bg-purple-50', border: 'border-purple-200', textMain: 'text-purple-700', textSub: 'text-purple-400' }, { bg: 'bg-orange-50', border: 'border-orange-200', textMain: 'text-orange-800', textSub: 'text-orange-500' }, { bg: 'bg-cyan-50', border: 'border-cyan-200', textMain: 'text-cyan-700', textSub: 'text-cyan-500' } ];
+            const theme = stickerThemes[idx % 7];
+            
+            const fullText = day.date || "";
+            let dateText = fullText.split(' ')[0];
+            let titleText = fullText.substring(dateText.length).trim();
+            if (!titleText) titleText = fullText;
+
+            // 天氣顯示
+            const searchUrl = "https://tenki.jp/forecast/3/16/4410/13106/10days.html";
+            const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
+            let tempBadgeHtml = '';
+            if (day.temp) {
+                const tempVal = parseInt(day.temp);
+                let tempClass = 'temp-warm';
+                if (!isNaN(tempVal)) { if (tempVal >= 28) tempClass = 'temp-hot'; else if (tempVal >= 20) tempClass = 'temp-warm'; else if (tempVal >= 10) tempClass = 'temp-cool'; else tempClass = 'temp-cold'; }
+                const displayTemp = day.temp.replace(/c/ig, '').trim();
+                tempBadgeHtml = `<span class="temp-badge ${tempClass} px-2 min-w-[3rem] text-center inline-block shadow-sm border border-white/50">${displayTemp}°C</span>`;
+            }
+            const weatherGroupHtml = (day.weather || day.temp) ? `<a href="${searchUrl}" target="_blank" class="weather-group group/weather no-underline mt-1 flex flex-col items-center" title="搜尋天氣">${tempBadgeHtml}<div class="weather-badge group-hover/weather:scale-110 transition-transform text-lg shadow-md border-2 border-white mt-0.5">${wIcon}</div></a>` : '';
+
+            // 每日照片集
+            const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
+            
+            // 住宿資訊
+            const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200"><div class="flex items-start gap-2"><button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片"><i class="fa-solid fa-bed"></i>${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}</button><div class="flex-1 min-w-0 pt-1">${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}</div></div></div>` : '';
+
+            // 三餐資訊
+            const renderMealItem = (type, icon, color) => { const m = day.meals?.[type]; if(!m || !m.name) return ''; const linkPart = m.link ? `<a href="${m.link}" target="_blank" class="hover:text-fuji underline decoration-dotted ml-1 font-bold">${m.name}</a>` : `<span class="ml-1 font-bold">${m.name}</span>`; const notePart = m.note ? `<span class="text-[10px] text-gray-400 ml-2 border-l pl-2 border-gray-300">${m.note}</span>` : ''; return `<div class="flex items-center gap-1 p-1"><i class="fa-solid ${icon} ${color} cursor-pointer hover:scale-125 transition flex-shrink-0" onclick="quickExpense('${m.name}', '餐飲')" title="點擊記帳"></i><div class="flex-1 min-w-0 truncate">${linkPart}${notePart}</div></div>`; };
+            const mealsHtml = (day.meals && (day.meals.b?.name || day.meals.l?.name || day.meals.d?.name)) ? `<div class="mt-3 flex flex-col gap-2 text-xs text-gray-500 border-t border-dashed border-gray-200 pt-2 px-1">${renderMealItem('b', 'fa-mug-hot', 'text-orange-300')}${renderMealItem('l', 'fa-utensils', 'text-green-400')}${renderMealItem('d', 'fa-wine-glass', 'text-purple-400')}</div>` : '';
+
+            // --- 交通資訊 (這裡是修改重點) ---
+            let transData = Array.isArray(day.transportation) ? day.transportation : (day.transportation ? [day.transportation] : []);
+            
+            const transHtml = transData.map((t) => {
+                // 1. 取得該筆交通的所有照片 (相容舊資料)
+                let allPhotos = t.photos || [];
+                if (allPhotos.length === 0 && t.photo) {
+                    allPhotos = [t.photo]; 
+                }
+
+                // 2. 產生照片 HTML 字串
+                const imagesHtml = allPhotos.map(p => {
+                    // 判斷 p 是字串(舊)還是物件(新 {url, name})
+                    const src = (typeof p === 'object' && p.url) ? p.url : p;
+                    // 生成圖片標籤，點擊直接放大 (viewPhoto)
+                    return `<img src="${src}" onclick="viewPhoto('${src}')" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm cursor-zoom-in hover:scale-110 transition bg-white" title="點擊放大">`;
+                }).join('');
+
+                // 3. 回傳 HTML
+                return `
+                <div class="mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm group/trans hover:bg-gray-100 transition">
+                    <div class="font-bold text-gray-500 flex items-center gap-2 mb-1">
+                        <i class="fa-solid ${t.icon || 'fa-train-subway'} text-blue-400 w-5 text-center"></i>
+                        ${t.time ? `<span class="text-xs font-normal bg-white px-2 py-0.5 rounded border border-gray-200 text-gray-400 font-mono text-fuji">${t.time}</span>` : ''}
+                        <span class="text-gray-700">${t.content || '交通移動'}</span>
+                    </div>
+                    ${t.note ? `<div class="ml-9 text-xs text-gray-400 mt-1 border-l-2 border-gray-200 pl-2 mb-1">${t.note}</div>` : ''}
+                    
+                    ${imagesHtml ? `<div class="mt-1 ml-9 flex flex-wrap gap-2">${imagesHtml}</div>` : ''}
+                </div>`;
+            }).join('');
+            // --- 交通資訊修改結束 ---
+
+            // 備註
+            const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
+            
+            // 卡片樣式設定
+            const isHighlight = day.highlight;
+            const titleStickerBg = isHighlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]';
+            const titleStickerBorder = isHighlight ? 'border-sakura' : 'border-[#e6dbbf]';
+            const titleStickerText = isHighlight ? 'text-sakura' : 'text-[#827355]';
+
+            // 組裝整張卡片
+            c.innerHTML += `
+            <div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
+                <div class="absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14">
+                    <div onclick="document.getElementById('quick-nav-container').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors z-20" title="回到上方雲朵">
+                        <span class="text-[9px] font-black font-sans tracking-widest ${theme.textSub} mb-[-2px]">DAY</span>
+                        <span class="text-2xl font-black font-maru leading-none ${theme.textMain}">${idx + 1}</span>
+                        <span class="text-[10px] font-bold font-hand ${theme.textMain} opacity-80 mt-[-2px] truncate max-w-full">${dateText}</span>
+                    </div>
+                    <div class="h-4 w-0.5 bg-gray-300 -mt-1 relative z-10"></div>
+                    ${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300 relative z-10"><i class="fa-solid fa-cloud"></i></div>'}
+                </div>
+                
+                <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative group/card hover:border-fuji/30 transition-colors">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="relative transform -rotate-1 hover:rotate-0 transition-transform duration-300 cursor-pointer" onclick="openDayEditor('${day.id}')">
+                            <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-4 bg-white/40 backdrop-blur-[1px] border border-white/20 rounded-sm shadow-sm z-20"></div>
+                            <div class="relative ${titleStickerBg} border-2 ${titleStickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem] text-center">
+                                <h4 class="text-xl font-black font-maru tracking-widest ${titleStickerText} leading-tight">${titleText}</h4>
+                            </div>
+                        </div>
+                        <button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2 hover:bg-gray-50 rounded-full">
+                            <i class="fa-solid fa-pen text-sm"></i>
+                        </button>
+                    </div>
+                    
+                    <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">
+                        ${contentHtml}
+                    </ul>
+                    
+                    ${photosHtml}
+                    ${accHtml}
+                    ${transHtml}
+                    ${mealsHtml}
+                    ${noteHtml}
+                </div>
+            </div>`;
+        });
+    }
         
         function openDayEditor(id){ 
             const d=itinerary.find(i=>i.id===id); 
