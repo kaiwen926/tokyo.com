@@ -1091,7 +1091,7 @@ function renderItinerary() {
             const stickersHtml = itinerary.map((day, idx) => {
                 const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ];
                 const theme = themes[idx % 7];
-                return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
+                return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'start'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
             }).join('');
             navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div>`;
         }
@@ -1177,7 +1177,7 @@ function renderItinerary() {
 
             // 組裝整張卡片
             c.innerHTML += `
-            <div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
+            <div id="${day.id}" style="scroll-margin-top: 140px;" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
                 <div class="absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14">
                     <div onclick="document.getElementById('quick-nav-container').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors z-20" title="回到上方雲朵">
                         <span class="text-[9px] font-black font-sans tracking-widest ${theme.textSub} mb-[-2px]">DAY</span>
@@ -1753,3 +1753,4 @@ function renderMustEatList() {
     </script>
 </body>
 </html>
+
