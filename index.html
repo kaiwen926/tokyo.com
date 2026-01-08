@@ -805,163 +805,202 @@
         let tempTrans = []; let currentFlightPhoto = null; let currentAccDayId = null; 
         let currentTransPhotos = [];
 
-        // --- 📥 智能同步輔助函式 ---
-        function getDataCount(dataObj) {
-            if (!dataObj) {
-                return flights.length + itinerary.length + mustEatList.length + 
-                       expenses.length + shoppingList.length + guides.length;
+// --- 2. 核心功能 (CORE FUNCTIONS) ---
+    function getDataCount(dataObj) {
+        if (!dataObj) {
+            return flights.length + itinerary.length + mustEatList.length + 
+                   expenses.length + shoppingList.length + guides.length;
+        }
+        return (dataObj.flights?.length || 0) + 
+               (dataObj.itinerary?.length || 0) + 
+               (dataObj.mustEatList?.length || 0) + 
+               (dataObj.expenses?.length || 0) + 
+               (dataObj.shoppingList?.length || 0) + 
+               (dataObj.guides?.length || 0);
+    }
+
+    function applyCloudData(c) {
+        localStorage.setItem('flights',JSON.stringify(c.flights||[]));
+        localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
+        localStorage.setItem('mustEatList',JSON.stringify(c.mustEatList||[]));
+        localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
+        localStorage.setItem('guides',JSON.stringify(c.guides||[]));
+        localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
+        localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
+        localStorage.setItem('memo',c.memo||"");
+        localStorage.setItem('vjwData', JSON.stringify(c.vjwData || { isOpen: true, items: [] }));
+        
+        // ✨ 修改處：下載成功後，把雲端的時間戳記也存入本地，避免重複跳出提示
+        const cloudTime = c.lastUpdate ? c.lastUpdate : new Date().toISOString();
+        localStorage.setItem('lastUpdate', cloudTime);
+
+        updateCloudStatus("同步完成"); 
+        window.refreshUI(); 
+        // 移除 alert 改用 console，體驗較好
+        console.log("✅ 同步完成");
+    }
+
+    function reloadLocalData() {
+        flights = JSON.parse(localStorage.getItem('flights')) || [];
+        itinerary = JSON.parse(localStorage.getItem('itinerary_v3')) || [];
+        mustEatList = JSON.parse(localStorage.getItem('mustEatList')) || [];
+        expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+        guides = JSON.parse(localStorage.getItem('guides')) || [];
+        if (guides.length === 0) guides = [...PRELOADED_GUIDES];
+        shoppingList = JSON.parse(localStorage.getItem('shoppingList_v3')) || [];
+        shoppingOwners = JSON.parse(localStorage.getItem('shoppingOwners')) || ["我的清單"];
+        payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
+        if(!payers.includes("公費")) payers.push("公費");
+        payerProfiles = JSON.parse(localStorage.getItem('payerProfiles')) || {};
+        manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
+        const savedTodos = JSON.parse(localStorage.getItem('todos'));
+        todos = (savedTodos && savedTodos.length > 0) ? savedTodos : DEFAULT_TODOS.map(text => ({text, done: false}));
+        memoText = localStorage.getItem('memo') || "";
+        publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig_v2')) || { total: 0, currency: 'JPY' };
+        vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
+        gistId = localStorage.getItem('gist_id') || ""; gistToken = localStorage.getItem('gist_token') || "";
+        mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
+        expenses.forEach(e => {
+            if (!e.splitBy) {
+                e.splitBy = (e.payer || "").split(',').filter(x=>x);
+                e.paidBy = e.splitBy[0] || "我"; 
             }
-            return (dataObj.flights?.length || 0) + 
-                   (dataObj.itinerary?.length || 0) + 
-                   (dataObj.mustEatList?.length || 0) + 
-                   (dataObj.expenses?.length || 0) + 
-                   (dataObj.shoppingList?.length || 0) + 
-                   (dataObj.guides?.length || 0);
-        }
+        });
+    }
 
-        function applyCloudData(c) {
-            localStorage.setItem('flights',JSON.stringify(c.flights||[]));
-            localStorage.setItem('itinerary_v3',JSON.stringify(c.itinerary||[]));
-            localStorage.setItem('mustEatList',JSON.stringify(c.mustEatList||[]));
-            localStorage.setItem('expenses',JSON.stringify(c.expenses||[]));
-            localStorage.setItem('guides',JSON.stringify(c.guides||[]));
-            localStorage.setItem('shoppingList_v3',JSON.stringify(c.shoppingList||[]));
-            localStorage.setItem('publicFundConfig_v2',JSON.stringify(c.publicFundConfig||{total:0}));
-            localStorage.setItem('memo',c.memo||"");
-            localStorage.setItem('vjwData', JSON.stringify(c.vjwData || { isOpen: true, items: [] }));
-            updateCloudStatus("同步完成"); 
-            window.refreshUI(); 
-            alert("✅ 成功下載：已更新為雲端資料 (因為它比較多！)");
-        }
-
-        // --- CORE ---
-        function reloadLocalData() {
-            flights = JSON.parse(localStorage.getItem('flights')) || [];
-            itinerary = JSON.parse(localStorage.getItem('itinerary_v3')) || [];
-            mustEatList = JSON.parse(localStorage.getItem('mustEatList')) || [];
-            expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-            guides = JSON.parse(localStorage.getItem('guides')) || [];
-            if (guides.length === 0) guides = [...PRELOADED_GUIDES];
-            shoppingList = JSON.parse(localStorage.getItem('shoppingList_v3')) || [];
-            shoppingOwners = JSON.parse(localStorage.getItem('shoppingOwners')) || ["我的清單"];
-            payers = JSON.parse(localStorage.getItem('payers')) || RECOVERED_PAYERS;
-            if(!payers.includes("公費")) payers.push("公費");
-            payerProfiles = JSON.parse(localStorage.getItem('payerProfiles')) || {};
-            manualDebts = JSON.parse(localStorage.getItem('manualDebts_v1')) || [];
-            todos = JSON.parse(localStorage.getItem('todos')) || DEFAULT_TODOS.map(text => ({text, done: false}));
-            const savedTodos = JSON.parse(localStorage.getItem('todos'));
-            if (!savedTodos || savedTodos.length === 0){todos = DEFAULT_TODOS.map(text => ({text, done: false}));} else {todos = savedTodos;}
-            memoText = localStorage.getItem('memo') || "";
-            publicFundConfig = JSON.parse(localStorage.getItem('publicFundConfig_v2')) || { total: 0, currency: 'JPY' };
-            vjwData = JSON.parse(localStorage.getItem('vjwData')) || { isOpen: true, items: [] };
-            gistId = localStorage.getItem('gist_id') || ""; gistToken = localStorage.getItem('gist_token') || "";
-            mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
+    function saveData() {
+        try {
+            // ✨ 修改處：每次存檔時，產生一個最新的時間戳記
+            const now = new Date();
             
-            expenses.forEach(e => {
-                if (!e.splitBy) {
-                    e.splitBy = (e.payer || "").split(',').filter(x=>x);
-                    e.paidBy = e.splitBy[0] || "我"; 
-                }
-            });
-        }
-
-        function saveData() {
-            try {
-                localStorage.setItem('flights', JSON.stringify(flights));
-                localStorage.setItem('itinerary_v3', JSON.stringify(itinerary));
-                localStorage.setItem('mustEatList', JSON.stringify(mustEatList));
-                localStorage.setItem('expenses', JSON.stringify(expenses));
-                localStorage.setItem('guides', JSON.stringify(guides));
-                localStorage.setItem('shoppingList_v3', JSON.stringify(shoppingList));
-                localStorage.setItem('shoppingOwners', JSON.stringify(shoppingOwners));
-                localStorage.setItem('payers', JSON.stringify(payers));
-                localStorage.setItem('payerProfiles', JSON.stringify(payerProfiles));
-                localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
-                localStorage.setItem('todos', JSON.stringify(todos));
-                localStorage.setItem('memo', memoText); 
-                localStorage.setItem('publicFundConfig_v2', JSON.stringify(publicFundConfig));
-                localStorage.setItem('vjwData', JSON.stringify(vjwData));
-                if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(forceUpload, 2000); }
-            } catch (e) {
-                alert("儲存失敗：資料量可能已超過瀏覽器限制 (LocalStorage)。建議刪除部分舊照片。");
-                console.error(e);
-            }
-        }
-
-        // --- GIST SYNC ---
-        function forceDownload() {
-            if(!gistId) return updateCloudStatus("未連線");
-            updateCloudStatus("檢查中...");
+            localStorage.setItem('flights', JSON.stringify(flights));
+            localStorage.setItem('itinerary_v3', JSON.stringify(itinerary));
+            localStorage.setItem('mustEatList', JSON.stringify(mustEatList));
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            localStorage.setItem('guides', JSON.stringify(guides));
+            localStorage.setItem('shoppingList_v3', JSON.stringify(shoppingList));
+            localStorage.setItem('shoppingOwners', JSON.stringify(shoppingOwners));
+            localStorage.setItem('payers', JSON.stringify(payers));
+            localStorage.setItem('payerProfiles', JSON.stringify(payerProfiles));
+            localStorage.setItem('manualDebts_v1', JSON.stringify(manualDebts));
+            localStorage.setItem('todos', JSON.stringify(todos));
+            localStorage.setItem('memo', memoText); 
+            localStorage.setItem('publicFundConfig_v2', JSON.stringify(publicFundConfig));
+            localStorage.setItem('vjwData', JSON.stringify(vjwData));
             
-            fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {headers: {'Authorization': `token ${gistToken}`}})
-            .then(r=>r.json()).then(async d=>{
-                let content = d.files["travel_data.json"].content;
-                if(d.files["travel_data.json"].truncated) { const r=await fetch(d.files["travel_data.json"].raw_url); content=await r.text(); }
-                const cloudData = JSON.parse(content);
+            // ✨ 修改處：將這個時間寫入 LocalStorage
+            localStorage.setItem('lastUpdate', now.toISOString());
 
-                const cloudCount = getDataCount(cloudData); // 雲端筆數
-                const localCount = getDataCount();          // 本機筆數
+            if (gistId && gistToken) { 
+                clearTimeout(window.autoUploadTimer); 
+                window.autoUploadTimer = setTimeout(() => forceUpload(false), 2000); 
+            }
+        } catch (e) {
+            alert("儲存失敗：資料量可能已超過瀏覽器限制。");
+            console.error(e);
+        }
+    }
 
-                console.log(`雲端: ${cloudCount} 筆 vs 本機: ${localCount} 筆`);
+    // --- GIST SYNC ---
+    function forceDownload(isAuto = false) {
+        if(!gistId) return updateCloudStatus("未連線");
+        if(!isAuto) updateCloudStatus("檢查中...");
+        
+        // ✨ 修改處：加入 headers 禁止快取 (Cache-Control)，確保抓到最新版
+        fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, {
+            headers: {
+                'Authorization': `token ${gistToken}`,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        })
+        .then(r => r.json())
+        .then(async d => {
+            let content = d.files["travel_data.json"].content;
+            if(d.files["travel_data.json"].truncated) { 
+                // 若檔案太大被截斷，強制抓取原始檔並加上時間參數防快取
+                const r = await fetch(d.files["travel_data.json"].raw_url + '?t=' + Date.now()); 
+                content = await r.text(); 
+            }
+            const cloudData = JSON.parse(content);
+            
+            // ✨ 修改處：改用「時間戳記 (Time)」比對，而非資料筆數
+            const cloudTime = new Date(cloudData.lastUpdate || 0).getTime();
+            const localLastUpdate = localStorage.getItem('lastUpdate');
+            const localTime = localLastUpdate ? new Date(localLastUpdate).getTime() : 0;
 
-                if (cloudCount > localCount) {
-                    if(confirm(`☁️ 發現雲端資料比較多！\n(雲端 ${cloudCount} 筆 > 本機 ${localCount} 筆)\n\n建議「下載」並覆蓋目前的畫面，確定嗎？`)) {
-                        applyCloudData(cloudData);
-                    } else {
-                        updateCloudStatus("取消同步");
-                    }
-                } 
-                else if (localCount > cloudCount) {
-                    if(confirm(`📱 發現你剛新增了資料！\n(本機 ${localCount} 筆 > 雲端 ${cloudCount} 筆)\n\n建議「上傳」備份到雲端，確定嗎？`)) {
-                        forceUpload(); 
-                    } else {
-                        updateCloudStatus("本機較新");
-                    }
-                } 
-                else {
-                    console.log("資料同步中");
-                    updateCloudStatus("已同步");
+            console.log(`雲端: ${cloudTime} vs 本機: ${localTime}`);
+
+            // 邏輯：雲端時間 > 本機時間 = 下載
+            if (cloudTime > localTime) {
+                if(!isAuto || confirm(`☁️ 發現雲端有更新的資料！\n(修改於: ${new Date(cloudTime).toLocaleString()})\n\n要下載覆蓋嗎？`)) {
+                    applyCloudData(cloudData);
+                } else {
+                    updateCloudStatus("雲端較新");
                 }
-            }).catch((e)=>{
-                console.error(e);
-                updateCloudStatus("連線失敗");
-            });
-        }
-        async function forceUpload(isManual = false) {
-            if(!gistId) return;
-            if (isManual) {
-                const check = confirm("⚠️ 警告：確定要將「目前的內容」強制上傳嗎？\n\n這將會【覆蓋並刪除】雲端上原本的資料！\n(建議先按「同步(下載)」確認雲端資料，再執行此操作)");
-                if (!check) return; 
+            } 
+            // 邏輯：本機時間 > 雲端時間 = 提示上傳
+            else if (localTime > cloudTime) {
+                if (!isAuto) {
+                    if(confirm(`📱 本機資料比較新！\n要上傳覆蓋雲端嗎？`)) {
+                        forceUpload(true); 
+                    }
+                }
+                updateCloudStatus("本機較新");
+            } 
+            else {
+                updateCloudStatus("已同步");
             }
-            updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, lastUpdate: new Date() };
-            try { 
-                await fetch(`https://api.github.com/gists/${gistId}`, { 
-                    method: 'PATCH', 
-                    headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) 
-                }); 
-                updateCloudStatus("上傳成功"); 
-                if(isManual) alert("✅ 上傳成功！雲端資料已更新為您目前的內容。");
-            } catch(e){ 
-                console.error(e);
-                updateCloudStatus("上傳失敗"); 
-                if(isManual) alert("❌ 上傳失敗，請檢查網路或 Token 設定。");
-            }
-        }
+        }).catch(e => {
+            console.error(e);
+            alert("錯誤詳情:\n" + e.message);
+            updateCloudStatus("連線失敗");
+        });
+    }
 
-        function updateCloudStatus(msg) { 
-            document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
+    async function forceUpload(isManual = false) {
+        if(!gistId) return;
+        if (isManual) {
+            const check = confirm("⚠️ 確定要將「目前的內容」強制上傳嗎？\n這將覆蓋雲端資料！");
+            if (!check) return; 
         }
+        updateCloudStatus("上傳中...");
+        
+        // ✨ 修改處：上傳時必定帶上 lastUpdate 時間
+        const payload = { 
+            flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, 
+            publicFundConfig, memo: memoText, vjwData, 
+            lastUpdate: new Date().toISOString() // 這裡很重要
+        };
+        
+        try { 
+            await fetch(`https://api.github.com/gists/${gistId}`, { 
+                method: 'PATCH', 
+                headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ files: { "travel_data.json": { content: JSON.stringify(payload) } } }) 
+            }); 
+            updateCloudStatus("上傳成功"); 
+            if(isManual) alert("✅ 上傳成功！");
+        } catch(e){ 
+            console.error(e);
+            updateCloudStatus("上傳失敗"); 
+            if(isManual) alert("❌ 上傳失敗，請檢查設定。");
+        }
+    }
 
-        function saveGistConfig() { 
-            gistId = document.getElementById('gist-id-input').value; 
-            gistToken = document.getElementById('gist-token-input').value; 
-            localStorage.setItem('gist_id', gistId); 
-            localStorage.setItem('gist_token', gistToken); 
-            alert("設定已儲存！"); 
-            forceDownload(); 
-        }        
+    function updateCloudStatus(msg) { 
+        document.getElementById('cloud-status').innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
+    }
+
+    function saveGistConfig() { 
+        gistId = document.getElementById('gist-id-input').value; 
+        gistToken = document.getElementById('gist-token-input').value; 
+        localStorage.setItem('gist_id', gistId); 
+        localStorage.setItem('gist_token', gistToken); 
+        alert("設定已儲存！"); 
+        forceDownload(); 
+    }        
 
         window.refreshUI = function() { reloadLocalData(); renderFlights(); renderItinerary(); renderGuides(); renderExpenses(); renderMustEatList(); renderChecklist(); renderShoppingList(); document.getElementById('memo-pad').value = memoText; renderVJW(); if(gistId){document.getElementById('gist-id-input').value=gistId;document.getElementById('gist-token-input').value=gistToken;} }
 
@@ -1542,17 +1581,22 @@ function renderItinerary() {
         }
         
         window.onload = function() {
-            reloadLocalData();
-            window.refreshUI(); 
-            if(gistId) { 
-                document.getElementById('gist-id-input').value = gistId; 
-                document.getElementById('gist-token-input').value = gistToken; 
-                updateCloudStatus("連線中..."); 
-                setTimeout(forceDownload, 500);
-            }
-            switchTab('plan');
-            enableAutoSaveOnOutsideClick();
-        }    
+        reloadLocalData();
+        window.refreshUI(); 
+        if(gistId) { 
+            document.getElementById('gist-id-input').value = gistId; 
+            document.getElementById('gist-token-input').value = gistToken; 
+            updateCloudStatus("連線中..."); 
+            
+            // 剛打開時檢查一次
+            setTimeout(() => forceDownload(true), 500); 
+            
+            // ✨ 修改處：每 10 秒自動檢查一次雲端有沒有新資料
+            setInterval(() => forceDownload(true), 10000);
+        }
+        switchTab('plan');
+        enableAutoSaveOnOutsideClick();
+    }
     </script>
 </body>
 </html>
