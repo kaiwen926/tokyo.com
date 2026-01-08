@@ -1091,7 +1091,7 @@ function renderItinerary() {
             const stickersHtml = itinerary.map((day, idx) => {
                 const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ];
                 const theme = themes[idx % 7];
-                return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'start'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
+                return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
             }).join('');
             navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div>`;
         }
@@ -1177,7 +1177,7 @@ function renderItinerary() {
 
             // 組裝整張卡片
             c.innerHTML += `
-            <div id="${day.id}" style="scroll-margin-top: 140px;" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
+            <div id="${day.id}" class="relative pl-12 sm:pl-16 border-l-2 ${isHighlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
                 <div class="absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14">
                     <div onclick="document.getElementById('quick-nav-container').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md cursor-pointer flex flex-col items-center justify-center p-1 hover:border-fuji transition-colors z-20" title="回到上方雲朵">
                         <span class="text-[9px] font-black font-sans tracking-widest ${theme.textSub} mb-[-2px]">DAY</span>
@@ -1402,7 +1402,92 @@ function renderItinerary() {
 
         function toggleAnalysisExpand() { const modalContainer = document.querySelector('#member-analysis-modal'); const card = modalContainer.querySelector('.hand-card'); const chartDiv = document.getElementById('memberDetailChart').parentElement; const summaryDiv = document.getElementById('analysis-cat-summary'); const detailsDiv = document.getElementById('analysis-details'); const listWrapper = document.getElementById('analysis-list-wrapper'); const arrow = document.getElementById('analysis-arrow'); const isExpanded = card.classList.contains('!w-[95vw]'); if (isExpanded) { card.classList.remove('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col'); card.classList.add('max-w-sm'); chartDiv.classList.remove('hidden'); summaryDiv.classList.remove('hidden'); detailsDiv.classList.remove('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full'); detailsDiv.classList.add('max-h-40', 'overflow-y-auto'); listWrapper.classList.remove('flex-1', 'h-full', 'overflow-hidden'); arrow.classList.remove('rotate-180'); } else { card.classList.remove('max-w-sm'); card.classList.add('!w-[95vw]', '!h-[85vh]', '!max-w-none', 'flex', 'flex-col'); chartDiv.classList.add('hidden'); summaryDiv.classList.add('hidden'); detailsDiv.classList.remove('max-h-40', 'overflow-y-auto'); detailsDiv.classList.add('flex-1', 'flex', 'flex-col', 'overflow-hidden', 'h-full'); listWrapper.classList.add('flex-1', 'h-full', 'overflow-hidden'); arrow.classList.add('rotate-180'); } }
         function updateInlineCharts(rate) { const catData = {}; expenses.forEach(e => { const amt = e.curr === 'JPY' ? e.amt * rate : e.amt; catData[e.cat] = (catData[e.cat] || 0) + amt; }); const ctxCat = document.getElementById('inlineCategoryChart').getContext('2d'); if(inlineCategoryChart) inlineCategoryChart.destroy(); inlineCategoryChart = new Chart(ctxCat, { type: 'doughnut', data: { labels: Object.keys(catData), datasets: [{ data: Object.values(catData), backgroundColor: ['#f8c3cd', '#bccc9a', '#7b90d2', '#b5651d', '#eff6ff', '#e5e7eb'], borderWidth: 0 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } }); const memberData = {}; payers.forEach(p => memberData[p] = 0); expenses.forEach(e => { const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt); if(e.splitBy && e.splitBy.length > 0) { const share = amt / e.splitBy.length; e.splitBy.forEach(p => { if(memberData[p] !== undefined) memberData[p] += share; }); } }); const ctxMem = document.getElementById('inlineMemberChart').getContext('2d'); if(inlineMemberChart) inlineMemberChart.destroy(); inlineMemberChart = new Chart(ctxMem, { type: 'bar', data: { labels: Object.keys(memberData), datasets: [{ label: 'NT$ 消費', data: Object.values(memberData), backgroundColor: '#7b90d2', borderRadius: 4 }] }, options: { maintainAspectRatio: false, indexAxis: 'y', scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }, plugins: { legend: { display: false } } } }); }
-        function calculateSettlement() { const rate = parseFloat(document.getElementById('exchange-rate').value); const balances = {}; payers.forEach(p => balances[p] = 0); expenses.forEach(e => { const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt); const payer = e.paidBy || "我"; const consumers = e.splitBy || []; if (balances[payer] !== undefined) balances[payer] += amt; if (consumers.length > 0) { const share = amt / consumers.length; consumers.forEach(c => { if (balances[c] !== undefined) balances[c] -= share; }); } }); manualDebts.forEach(d => { if (balances[d.creditor] !== undefined) balances[d.creditor] += parseFloat(d.amount); if (balances[d.debtor] !== undefined) balances[d.debtor] -= parseFloat(d.amount); }); let debtors = []; let creditors = []; Object.keys(balances).forEach(p => { if(p === '公費') return; if (balances[p] < -1) debtors.push({ name: p, amount: balances[p] }); else if (balances[p] > 1) creditors.push({ name: p, amount: balances[p] }); }); debtors.sort((a, b) => a.amount - b.amount); creditors.sort((a, b) => b.amount - a.amount); let planHtml = ''; let i = 0, j = 0; while (i < debtors.length && j < creditors.length) { let debt = Math.abs(debtors[i].amount); let credit = creditors[j].amount; let transfer = Math.min(debt, credit); planHtml += `<div class="flex justify-between border-b border-blue-200 pb-1 mb-1 last:border-0"><span class="font-bold text-gray-700">${debtors[i].name}</span> <span class="text-gray-400 text-xs mx-1">給</span> <span class="font-bold text-gray-700">${creditors[j].name}</span> <span class="font-mono font-bold text-blue-600">NT$${Math.round(transfer)}</span></div>`; debtors[i].amount += transfer; creditors[j].amount -= transfer; if (Math.abs(debtors[i].amount) < 1) i++; if (creditors[j].amount < 1) j++; } if (!planHtml) planHtml = '<div class="text-center text-gray-400">目前帳目平衡，無需轉帳。</div>'; document.getElementById('settlement-plan').innerHTML = planHtml; document.getElementById('settlement-details').innerHTML = Object.entries(balances).map(([k,v]) => `<div>${k}: ${v>=0?'+':''}${Math.round(v)}</div>`).join(''); const ctxSet = document.getElementById('settlementChart').getContext('2d'); if(settlementChart) settlementChart.destroy(); settlementChart = new Chart(ctxSet, { type: 'bar', data: { labels: Object.keys(balances), datasets: [{ label: '淨餘額 (NT$)', data: Object.values(balances), backgroundColor: Object.values(balances).map(v => v >= 0 ? '#bccc9a' : '#f8c3cd'), borderRadius: 4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } }); openModal('settlement-modal'); }
+        function calculateSettlement() { 
+        const rate = parseFloat(document.getElementById('exchange-rate').value); 
+        
+        // 1. 初始化債務矩陣 (記錄誰欠誰多少)
+        // 結構: matrix['欠錢的人']['債主'] = 金額
+        const matrix = {};
+        payers.forEach(p => { 
+            if(p !== '公費') matrix[p] = {}; 
+        });
+
+        // 2. 逐筆計算，建立債務關係 (不進行總額結算)
+        expenses.forEach(e => { 
+            const amt = (e.curr === 'JPY' ? e.amt * rate : e.amt); 
+            const payer = e.paidBy || "我"; 
+            const consumers = e.splitBy || []; 
+            
+            // 跳過無效資料
+            if (payer === '公費' || consumers.length === 0) return;
+
+            const share = amt / consumers.length; 
+            
+            consumers.forEach(c => { 
+                // 如果是自己幫自己付，不用記帳
+                if (c !== payer && c !== '公費') { 
+                    if (!matrix[c][payer]) matrix[c][payer] = 0;
+                    matrix[c][payer] += share;
+                } 
+            }); 
+        }); 
+
+        // 3. 加入手動欠款 (IOU)
+        manualDebts.forEach(d => { 
+            if (!matrix[d.debtor][d.creditor]) matrix[d.debtor][d.creditor] = 0;
+            matrix[d.debtor][d.creditor] += parseFloat(d.amount); 
+        }); 
+
+        // 4. 雙向抵銷 (Pairwise Netting)
+        // 邏輯：如果 A 欠 B 100，B 欠 A 40 => 抵銷後 A 欠 B 60，B 不欠 A
+        const people = Object.keys(matrix);
+        for (let i = 0; i < people.length; i++) {
+            for (let j = i + 1; j < people.length; j++) {
+                const p1 = people[i];
+                const p2 = people[j];
+                
+                const debt1 = matrix[p1][p2] || 0; // p1 欠 p2
+                const debt2 = matrix[p2][p1] || 0; // p2 欠 p1
+                
+                if (debt1 > 0 && debt2 > 0) {
+                    if (debt1 >= debt2) {
+                        matrix[p1][p2] = debt1 - debt2;
+                        matrix[p2][p1] = 0;
+                    } else {
+                        matrix[p2][p1] = debt2 - debt1;
+                        matrix[p1][p2] = 0;
+                    }
+                }
+            }
+        }
+
+        // 5. 產生轉帳建議列表 HTML (並順便計算總結餘給圖表用)
+        let planHtml = ''; 
+        const balances = {}; // 為了畫圖，還是要統計一下總盈虧
+        payers.forEach(p => balances[p] = 0);
+
+        Object.keys(matrix).forEach(debtor => {
+            Object.keys(matrix[debtor]).forEach(creditor => {
+                const amount = matrix[debtor][creditor];
+                if (amount > 1) { // 忽略 1 元以下的誤差
+                    planHtml += `<div class="flex justify-between border-b border-blue-200 pb-1 mb-1 last:border-0"><span class="font-bold text-gray-700">${debtor}</span> <span class="text-gray-400 text-xs mx-1">給</span> <span class="font-bold text-gray-700">${creditor}</span> <span class="font-mono font-bold text-blue-600">NT$${Math.round(amount).toLocaleString()}</span></div>`;
+                    
+                    // 統計圖表用
+                    balances[debtor] -= amount;
+                    balances[creditor] += amount;
+                }
+            });
+        });
+
+        if (!planHtml) planHtml = '<div class="text-center text-gray-400">目前帳目平衡，無需轉帳。</div>'; 
+        document.getElementById('settlement-plan').innerHTML = planHtml; 
+        document.getElementById('settlement-details').innerHTML = Object.entries(balances).map(([k,v]) => `<div>${k}: ${v>=0?'+':''}${Math.round(v)}</div>`).join(''); 
+        
+        const ctxSet = document.getElementById('settlementChart').getContext('2d'); 
+        if(settlementChart) settlementChart.destroy(); 
+        settlementChart = new Chart(ctxSet, { type: 'bar', data: { labels: Object.keys(balances), datasets: [{ label: '淨餘額 (NT$)', data: Object.values(balances), backgroundColor: Object.values(balances).map(v => v >= 0 ? '#bccc9a' : '#f8c3cd'), borderRadius: 4 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } } }); 
+        openModal('settlement-modal'); 
+    }        
         function openPublicFundModal() { document.getElementById('pf-total-input').value = publicFundConfig.total || 0; openModal('pf-settings-modal'); }
         function savePublicFundSettings() { publicFundConfig.total = parseFloat(document.getElementById('pf-total-input').value) || 0; saveData(); renderExpenses(); closeModal('pf-settings-modal'); }
         function switchCategory(id) { selectedCat = id; renderCategoryUI(); }
@@ -1744,7 +1829,11 @@ function renderMustEatList() {
             document.getElementById('gist-id-input').value = gistId; 
             document.getElementById('gist-token-input').value = gistToken; 
             updateCloudStatus("連線中..."); 
+            
+            // 剛打開時檢查一次
             setTimeout(() => forceDownload(true), 500); 
+            
+            // ✨ 修改處：每 10 秒自動檢查一次雲端有沒有新資料
             setInterval(() => forceDownload(true), 10000);
         }
         switchTab('plan');
@@ -1753,4 +1842,3 @@ function renderMustEatList() {
     </script>
 </body>
 </html>
-
