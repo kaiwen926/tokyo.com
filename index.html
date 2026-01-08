@@ -1268,6 +1268,40 @@ function renderItinerary() {
         function openFlightModal(){ ['flight-id','flight-dep','flight-arr','flight-code','flight-date','flight-time','flight-url'].forEach(k=>document.getElementById(k).value=''); currentFlightPhoto = null; document.getElementById('flight-photo-preview').classList.add('hidden'); document.getElementById('flight-photo-preview').src = ""; openModal('flight-modal'); }
 
         // --- WALLET & CHARTS ---
+// ✨ 新增：抓取即時匯率的功能
+    function updateExchangeRate() {
+        const btn = document.getElementById('btn-rate-update');
+        const icon = btn.querySelector('i');
+        
+        // 讓圖示轉圈圈，表示正在跑
+        icon.classList.add('fa-spin');
+        
+        // 呼叫免費匯率 API (以日幣為基準)
+        fetch('https://api.exchangerate-api.com/v4/latest/JPY')
+            .then(response => response.json())
+            .then(data => {
+                // 取得對台幣的匯率
+                const rate = data.rates.TWD;
+                
+                if (rate) {
+                    // 更新輸入框
+                    document.getElementById('exchange-rate').value = rate;
+                    // 重新計算所有花費顯示
+                    renderExpenses();
+                    alert(`✅ 匯率已更新！\n目前 1 日幣 ≈ ${rate} 台幣`);
+                } else {
+                    alert("❌ 找不到台幣匯率資料");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("❌ 連線失敗，無法取得匯率");
+            })
+            .finally(() => {
+                // 停止轉圈圈
+                icon.classList.remove('fa-spin');
+            });
+    }
         function renderExpenses() {
             const list = document.getElementById('expense-list'); 
             list.innerHTML = '';
