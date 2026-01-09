@@ -220,13 +220,75 @@
                 </div>
             </div>
             <div id="expense-list" class="space-y-3 pb-24 md:grid md:grid-cols-2 md:gap-3 md:space-y-0"></div>
-            <div class="fixed bottom-24 right-6 md:right-10 z-30">
+            <div class="fixed bottom-24 right-6 md:right-10 z-30 flex flex-col gap-3 items-end">
+                <button onclick="openCalcModal()" class="bg-white text-gray-500 rounded-full w-12 h-12 shadow-lg flex items-center justify-center border border-gray-200 hover:text-fuji hover:border-fuji transition active:scale-95">
+                    <i class="fa-solid fa-calculator text-xl"></i>
+                </button>
                 <button onclick="openExpenseModal()" class="bg-ink text-white rounded-full h-14 px-6 shadow-float flex items-center gap-2 hover:scale-105 transition active:scale-95 group border-2 border-white/20">
                     <i class="fa-solid fa-pen-nib text-xl group-hover:rotate-12 transition"></i> <span class="font-bold handwritten tracking-widest text-lg">記一筆</span>
                 </button>
             </div>
         </section>
 
+         <div id="calc-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center px-4 backdrop-blur-sm pb-24 sm:pb-0">
+        <div class="bg-[#f9f7f2] w-full max-w-xs rounded-3xl p-5 shadow-2xl relative hand-card border-4 border-white">
+            <button onclick="closeModal('calc-modal')" class="absolute top-3 right-3 text-gray-300 hover:text-red-400"><i class="fa-solid fa-times"></i></button>
+           <div class="bg-white border-2 border-gray-200 rounded-xl p-2 mb-4 shadow-inner flex items-end gap-2">
+                <div class="flex flex-col justify-between h-full pb-1">
+                     <div id="calc-history" class="text-[10px] text-gray-400 h-4 text-left whitespace-nowrap overflow-hidden w-20"></div>
+                     <select id="calc-currency" class="bg-gray-100 text-fuji font-black rounded-lg px-1 py-1 outline-none text-sm border border-gray-200 cursor-pointer text-center w-16 appearance-none hover:bg-gray-200 transition">
+                        <option value="JPY">JPY</option>
+                        <option value="TWD">TWD</option>
+                     </select>
+                </div>
+                <input type="text" id="calc-display" value="0" readonly class="flex-1 min-w-0 text-4xl font-mono font-black text-gray-700 outline-none text-right bg-transparent tracking-tight">
+            </div>
+
+           <div class="grid grid-cols-4 gap-2 mb-4">
+                <button onclick="calcClear()" class="col-span-1 bg-red-100 text-red-500 rounded-lg p-3 font-bold active:scale-95">AC</button>
+                <button onclick="calcDel()" class="col-span-1 bg-gray-200 text-gray-500 rounded-lg p-3 font-bold active:scale-95"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="calcOp('/')" class="bg-blue-100 text-blue-500 rounded-lg p-3 font-bold active:scale-95">÷</button>
+                <button onclick="calcOp('*')" class="bg-blue-100 text-blue-500 rounded-lg p-3 font-bold active:scale-95">×</button>
+
+                <button onclick="calcNum('7')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">7</button>
+                <button onclick="calcNum('8')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">8</button>
+                <button onclick="calcNum('9')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">9</button>
+                <button onclick="calcOp('-')" class="bg-blue-100 text-blue-500 rounded-lg p-3 font-bold active:scale-95">-</button>
+
+                <button onclick="calcNum('4')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">4</button>
+                <button onclick="calcNum('5')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">5</button>
+                <button onclick="calcNum('6')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">6</button>
+                <button onclick="calcOp('+')" class="bg-blue-100 text-blue-500 rounded-lg p-3 font-bold active:scale-95">+</button>
+
+                <button onclick="calcNum('1')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">1</button>
+                <button onclick="calcNum('2')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">2</button>
+                <button onclick="calcNum('3')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">3</button>
+                
+                <button onclick="calcEqual()" class="row-span-2 bg-fuji text-white rounded-lg p-3 font-bold active:scale-95 shadow-md flex items-center justify-center text-xl">=</button>
+
+                <button onclick="calcNum('0')" class="col-span-2 bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">0</button>
+                <button onclick="calcNum('.')" class="bg-white shadow-sm border border-gray-100 rounded-lg p-3 font-bold text-xl active:scale-95 text-gray-600">.</button>
+            </div>               
+                 <div class="grid grid-cols-3 gap-2 mb-2">
+                 <button onclick="calcTax(1.1)" class="bg-gray-100 text-gray-500 text-xs py-2 rounded-lg font-bold border border-gray-200 active:scale-95 flex flex-col items-center leading-none justify-center hover:bg-gray-200 transition">
+                    <span>+10% 稅</span><span class="scale-75 opacity-50">(含稅價)</span>
+                </button>
+                
+                <button onclick="calcTax(1/1.1)" class="bg-pink-50 text-pink-500 text-xs py-2 rounded-lg font-bold border border-pink-100 active:scale-95 flex flex-col items-center leading-none justify-center hover:bg-pink-100 transition">
+                    <span>免稅</span><span class="scale-75 opacity-50">(/1.1)</span>
+                </button>
+                
+                <button onclick="calcCustomDiscount()" class="bg-yellow-50 text-yellow-600 text-xs py-2 rounded-lg font-bold border border-yellow-100 active:scale-95 flex flex-col items-center leading-none justify-center hover:bg-yellow-100 transition">
+                    <span>折扣</span><span class="scale-75 opacity-50">自訂</span>
+                </button>
+            </div>
+            <button onclick="calcToExpense()" class="w-full bg-ink text-white py-3 rounded-xl font-bold shadow-lg mt-2 flex items-center justify-center gap-2 active:scale-95">
+                <i class="fa-solid fa-pen-to-square"></i> 帶入記帳
+            </button>
+        </div>
+    </div>
+
+ 
         <!-- LISTS SECTION -->
         <section id="view-lists" class="view-section hidden relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -1594,8 +1656,8 @@ function renderItinerary() {
         function toggleAllPayers() { const allHumanPayers = payers.filter(p => p !== '公費'); if (selectedPayers.length === allHumanPayers.length) selectedPayers = []; else selectedPayers = [...allHumanPayers]; renderSplitButtons(); }
         function saveExpense() { const id=document.getElementById('ex-id').value, amt=parseFloat(document.getElementById('ex-amount').value); if(!amt) return; let paidBy = document.getElementById('ex-paid-by').value; const ex = { id:id?parseInt(id):Date.now(), cat:selectedCat, note:document.getElementById('ex-note').value, curr:document.getElementById('ex-currency').value, amt, paidBy: paidBy, splitBy: selectedPayers.length > 0 ? selectedPayers : [paidBy], payer: selectedPayers.join(','), photo: currentPhotoBase64 }; if(id){const idx=expenses.findIndex(e=>e.id==id);expenses[idx]=ex;}else{expenses.push(ex);} saveData(); renderExpenses(); closeModal('expense-modal'); }
         function deleteExpense(){ if(confirm("Del?")){ expenses=expenses.filter(e=>e.id!=document.getElementById('ex-id').value); saveData(); renderExpenses(); closeModal('expense-modal'); } }
-        
-        // --- SHOPPING ---
+
+                // --- SHOPPING ---
         window.expandedCategories = window.expandedCategories || new Set();
         function renderShoppingList() { const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner); const container = document.getElementById('shopping-list-container'); container.innerHTML = ''; const grouped = {}; items.forEach(item => { const cat = item.category || '未分類'; if(!grouped[cat]) grouped[cat] = []; grouped[cat].push(item); }); const catStyles = { '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 'Outlet': 'border-sky-400 bg-sky-50 text-sky-600', '7-11': 'border-orange-400 bg-orange-50 text-orange-600', '全家': 'border-green-500 bg-green-50 text-green-700', 'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', '伴手禮': 'border-red-400 bg-red-50 text-red-600', '電器': 'border-gray-500 bg-gray-100 text-gray-600', '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 'AEON': 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-600', '超市': 'border-emerald-400 bg-emerald-50 text-emerald-600', '唐吉軻德': 'border-yellow-400 bg-yellow-50 text-yellow-700', '未分類': 'border-gray-300 bg-gray-50 text-gray-500' }; const autoPalettes = [ 'border-teal-400 bg-teal-50 text-teal-600', 'border-indigo-400 bg-indigo-50 text-indigo-600', 'border-lime-400 bg-lime-50 text-lime-700', 'border-cyan-400 bg-cyan-50 text-cyan-600', 'border-rose-400 bg-rose-50 text-rose-600', 'border-amber-400 bg-amber-50 text-amber-700', 'border-violet-400 bg-violet-50 text-violet-600' ]; Object.keys(grouped).sort().forEach(cat => { const catItems = grouped[cat]; const doneCount = catItems.filter(i => i.done).length; const isExpanded = expandedCategories.has(cat); let styleClass = catStyles[cat]; if (!styleClass) { let hash = 0; for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash); const colorIdx = Math.abs(hash) % autoPalettes.length; styleClass = autoPalettes[colorIdx]; } const itemsHtml = catItems.map(s => renderShopItem(s)).join(''); let html = `<div class="mb-3 transition-all duration-300 w-full max-w-full"><div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" onclick="toggleShopCat('${cat}')" style="background-color: white;"><div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div><div class="flex items-center gap-2"><i class="fa-solid fa-tag text-sm opacity-70"></i><h5 class="font-bold text-sm tracking-wide">${cat}</h5><span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span></div><i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i></div><div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">${itemsHtml}</div></div>`; container.innerHTML += html; }); document.getElementById('shop-owner-name').innerText = owner; }
         function renderShopItem(s) { const isDone = s.done; return `<div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal(${s.id})"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})"><i class="fa-solid fa-check text-xs"></i></div><div class="min-w-0"><div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div><div class="text-[11px] text-gray-400 mt-0.5 font-mono">${s.price ? `¥${s.price} ` : ''}${s.qty && s.qty > 1 ? `<span class="text-gray-300">x</span> ${s.qty}` : ''}</div></div></div>${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}</div>`; }
@@ -1837,7 +1899,8 @@ function renderMustEatList() {
                 { id: 'settlement-modal',      save: () => closeModal('settlement-modal') },
                 { id: 'member-modal',          save: () => closeModal('member-modal') },
                 { id: 'manage-shop-lists-modal', save: () => closeModal('manage-shop-lists-modal') },
-                { id: 'shop-confirm-modal',    save: () => closeModal('shop-confirm-modal') }
+                { id: 'shop-confirm-modal',    save: () => closeModal('shop-confirm-modal') },
+                { id: 'calc-modal',            save: () => closeModal('calc-modal') } 
             ];
 
             modalMap.forEach(item => {
@@ -1855,7 +1918,104 @@ function renderMustEatList() {
                 }
             });
         }
+        // --- 🧮 計算機邏輯 ---
+    let calcVal = '0';
+    let calcPendingOp = null;
+    let calcPrevVal = null;
+    let calcResetNext = false;
+
+    function openCalcModal() { calcClear(); openModal('calc-modal'); }
+    
+    function updateCalcDisplay() {
+        const display = document.getElementById('calc-display');
+        const history = document.getElementById('calc-history');
+        display.value = calcVal;
+        history.innerText = (calcPrevVal !== null ? `${calcPrevVal} ${calcPendingOp || ''}` : '');
+    }
+
+    function calcNum(n) {
+        if (calcResetNext) { calcVal = '0'; calcResetNext = false; }
+        if (n === '.' && calcVal.includes('.')) return;
+        calcVal = calcVal === '0' && n !== '.' ? n : calcVal + n;
+        updateCalcDisplay();
+    }
+
+    function calcOp(op) {
+        if (calcPendingOp && !calcResetNext) calcEqual();
+        calcPrevVal = calcVal;
+        calcPendingOp = op;
+        calcResetNext = true;
+        updateCalcDisplay();
+    }
+
+    function calcEqual() {
+        if (!calcPendingOp || !calcPrevVal) return;
+        const prev = parseFloat(calcPrevVal);
+        const curr = parseFloat(calcVal);
+        let res = 0;
+        switch(calcPendingOp) {
+            case '+': res = prev + curr; break;
+            case '-': res = prev - curr; break;
+            case '*': res = prev * curr; break;
+            case '/': res = prev / curr; break;
+        }
+        calcVal = String(Math.round(res * 100) / 100); // 避免浮點數誤差
+        calcPendingOp = null;
+        calcPrevVal = null;
+        calcResetNext = true;
+        updateCalcDisplay();
+    }
+
+    function calcClear() {
+        calcVal = '0'; calcPendingOp = null; calcPrevVal = null; calcResetNext = false;
+        updateCalcDisplay();
+    }
+
+    function calcDel() {
+        calcVal = calcVal.length > 1 ? calcVal.slice(0, -1) : '0';
+        updateCalcDisplay();
+    }
+
+    function calcTax(rate) {
+        calcEqual(); // 先算完目前的算式
+        let val = parseFloat(calcVal);
+        val = val * rate;
+        calcVal = String(Math.round(val)); // 日幣通常不講小數點，直接四捨五入
+        calcResetNext = true;
+        updateCalcDisplay();
+    }
+    function calcCustomDiscount() {
+        calcEqual(); 
+        let val = parseFloat(calcVal);
+        let input = prompt("請輸入折扣：\n\n🔸 打折：輸入 95 (代表95折) 或 0.9\n🔸 減錢：輸入 -500 (代表減500元)", "95");
         
+        if (input === null || input === "") return;
+        let num = parseFloat(input);
+        if (isNaN(num)) return alert("請輸入數字");
+
+        if (num < 0) { val = val + num; } 
+        else if (num <= 1) { val = val * num; } 
+        else if (num <= 100) { val = val * (num / 100); } 
+        else {
+            if(confirm(`您輸入了 ${num}，是要「減去 ${num}」嗎？`)) { val = val - num; } else { return; }
+        }
+        calcVal = String(Math.round(val)); 
+        calcResetNext = true;
+        updateCalcDisplay();
+    }
+    function calcToExpense() {
+        calcEqual(); // 1. 先把還沒算完的算式算出來 (例如螢幕停在 500+200)
+        
+        const amount = Math.round(parseFloat(calcVal)); // 2. 取整數
+        const currency = document.getElementById('calc-currency').value; // ✨ 3. 抓取計算機上的幣別
+        
+        closeModal('calc-modal');
+        
+        // 4. 打開記帳視窗，並帶入金額與幣別
+        openExpenseModal(null, true);
+        document.getElementById('ex-amount').value = amount;
+        document.getElementById('ex-currency').value = currency; // ✨ 把幣別帶過去
+    }
         window.onload = function() {
         reloadLocalData();
         window.refreshUI(); 
