@@ -888,19 +888,14 @@
             .then(r => r.json())
             .then(async d => {
                 const cloudFileName = currentTripId + "_data.json";
-                
-                let isMigration = false;
                 let targetFile = d.files[cloudFileName];
-                
-                // ✨ 兼容舊版：找不到新檔名，但雲端有舊的 travel_data.json，視為強制轉移！
-                if (!targetFile && d.files["travel_data.json"]) {
-                    targetFile = d.files["travel_data.json"];
-                    isMigration = true; // 啟動轉移模式
-                }
 
+                // ✨ 修正：新國家在雲端還沒有檔案時，不要再去抓舊的日本資料
+                // 直接把本機目前的全新空白內容自動同步上去建立新檔案
                 if (!targetFile) {
-                    if(!isAuto) alert("雲端尚未有此行程的資料，將自動上傳備份！");
-                    forceUpload(true); return;
+                    forceUpload(false); 
+                    updateCloudStatus("已建立新雲端檔");
+                    return;
                 }
                 
                 let content = targetFile.content;
@@ -911,15 +906,15 @@
                 const localLastUpdate = localStorage.getItem(p+'lastUpdate');
                 const localTime = localLastUpdate ? new Date(localLastUpdate).getTime() : 0;
 
-                // ✨ 關鍵修正：如果是舊版轉移，直接無視時間，強制用雲端覆蓋本機！
-                if (isMigration || cloudTime > localTime) {
+                if (cloudTime > localTime) {
                     applyCloudData(cloudData); 
-                    if(isMigration && !isAuto) alert("✅ 成功從舊版備份救回您的行程！");
-                    // 轉移成功後，順便幫您把它重新上傳成新的專屬檔名
-                    if(isMigration) setTimeout(() => forceUpload(false), 1500);
                 } 
-                else if (localTime > cloudTime) forceUpload(true); 
-                else updateCloudStatus("已同步");
+                else if (localTime > cloudTime) {
+                    forceUpload(false); 
+                } 
+                else {
+                    updateCloudStatus("已同步");
+                }
             }).catch(e => { updateCloudStatus("連線失敗"); });
         }
        async function forceUpload(isManual = false) {
