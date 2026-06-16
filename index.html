@@ -397,7 +397,7 @@
                 <div id="day-trans-list" class="space-y-3"></div>
             </div>  
             
-            <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed" placeholder="行程內容... (請用換行或反斜線 '\' 分隔活動)"></textarea>
+          <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed placeholder-gray-300" placeholder="在這裡寫下你的行程規劃...&#10;1️⃣換行 或 輸入 \ 可以分隔不同活動&#10;2️⃣輸入 * 或 | 可以加上灰色的備註 &#10;3️⃣ 直接貼上網址會自動變成超連結"></textarea>
             
             <div class="bg-white p-3 rounded-lg border mb-4 space-y-4 shadow-sm">
                 <h4 class="text-xs font-bold text-gray-400 border-b pb-1">三餐安排</h4>
@@ -1326,8 +1326,9 @@
         function exitDayEditMode() { isEditMode = false; document.querySelectorAll('.day-delete-badge').forEach(el => el.classList.add('hidden')); document.removeEventListener('click', handleOutsideClickForEditMode); }
         function handleOutsideClickForEditMode(e) { if (!e.target.closest('.day-delete-badge')) { exitDayEditMode(); } }
         
-        function addNewDay() {
-            itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"...",weather:""}); 
+       function addNewDay() {
+            // 將原本的 content:"..." 改成 content:""，這樣新增時就不會有煩人的預設文字了
+            itinerary.push({id:'day_'+Date.now(),date:"New Day",highlight:false,content:"",weather:""}); 
             saveData(); renderItinerary();
         }
 
@@ -1348,15 +1349,23 @@
                     const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ];
                     const theme = themes[idx % 7];
                     return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
-                }).join('');
-                navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div><div class="text-center text-[10px] text-gray-400 mt-3 font-hand tracking-widest opacity-60"><i class="fa-solid fa-hand-pointer mr-1"></i> 提示：長按 DAY 標籤可開啟刪除模式或拖曳排序</div>`;
+                }).join(''); navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div><div class="text-center text-[10px] text-gray-400 mt-3 font-hand tracking-widest opacity-60"><i class="fa-solid fa-hand-pointer mr-1"></i> 提示：長按 DAY 標籤可開啟刪除模式或拖曳排序</div>`;
             } else if (navC) { navC.innerHTML = ''; }
 
             itinerary.forEach((day, idx) => {
                 let contentHtml = (typeof linkifyContent === 'function') ? linkifyContent(day.content) : day.content;
                 const accLink = day.accommodationUrl || (typeof checkUrl === 'function' ? checkUrl(day.accommodation) : null);
                 const theme = [ { bg: 'bg-pink-50', border: 'border-pink-200', textMain: 'text-pink-700', textSub: 'text-pink-400' }, { bg: 'bg-yellow-50', border: 'border-yellow-200', textMain: 'text-yellow-800', textSub: 'text-yellow-500' }, { bg: 'bg-blue-50', border: 'border-blue-200', textMain: 'text-blue-700', textSub: 'text-blue-400' }, { bg: 'bg-green-50', border: 'border-green-200', textMain: 'text-green-700', textSub: 'text-green-500' }, { bg: 'bg-purple-50', border: 'border-purple-200', textMain: 'text-purple-700', textSub: 'text-purple-400' }, { bg: 'bg-orange-50', border: 'border-orange-200', textMain: 'text-orange-800', textSub: 'text-orange-500' }, { bg: 'bg-cyan-50', border: 'border-cyan-200', textMain: 'text-cyan-700', textSub: 'text-cyan-500' } ][idx % 7];
-                const fullText = day.date || ""; let dateText = fullText.split(' ')[0]; let titleText = fullText.substring(dateText.length).trim() || fullText;
+                
+                // ✨ 解析日期與標題：只要有「空白」，就會自動切成上下兩層
+                const fullText = (day.date || "").trim(); 
+                let dateText = ""; let titleText = fullText;
+                if (fullText.includes(' ')) {
+                    const firstSpace = fullText.indexOf(' ');
+                    dateText = fullText.substring(0, firstSpace).trim();
+                    titleText = fullText.substring(firstSpace + 1).trim();
+                }
+
                 const wIcon = (typeof WEATHER_MAP !== 'undefined') ? (WEATHER_MAP[day.weather] || '<i class="fa-solid fa-question text-gray-200"></i>') : '';
                 let tempBadgeHtml = '';
                 if (day.temp) {
@@ -1380,19 +1389,30 @@
                 const noteHtml = day.dayNote ? `<div class="mt-3 p-2 bg-yellow-50 text-yellow-800 text-xs rounded border border-yellow-100 handwritten leading-relaxed line-pre"><i class="fa-solid fa-pencil mr-1"></i> ${day.dayNote}</div>` : '';
                 const titleStickerBg = day.highlight ? 'bg-[#fff0f5]' : 'bg-[#fff8e1]'; const titleStickerBorder = day.highlight ? 'border-sakura' : 'border-[#e6dbbf]'; const titleStickerText = day.highlight ? 'text-sakura' : 'text-[#827355]';
 
-                c.innerHTML += `
-                <div id="${day.id}" data-id="${day.id}" style="scroll-margin-top: 140px;" class="relative pl-12 sm:pl-16 border-l-2 ${day.highlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
+c.innerHTML += `
+                <!-- ✨ 加上 ml-4 將整條虛線往右推，避免方塊被螢幕切掉 -->
+                <div id="${day.id}" data-id="${day.id}" style="scroll-margin-top: 140px;" class="relative ml-4 sm:ml-6 pl-10 sm:pl-12 border-l-2 ${day.highlight ? 'border-sakura' : 'border-gray-200'} border-dashed pb-10 group">
                     <button onclick="event.stopPropagation(); deleteDayById('${day.id}')" class="day-delete-badge hidden absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg z-50 animate-pulse"><i class="fa-solid fa-xmark"></i></button>
-                    <div class="day-drag-handle absolute -left-3 sm:-left-4 top-0 flex flex-col items-center z-10 w-12 sm:w-14 cursor-grab" onmousedown="dayLongPressTimer=setTimeout(enterDayEditMode,800)" onmouseup="clearTimeout(dayLongPressTimer)" ontouchstart="dayLongPressTimer=setTimeout(enterDayEditMode,800)" ontouchend="clearTimeout(dayLongPressTimer)">
-                        <div class="relative w-full aspect-square ${theme.bg} border-2 ${theme.border} rounded-xl shadow-md flex flex-col items-center justify-center p-1"><span class="text-[9px] font-black ${theme.textSub} mb-[-2px]">DAY</span><span class="text-2xl font-black font-maru leading-none ${theme.textMain}">${idx + 1}</span></div>
-                        <div class="h-4 w-0.5 bg-gray-300 -mt-1 relative z-10"></div>${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300 relative z-10"><i class="fa-solid fa-cloud"></i></div>'}
+                    
+                    <!-- ✨ 左側手帳方塊：精準算出寬度的一半(-1.75rem與-2rem)來完美置中 -->
+                    <div class="day-drag-handle absolute -left-[1.75rem] sm:-left-[2rem] top-0 flex flex-col items-center z-10 w-14 sm:w-16 cursor-grab" onmousedown="dayLongPressTimer=setTimeout(enterDayEditMode,800)" onmouseup="clearTimeout(dayLongPressTimer)" ontouchstart="dayLongPressTimer=setTimeout(enterDayEditMode,800)" ontouchend="clearTimeout(dayLongPressTimer)">
+                        <div class="relative w-full ${theme.bg} border-2 ${theme.border} rounded-2xl shadow-md flex flex-col items-center justify-center py-2 px-1 cursor-pointer hover:scale-105 transition-transform" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="點擊回到頂部">
+                            <span class="text-[9px] font-black ${theme.textSub} mb-1">DAY</span>
+                            <span class="text-xl sm:text-2xl font-black font-maru leading-none ${theme.textMain}">${idx + 1}</span>
+                            ${dateText ? `<div class="w-3/4 border-t-2 border-dotted ${theme.border} my-1.5 opacity-50"></div><span class="text-[9px] sm:text-[10px] font-bold ${theme.textMain} tracking-tighter truncate w-full text-center px-0.5">${dateText}</span>` : ''}
+                        </div>
+                        <div class="h-4 w-0.5 bg-gray-300 -mt-0.5 relative z-10"></div>${weatherGroupHtml || '<div class="w-8 h-8 rounded-full bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center text-xs text-gray-300 relative z-10"><i class="fa-solid fa-cloud"></i></div>'}
                     </div>
+                    
                     <div class="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 relative group/card hover:border-fuji/30 transition-colors">
                         <div class="flex justify-between items-start mb-4">
-                            <div class="relative transform -rotate-1 cursor-pointer" onclick="openDayEditor('${day.id}')">
-                                <div class="relative ${titleStickerBg} border-2 ${titleStickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem] text-center"><h4 class="text-xl font-black font-maru ${titleStickerText}">${titleText}</h4></div>
+                            <div class="relative transform -rotate-1 cursor-pointer flex-1" onclick="openDayEditor('${day.id}')">
+                                <!-- ✨ 標題變得更乾淨，不再帶有日期小標籤 -->
+                                <div class="relative inline-flex flex-col items-start ${titleStickerBg} border-2 ${titleStickerBorder} px-4 py-2 rounded-lg shadow-md min-w-[5rem]">
+                                    <h4 class="text-xl font-black font-maru ${titleStickerText} text-left">${titleText}</h4>
+                                </div>
                             </div>
-                            <button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="openDayEditor('${day.id}')" class="text-gray-200 hover:text-fuji transition p-2 flex-shrink-0"><i class="fa-solid fa-pen text-sm"></i></button>
                         </div>
                         <ul class="text-sm space-y-3 leading-relaxed text-gray-700 font-maru font-bold text-lg mb-3">${contentHtml}</ul>
                         ${photosHtml} ${accHtml} ${transHtml} ${mealsHtml} ${massagesHtml} ${noteHtml}
