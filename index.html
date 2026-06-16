@@ -874,7 +874,10 @@
             customStickers = JSON.parse(localStorage.getItem(p+'customStickers')) || [];
             transMaps = JSON.parse(localStorage.getItem(p+'transMaps')) || [];
             
-            gistId = currentTrip.gistId || ""; gistToken = currentTrip.gistToken || "";
+            gistId = currentTrip.gistId || ""; 
+            // ⚠️ 關鍵：Token 優先從本機獨立的保險箱拿，絕對不拿雲端傳下來的
+            gistToken = localStorage.getItem('app_global_token') || "";
+            
             mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
             expenses.forEach(e => { if (!e.splitBy) { e.splitBy = (e.payer || "").split(',').filter(x=>x); e.paidBy = e.splitBy[0] || "我"; }});
             
@@ -914,6 +917,7 @@
         }
 
         async function forceDownload(isAuto = false) {
+            // 如果連獨立 Token 都沒有，就不准動
             if(!gistId || !gistToken) return;
             if(!isAuto) updateCloudStatus("檢查中...");
             
@@ -924,15 +928,13 @@
                 if (r.status === 401) throw new Error("Unauthorized");
                 const d = await r.json();
 
-                // 1. 同步總清單
                 if (d.files["global_trip_list.json"]) {
                     const cloudTripList = JSON.parse(d.files["global_trip_list.json"].content);
-                    // 保持 Token
-                    tripList = cloudTripList.map(t => ({...t, gistId, gistToken}));
+                    // ⚠️ 關鍵：把雲端的名單抓下來，但**強行注入本機的 Token**，不讓雲端覆蓋！
+                    tripList = cloudTripList.map(t => ({...t, gistToken: gistToken}));
                     localStorage.setItem('app_trip_list', JSON.stringify(tripList));
                 }
 
-                // 2. 同步資料檔
                 const cloudFileName = currentTripId + "_data.json";
                 if (d.files[cloudFileName]) {
                     let content = d.files[cloudFileName].content;
@@ -941,6 +943,8 @@
                         content = await r2.text();
                     }
                     applyCloudData(JSON.parse(content));
+                } else {
+                    updateCloudStatus("已建立新雲端檔");
                 }
                 updateCloudStatus("同步完成");
             } catch(e) {
@@ -973,17 +977,20 @@
             }
         }
         function saveGistConfig() { 
-            gistId = document.getElementById('gist-id-input').value.trim(); 
-            gistToken = document.getElementById('gist-token-input').value.trim();
-            const tripIdx = tripList.findIndex(t => t.id === currentTripId);
+            const newId = document.getElementById('gist-id-input').value.trim(); 
+            const newTok = document.getElementById('gist-token-input').value.trim();
             
+            gistId = newId;
+            gistToken = newTok;
+            
+            const tripIdx = tripList.findIndex(t => t.id === currentTripId);
             if(tripIdx > -1) { 
                 tripList[tripIdx].gistId = gistId; 
-                tripList[tripIdx].gistToken = gistToken; 
+                // ⚠️ 移除這裡存入 Token 的動作，改存到獨立的 localStorage
+                localStorage.setItem('app_global_token', gistToken);
                 localStorage.setItem('app_trip_list', JSON.stringify(tripList)); 
             }
             
-            // 👉 補回被閹割的提示視窗
             alert("✅ 雲端設定已儲存！即將為您同步資料..."); 
             forceDownload(true);
         }
