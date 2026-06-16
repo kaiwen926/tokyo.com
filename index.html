@@ -834,6 +834,7 @@
         }
 
         // --- 3. 核心儲存引擎 ---
+        // --- 3. 核心儲存引擎 ---
         function applyCloudData(c) {
             const p = currentTripId + '_';
             localStorage.setItem(p+'flights',JSON.stringify(c.flights||[]));
@@ -874,9 +875,9 @@
             customStickers = JSON.parse(localStorage.getItem(p+'customStickers')) || [];
             transMaps = JSON.parse(localStorage.getItem(p+'transMaps')) || [];
             
-            gistId = currentTrip.gistId || ""; 
-            // ⚠️ 關鍵：Token 優先從本機獨立的保險箱拿，絕對不拿雲端傳下來的
-            gistToken = localStorage.getItem('app_global_token') || "";
+            // ✨ 萬能鑰匙：從獨立的本機庫讀取，不鎖死在單一國家物件裡
+            gistId = localStorage.getItem('app_global_gist_id') || currentTrip.gistId || ""; 
+            gistToken = localStorage.getItem('app_global_gist_token') || currentTrip.gistToken || "";
             
             mustEatList.forEach(m => { if(!m.themes) m.themes = []; });
             expenses.forEach(e => { if (!e.splitBy) { e.splitBy = (e.payer || "").split(',').filter(x=>x); e.paidBy = e.splitBy[0] || "我"; }});
@@ -907,17 +908,18 @@
                 localStorage.setItem(p+'customStickers', JSON.stringify(customStickers));
                 localStorage.setItem(p+'lastUpdate', now.toISOString());
 
-                const tripIdx = tripList.findIndex(t => t.id === currentTripId);
-                if(tripIdx > -1) {
-                    tripList[tripIdx].gistId = gistId; tripList[tripIdx].gistToken = gistToken;
-                    localStorage.setItem('app_trip_list', JSON.stringify(tripList));
-                }
+                // 同步更新所有行程的連線資訊
+                localStorage.setItem('app_global_gist_id', gistId);
+                localStorage.setItem('app_global_gist_token', gistToken);
+
+                tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
+                localStorage.setItem('app_trip_list', JSON.stringify(tripList));
+
                 if (gistId && gistToken) { clearTimeout(window.autoUploadTimer); window.autoUploadTimer = setTimeout(() => forceUpload(false), 2000); }
             } catch (e) { console.error(e); }
         }
 
         async function forceDownload(isAuto = false) {
-            // 如果連獨立 Token 都沒有，就不准動
             if(!gistId || !gistToken) return;
             if(!isAuto) updateCloudStatus("檢查中...");
             
@@ -928,11 +930,17 @@
                 if (r.status === 401) throw new Error("Unauthorized");
                 const d = await r.json();
 
+                // ✨ 安全合併：如果雲端檔案存在，與本機名單合併，絕不暴力覆蓋
                 if (d.files["global_trip_list.json"]) {
                     const cloudTripList = JSON.parse(d.files["global_trip_list.json"].content);
-                    // ⚠️ 關鍵：把雲端的名單抓下來，但**強行注入本機的 Token**，不讓雲端覆蓋！
-                    tripList = cloudTripList.map(t => ({...t, gistToken: gistToken}));
+                    cloudTripList.forEach(cloudTrip => {
+                        if (!tripList.some(localTrip => localTrip.id === cloudTrip.id)) {
+                            tripList.push(cloudTrip); // 把雲端有、本地沒有的加進來
+                        }
+                    });
+                    tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
                     localStorage.setItem('app_trip_list', JSON.stringify(tripList));
+                    renderTripList();
                 }
 
                 const cloudFileName = currentTripId + "_data.json";
@@ -943,19 +951,22 @@
                         content = await r2.text();
                     }
                     applyCloudData(JSON.parse(content));
-                } else {
-                    updateCloudStatus("已建立新雲端檔");
                 }
-                updateCloudStatus("同步完成");
+                updateCloudStatus("已同步");
             } catch(e) {
                 console.error("同步失敗:", e);
                 updateCloudStatus("連線失敗");
             }
         }
-       async function forceUpload(isManual = false) {
-            if(!gistId) return;
+
+        async function forceUpload(isManual = false) {
+            if(!gistId || !gistToken) return;
             updateCloudStatus("上傳中...");
             const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, lastUpdate: new Date().toISOString() };
+            
+            // ✨ 隱形安全盾：上傳前把選單裡的真實密碼全部抹空，絕不傳給 GitHub 機器人看！
+            const uploadTripList = tripList.map(t => ({...t, gistToken: ""}));
+
             try { 
                 const cloudFileName = currentTripId + "_data.json";
                 await fetch(`https://api.github.com/gists/${gistId}`, { 
@@ -964,40 +975,48 @@
                     body: JSON.stringify({ 
                         files: { 
                             [cloudFileName]: { content: JSON.stringify(payload) },
-                            // ✨ 順便把整份行程總選單上傳備份
-                            "global_trip_list.json": { content: JSON.stringify(tripList) }
+                            "global_trip_list.json": { content: JSON.stringify(uploadTripList) }
                         } 
                     }) 
                 }); 
-                updateCloudStatus("上傳成功"); 
-                if(isManual) alert("✅ 強制上傳成功！已將目前畫面與行程選單同步至雲端。"); 
+                updateCloudStatus("已同步"); 
+                if(isManual) alert("✅ 強制上傳成功！國家選單與行程已安全同步。"); 
             } catch(e){ 
                 updateCloudStatus("上傳失敗"); 
-                if(isManual) alert("❌ 上傳失敗，請檢查設定。"); 
+                if(isManual) alert("❌ 上傳失敗，請檢查網路。"); 
             }
         }
+
+        function saveGConfig() {
+            // 這邊相容舊的點擊
+            saveGistConfig();
+        }
+
         function saveGistConfig() { 
             const newId = document.getElementById('gist-id-input').value.trim(); 
             const newTok = document.getElementById('gist-token-input').value.trim();
             
-            gistId = newId;
+            if(!newId || !newTok) return alert("請完整填寫 ID 與 Token");
+
+            gistId = newId; 
             gistToken = newTok;
             
-            const tripIdx = tripList.findIndex(t => t.id === currentTripId);
-            if(tripIdx > -1) { 
-                tripList[tripIdx].gistId = gistId; 
-                // ⚠️ 移除這裡存入 Token 的動作，改存到獨立的 localStorage
-                localStorage.setItem('app_global_token', gistToken);
-                localStorage.setItem('app_trip_list', JSON.stringify(tripList)); 
-            }
+            localStorage.setItem('app_global_gist_id', gistId);
+            localStorage.setItem('app_global_gist_token', gistToken);
             
-            alert("✅ 雲端設定已儲存！即將為您同步資料..."); 
+            tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
+            localStorage.setItem('app_trip_list', JSON.stringify(tripList)); 
+            
+            alert("✅ 雲端連線設定已成功儲存！"); 
             forceDownload(true);
         }
+
         function updateCloudStatus(msg) { 
             const el = document.getElementById('cloud-status');
             if (el) el.innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
         }
+
+        // --- 4. 基礎 UI 工具箱 --- (後面不變，一路保留到 window.onload 之前)
 
         // --- 4. 基礎 UI 工具箱 ---
         function openModal(id){ 
@@ -1146,7 +1165,10 @@ function renderInfoLinks() {
                             <div class="p-4 bg-white space-y-3 border-t border-gray-100">
                                 <div class="text-[10px] text-gray-400 mb-2">設定 Gist ID 後，資料變動將自動上傳。</div>
                                 <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Gist ID</label><input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
-                                <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="password" id="gist-token-input" placeholder="Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
+                                <div>
+    <label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label>
+    <input type="text" id="gist-token-input" placeholder="請貼上 ghp_ 開頭的 Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha">
+</div>
                                 <button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
                                 <button onclick="forceUpload(true)" class="w-full bg-red-100 text-red-500 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> 強制上傳 (覆蓋雲端)</button>
                             </div>
@@ -1771,22 +1793,24 @@ function renderInfoLinks() {
             });
         }
         
-window.onload = async function() {
+// --- 最底部的 window.onload 初始化 ---
+        window.onload = async function() {
             fetchGlobalRates();
             reloadLocalData();
             
-            // 必須在渲染 UI 前先同步清單
             if (gistId && gistToken) {
+                const gId = document.getElementById('gist-id-input');
+                const gTok = document.getElementById('gist-token-input');
+                if(gId) gId.value = gistId;
+                if(gTok) gTok.value = gistToken;
                 updateCloudStatus("連線中...");
                 await forceDownload(true); 
             }
             
-            // 最後才渲染
             window.refreshUI();
             switchTab('plan');
             enableAutoSaveOnOutsideClick();
             
-            // 幣值選單邏輯
             const currencyNames = {'JPY': '日本', 'THB': '泰國', 'KRW': '韓國', 'TWD': '台灣', 'VND': '越南', 'AUD': '澳洲', 'CNY': '中國', 'HKD': '香港', 'EUR': '歐洲', 'GBP': '英國', 'USD': '美國'};
             ['new-trip-currency', 'calc-currency', 'ex-currency'].forEach(id => {
                 const select = document.getElementById(id);
@@ -1797,6 +1821,6 @@ window.onload = async function() {
                 }
             });
         };
- </script>
+    </script>
 </body>
 </html>
