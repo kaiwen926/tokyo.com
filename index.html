@@ -457,7 +457,7 @@
                 <div class="bg-fuji-light p-4 rounded-xl">
                     <input type="text" id="flight-code" placeholder="航班代號 (例: IT202)" class="w-full p-2 border-b border-fuji/20 bg-transparent text-center font-bold text-fuji handwritten text-xl mb-2 focus:outline-none placeholder-fuji/40">
                     <input type="text" id="flight-date" placeholder="日期 (例: 1/10 去程)" class="w-full p-1 bg-transparent text-center text-sm font-hand text-gray-500 mb-1 focus:outline-none">
-                    <input type="text" id="flight-time" placeholder="時間 (例: 14:00 - 18:00)" class="w-full p-1 bg-transparent text-center text-sm font-hand text-gray-500 focus:outline-none">
+                    <input type="text" id="flight-time" placeholder="시간 (例: 14:00 - 18:00)" class="w-full p-1 bg-transparent text-center text-sm font-hand text-gray-500 focus:outline-none">
                 </div>
                 <div class="flex gap-2">
                 <input type="url" id="flight-url" placeholder="官網/報到連結" class="flex-1 p-2 border rounded-xl bg-white text-xs outline-none">
@@ -648,38 +648,86 @@
             <button onclick="switchTab('info')" class="nav-item flex flex-col items-center text-gray-400 transition flex-1" data-target="info"><i class="fa-solid fa-circle-info text-lg mb-1"></i><span class="text-[10px] handwritten font-bold">資訊</span></button>
         </div>
     </nav>
-
-    <script>
-        // --- 1. 系統設定與語系資料 (DATA & CONFIG) ---
+<script>
+        // --- 1. 系統設定與基礎資料 ---
         const PRELOADED_GUIDES = []; 
         const WEATHER_MAP = {'sunny': '🌞','partly-cloudy': '⛅','cloudy': '☁','rain': '☂','heavy-rain': '⛈️','snow': '⛄','fog': '🌫️','windy': '🍃'};
         const expenseCategories = [{ id: '餐飲', icon: 'fa-utensils', color: 'bg-yellow-100 text-yellow-600' }, { id: '交通', icon: 'fa-train-subway', color: 'bg-blue-100 text-blue-600' }, { id: '購物', icon: 'fa-bag-shopping', color: 'bg-pink-100 text-pink-600' }, { id: '門票', icon: 'fa-ticket', color: 'bg-green-100 text-green-600' }, { id: '住宿', icon: 'fa-bed', color: 'bg-purple-100 text-purple-600' }, { id: '其他', icon: 'fa-asterisk', color: 'bg-gray-100 text-gray-600' }];
         const RECOVERED_PAYERS = ["我", "旅伴", "公費"];
-        const DEFAULT_TODOS = ["護照", "外幣現金", "信用卡", "手機", "充電器/線", "行動電源", "網卡/eSIM", "換洗衣物", "內衣褲", "襪子", "外套", "帽子/墨鏡", "好走的鞋", "盥洗用品", "保養品/化妝品", "個人藥品", "腸胃藥/止痛藥", "雨傘", "環保袋", "衛生紙/濕紙巾"];
+        const DEFAULT_TODOS = ["護照", "外幣現金", "信用卡", "手機", "充電器/線", "行動電源", "網卡/eSIM", "換洗衣物", "內衣褲", "襪子", "外套", "帽子/墨鏡", "好走的鞋", "盥洗用品", "保養品/化妝品", "個人藥品", "腸胃藥/止痛藥", "雨傘", "環保袋", "衛生紙/湿纸巾"];
         
-        const MULTI_PHRASES = {
+        // --- 國家專屬主題與獨立工具大腦 (Country Modules) ---
+        const COUNTRY_MODULES = {
             'JP': {
-                'food': [{ ja: 'メニューをください', p: 'Menu wo kudasai', zh: '請給我菜單' },{ ja: 'これをお願いします', p: 'Kore wo onegaishimasu', zh: '我要這個' },{ ja: 'お水ください', p: 'Omizu kudasai', zh: '請給我水' },{ ja: 'お会計お願いします', p: 'Okaikei onegaishimasu', zh: '我要結帳' },{ ja: '美味しいです', p: 'Oishii desu', zh: '很好吃' }],
-                'shopping': [{ ja: '試着してもいいですか', p: 'Shichaku shitemo ii desu ka', zh: '可以試穿嗎？' },{ ja: 'いくらですか', p: 'Ikura desu ka', zh: '多少錢？' },{ ja: '免税できますか', p: 'Menzei dekimasu ka', zh: '可以退稅嗎？' },{ ja: '袋はいりません', p: 'Fukuro wa irimasen', zh: '不用袋子' }],
-                'stay': [{ ja: 'チェックインお願いします', p: 'Chekkuin onegaishimasu', zh: '我要辦理入住' },{ ja: '荷物を預かってもらえますか', p: 'Nimotsu wo azukatte moraemasu ka', zh: '可以寄放行李嗎？' },{ ja: 'Wi-Fiのパスワードは何ですか', p: 'Wi-Fi no pasuwādo wa nan desu ka', zh: 'Wi-Fi密碼是多少？' }],
-                'transport': [{ ja: '駅はどこですか', p: 'Eki wa doko desu ka', zh: '車站在哪裡？' },{ ja: '切符売り場はどこですか', p: 'Kippu uriba wa doko desu ka', zh: '售票處在哪裡？' }],
-                'vege': [{ ja: '私はベジタリアンです', p: 'Watashi wa bejitarian desu', zh: '我是素食者' },{ ja: '肉と魚は食べられません', p: 'Niku to sakana wa taberaremasen', zh: '我不吃肉和魚' }]
-            },
-            'TH': {
-                'food': [{ ja: 'ขอเมนูหน่อยครับ/ค่ะ', p: 'Khor menu noi', zh: '請給我菜單' },{ ja: 'เอาอันนี้ครับ/ค่ะ', p: 'Ao an nii', zh: '我要這個' },{ ja: 'เช็คบิลด้วยครับ/ค่ะ', p: 'Check bill duay krub/ka', zh: '我要結帳' },{ ja: 'ไม่เผ็ดครับ/ค่ะ', p: 'Mai phed', zh: '不要辣' }],
-                'shopping': [{ ja: 'ลองได้ไหมครับ/ค่ะ', p: 'Long dai mai', zh: '可以試穿嗎？' },{ ja: 'เท่าไหร่ครับ/ค่ะ', p: 'Tao rai', zh: '多少錢？' },{ ja: 'ลดราคาได้ไหมครับ/ค่ะ', p: 'Lod raka dai mai', zh: '可以便宜一點嗎？' }],
-                'stay': [{ ja: 'เช็คอินครับ/ค่ะ', p: 'Check-in krub/ka', zh: '我要辦理入住' },{ ja: 'รหัสไวไฟคืออะไรครับ/ค่ะ', p: 'Rahat Wi-Fi kue arai', zh: 'Wi-Fi密碼是多少？' }],
-                'transport': [{ ja: 'สถานีรถไฟอยู่ที่ไหนครับ/ค่ะ', p: 'Sathani rot fai yoo tee nai', zh: '車站在哪裡？' },{ ja: 'อยากไป...ครับ/ค่ะ', p: 'Yak pai...', zh: '我想去...' }],
-                'vege': [{ ja: 'กินเจครับ/ค่ะ', p: 'Gin je krub/ka', zh: '我是吃全素的' },{ ja: 'ไม่ใส่กระเทียมครับ/ค่ะ', p: 'Mai sai gratiem', zh: '不加蒜頭' }]
+                emojis: ['🍙', '🍡', '⛩️'], bgColor: '#f9f7f2', pattern: '#f0f0f0',
+                langTarget: 'ja', langCode: 'ja-JP',
+                phraseTitle: '生存日語字卡', mapTitle: '交通路線圖庫',
+                quickLinks: [
+                    { name: '日本天氣', url: 'https://tenki.jp/', icon: 'fa-cloud-sun-rain', color: 'bg-blue-50 text-blue-400' },
+                    { name: 'Tabelog', url: 'https://tabelog.com/', icon: 'fa-utensils', color: 'bg-orange-50 text-orange-400' },
+                    { name: '乘換案內', url: 'https://transit.yahoo.co.jp/', icon: 'fa-train-subway', color: 'bg-red-50 text-red-400' },
+                    { name: 'Uber Taxi', url: 'https://m.uber.com/', icon: 'fa-brands fa-uber', color: 'bg-gray-100 text-gray-800' },
+                    { name: 'GO Taxi', url: 'https://go.mo-t.com/', icon: 'fa-solid fa-taxi', color: 'bg-emerald-50 text-emerald-500' }
+                ],
+                phrases: {
+                    'food': [{ ja: 'メニューをください', p: 'Menu wo kudasai', zh: '請給我菜單' },{ ja: 'これをお願いします', p: 'Kore wo onegaishimasu', zh: '我要這個' },{ ja: 'お会計お願いします', p: 'Okaikei onegaishimasu', zh: '我要結帳' },{ ja: 'お水ください', p: 'Omizu kudasai', zh: '請給我水' },{ ja: '美味しいです', p: 'Oishii desu', zh: '很好吃' }],
+                    'shopping': [{ ja: '試着してもいいですか', p: 'Shichaku shitemo ii desu ka', zh: '可以試穿嗎？' },{ ja: 'いくらですか', p: 'Ikura desu ka', zh: '多少錢？' },{ ja: '免税できますか', p: 'Menzei dekimasu ka', zh: '可以退稅嗎？' },{ ja: '袋はいりません', p: 'Fukuro wa irimasen', zh: '不用袋子' }],
+                    'stay': [{ ja: 'チェックインお願いします', p: 'Chekkuin onegaishimasu', zh: '我要辦理入住' },{ ja: '荷物を預かってもらえますか', p: 'Nimotsu wo azukatte moraemasu ka', zh: '可以寄放行李嗎？' },{ ja: 'Wi-Fiのパスワードは何ですか', p: 'Wi-Fi no pasuwādo wa nan desu ka', zh: 'Wi-Fi密碼是多少？' }],
+                    'transport': [{ ja: '駅はどこですか', p: 'Eki wa doko desu ka', zh: '車站在哪裡？' },{ ja: '切符売り場はどこですか', p: 'Kippu uriba wa doko desu ka', zh: '售票處在哪裡？' }]
+                }
             },
             'KR': {
-                'food': [{ ja: '메뉴판 주세요', p: 'Menu-pan juseyo', zh: '請給我菜單' },{ ja: '이거 주세요', p: 'Igeo juseyo', zh: '我要這個' },{ ja: '계산해 주세요', p: 'Gyesanhae juseyo', zh: '我要結帳' },{ ja: '안 맵게 해주세요', p: 'An maepge haejuseyo', zh: '請不要太辣' }],
-                'shopping': [{ ja: '입어봐도 되나요?', p: 'Ibeobwado doenayo?', zh: '可以試穿嗎？' },{ ja: '얼마예요?', p: 'Eolmayeyo?', zh: '多少錢？' },{ ja: '텍스 리펀 되나요?', p: 'Tekseu ripeon doenayo?', zh: '可以退稅嗎？' }],
-                'stay': [{ ja: '체크인 할게요', p: 'Chekeu-in halgeyo', zh: '我要辦理入住' },{ ja: '짐 보관 되나요?', p: 'Jim bogwan doenayo?', zh: '可以寄放行李嗎？' }],
-                'transport': [{ ja: '지하철역이 어디예요?', p: 'Jihacheollyeogi eodiyeyo?', zh: '地鐵站在哪裡？' },{ ja: '여기로 가주세요', p: 'Yeogiro gajuseyo', zh: '請載我到這裡' }],
-                'vege': [{ ja: '저는 채식주의자입니다', p: 'Jeoneun chaesikjuuijaimnida', zh: '我是素食者' },{ ja: '고기랑 해산물 빼주세요', p: 'Gogirang haesanmul ppaejuseyo', zh: '請不要放肉和海鮮' }]
+                emojis: ['🥘', '🍻', '🗼'], bgColor: '#fbfafc', pattern: '#e8eef2',
+                langTarget: 'ko', langCode: 'ko-KR',
+                phraseTitle: '生存韓語字卡', mapTitle: '韓國地鐵/交通圖',
+                quickLinks: [
+                    { name: '韓國天氣', url: 'https://weather.com/', icon: 'fa-cloud-sun-rain', color: 'bg-blue-50 text-blue-400' },
+                    { name: 'Naver Map', url: 'https://map.naver.com/', icon: 'fa-solid fa-map-location-dot', color: 'bg-green-50 text-green-500' },
+                    { name: '韓巢地圖', url: 'https://map.hanchao.com/', icon: 'fa-solid fa-route', color: 'bg-sky-50 text-sky-500' },
+                    { name: 'CatchTable', url: 'https://app.catchtable.co.kr/', icon: 'fa-solid fa-utensils', color: 'bg-red-50 text-red-400' },
+                    { name: 'Kakao T', url: 'https://www.kakaocorp.com/page/service/service/KakaoT', icon: 'fa-solid fa-taxi', color: 'bg-yellow-50 text-yellow-600' },
+                    { name: 'Naver Papago', url: 'https://papago.naver.com/', icon: 'fa-solid fa-language', color: 'bg-teal-50 text-teal-600' }
+                ],
+                phrases: {
+                    'food': [{ ja: '메뉴판 주세요', p: 'Menu-pan juseyo', zh: '請給我菜單' },{ ja: '이거 주세요', p: 'Igeo juseyo', zh: '我要這個' },{ ja: '계산해 주세요', p: 'Gyesanhae juseyo', zh: '我要結帳' },{ ja: '안 맵게 해주세요', p: 'An maepge haejuseyo', zh: '請做不辣/不要太辣' },{ ja: '여기 물 좀 주세요', p: 'Yeogi mul jom juseyo', zh: '請給我水' },{ ja: '반찬 좀 더 주세요', p: 'Banchan jom deo juseyo', zh: '請幫我續小菜' }],
+                    'shopping': [{ ja: '입어봐도 되나요?', p: 'Ibeobwado doenayo?', zh: '可以試穿嗎？' },{ ja: '얼마예요?', p: 'Eolmayeyo?', zh: '多少錢？' },{ ja: '텍스 리펀 되나요?', p: 'Tekseu ripeon doenayo?', zh: '可以退稅嗎？' },{ ja: '이거 새제품으로 주세요', p: 'Igeo saejepum-euro juseyo', zh: '請給我新的（非展示品）' },{ ja: '봉투 필요 없어요', p: 'Bongtu piryo eopseyo', zh: '不用袋子' }],
+                    'stay': [{ ja: '체크인 할게요', p: 'Chekeu-in halgeyo', zh: '我要辦理入住' },{ ja: '짐 보관 되나요?', p: 'Jim bogwan doenayo?', zh: '可以寄放行李嗎？' },{ ja: '와이파이 비밀번호가 뭐예요?', p: 'Wa-i-pa-i bimilbeonhoga mwoyeyo?', zh: 'Wi-Fi密碼是多少？' },{ ja: '수건 좀 더 주세요', p: 'Su-geon jom deo juseyo', zh: '請再給我幾條毛巾' }],
+                    'transport': [{ ja: '지하철역이 어디예요?', p: 'Jihacheollyeogi eodiyeyo?', zh: '地鐵站在哪裡？' },{ ja: '여기로 가주세요', p: 'Yeogiro gajuseyo', zh: '請載我到這裡' },{ ja: '여기서 내려주세요', p: 'Yeogiseo naeryeojuseyo', zh: '請在這裡讓我下車' }]
+                }
             },
-            'OTHER': { 'food': [], 'shopping': [], 'stay': [], 'transport': [], 'vege': [] } 
+            'TH': {
+                emojis: ['🐘', '🥥', '🛕'], bgColor: '#fdfaf2', pattern: '#f5ecd5',
+                langTarget: 'th', langCode: 'th-TH',
+                phraseTitle: '生存泰語字卡', mapTitle: '交通路線圖庫',
+                quickLinks: [
+                    { name: '泰國天氣', url: 'https://weather.com/', icon: 'fa-cloud-sun-rain', color: 'bg-blue-50 text-blue-400' },
+                    { name: 'Wongnai', url: 'https://www.wongnai.com/', icon: 'fa-solid fa-utensils', color: 'bg-orange-50 text-orange-400' },
+                    { name: 'Grab', url: 'https://grab.onelink.me/2695613898', icon: 'fa-solid fa-taxi', color: 'bg-emerald-50 text-emerald-500' },
+                    { name: 'Bolt', url: 'https://bolt.eu/', icon: 'fa-solid fa-car-side', color: 'bg-cyan-50 text-cyan-600' }
+                ],
+                phrases: {
+                    'food': [{ ja: 'ขอเมนูหน่อยค่ะ', p: 'Khor menu noi ka', zh: '請給我菜單' },{ ja: 'เอาอันนี้ค่ะ', p: 'Ao an nii ka', zh: '我要這個' },{ ja: 'เก็บเงินด้วยค่ะ', p: 'Kep ngen duay ka', zh: '我要結帳 (Check bill)' },{ ja: 'ไม่เผ็ดค่ะ', p: 'Mai phed ka', zh: '不要辣' },{ ja: 'ไม่ใส่ผักชีค่ะ', p: 'Mai sai pak-chee ka', zh: '不要香菜' }],
+                    'shopping': [{ ja: 'ลองได้ไหมคะ', p: 'Long dai mai ka', zh: '可以試穿嗎？' },{ ja: 'เท่าไหร่คะ', p: 'Tao rai ka', zh: '多少錢？' },{ ja: 'ลดราคาได้ไหมคะ', p: 'Lod raka dai mai ka', zh: '可以便宜一點嗎？' }],
+                    'stay': [{ ja: 'เช็คอินค่ะ', p: 'Check-in ka', zh: '我要辦理入住' },{ ja: 'รหัสไวไฟคืออะไรคะ', p: 'Rahat Wi-Fi kue arai ka', zh: 'Wi-Fi密碼是多少？' },{ ja: 'ฝากกระเป๋าได้ไหมคะ', p: 'Fak krapao dai mai ka', zh: '可以寄放行李嗎？' }],
+                    'transport': [{ ja: 'สถานีรถไฟอยู่ที่ไหนคะ', p: 'Sathani rot fai yoo tee nai ka', zh: '車站在哪裡？' },{ ja: 'อยากไป...ค่ะ', p: 'Yak pai...', zh: '我想去...' },{ ja: 'เปิดมิเตอร์ด้วยค่ะ', p: 'Poed meter duay ka', zh: '請跳錶交易 (By Meter)' }]
+                }
+            },
+            'OTHER': {
+                emojis: ['✈️', '🌍', '📸'], bgColor: '#f9f9f9', pattern: '#eeeeee',
+                langTarget: 'en', langCode: 'en-US',
+                phraseTitle: '通用旅遊英文', mapTitle: '自訂路線圖庫',
+                quickLinks: [
+                    { name: 'Google翻譯', url: 'https://translate.google.com/', icon: 'fa-solid fa-language', color: 'bg-blue-50 text-blue-500' },
+                    { name: 'Google Map', url: 'https://www.google.com/maps', icon: 'fa-solid fa-map-location-dot', color: 'bg-green-50 text-green-500' },
+                    { name: 'ChatGPT AI', url: 'https://chatgpt.com/', icon: 'fa-solid fa-robot', color: 'bg-purple-50 text-purple-500' }
+                ],
+                phrases: {
+                    'food': [{ ja: 'Could I have the menu, please?', p: 'Menu please', zh: '請給我菜單' },{ ja: 'I would like to order this.', p: 'This one', zh: '我要點這個' },{ ja: 'Check, please.', p: 'Bill please', zh: '我要結帳' }],
+                    'shopping': [{ ja: 'Can I try this on?', p: 'Try on?', zh: '可以試穿嗎？' },{ ja: 'How much is this?', p: 'How much?', zh: '多少錢？' },{ ja: 'Is it tax-free?', p: 'Tax free?', zh: '可以退稅嗎？' }],
+                    'stay': [{ ja: 'I’d like to check in, please.', p: 'Check in', zh: '我要辦理入住' },{ ja: 'Can I leave my luggage here?', p: 'Keep luggage?', zh: '可以寄放行李嗎？' }],
+                    'transport': [{ ja: 'Where is the train station?', p: 'Station?', zh: '車站在哪裡？' }]
+                }
+            }
         };
 
         // --- 全域資料變數 ---
@@ -689,19 +737,10 @@
         let currentShopOwnerIdx=0, inlineCategoryChart=null, inlineMemberChart=null, settlementChart=null, memberDetailChart=null, gistId="", gistToken="";
         let tempThemes=[], currentPhotoBase64=null, currentGuidePhoto=null, currentShopPhoto=null, tempDayPhotos=[], selectedPayers=[], selectedCat='餐飲';
         let tempTrans = [], tempMassages = [], currentFlightPhoto = null, currentAccDayId = null; 
-// 行程編輯變數
-        let dayLongPressTimer = null, isEditMode = false;
         
-        // 貼紙互動變數 (補上遺失的這兩行！)
+        let dayLongPressTimer = null, isEditMode = false;
         let activeSticker = null, stickerOffsetX = 0, stickerOffsetY = 0;
         let activeResizeSticker = null, startWidth = 0, startX = 0, longPressTimer = null;
-        // --- 國家專屬主題設定 ---
-        const COUNTRY_THEMES = {
-            'JP': { emojis: ['🍙', '🍡', '⛩️'], bgColor: '#f9f7f2', pattern: '#f0f0f0' },
-            'TH': { emojis: ['🐘', '🥥', '🛕'], bgColor: '#fdfaf2', pattern: '#f5ecd5' }, // 泰國：大象、椰子、寺廟 (暖黃色)
-            'KR': { emojis: ['🥘', '🍻', '🗼'], bgColor: '#fbfafc', pattern: '#e8eef2' }, // 韓國：部隊鍋、燒酒、首爾塔 (冷藍色)
-            'OTHER': { emojis: ['✈️', '🌍', '📸'], bgColor: '#f9f9f9', pattern: '#eeeeee' } // 其他：飛機、地球、相機
-        };
 
         // --- 即時匯率資料庫 ---
         let globalExchangeRates = {};
@@ -711,8 +750,8 @@
             .then(d => { globalExchangeRates = d.rates; })
             .catch(e => console.log('匯率載入失敗'));
         }
-        // 計算機變數
         let calcVal = '0', calcPendingOp = null, calcPrevVal = null, calcResetNext = false;
+
         // --- 2. 任意門管理系統 (Trip Manager) ---
         let tripList = JSON.parse(localStorage.getItem('app_trip_list')) || [
             { id: 'thai', name: '泰國之旅', currency: 'THB', country: 'TH', gistId: '', gistToken: '' },
@@ -724,8 +763,7 @@
         window.refreshUI = function() { 
             reloadLocalData(); 
             
-            // ✨ 變換國家專屬主題與背景
-            const theme = COUNTRY_THEMES[currentTrip.country] || COUNTRY_THEMES['OTHER'];
+            const theme = COUNTRY_MODULES[currentTrip.country] || COUNTRY_MODULES['OTHER'];
             document.body.style.backgroundColor = theme.bgColor;
             document.body.style.backgroundImage = `linear-gradient(${theme.pattern} 1px, transparent 1px), linear-gradient(90deg, ${theme.pattern} 1px, transparent 1px)`;
             const e1 = document.getElementById('bg-emoji-1'); if(e1) e1.innerText = theme.emojis[0];
@@ -749,6 +787,7 @@
             if(memo) memo.value = memoText; 
             renderVJW(); 
             if(typeof renderStickers === 'function') renderStickers();
+            
             if(gistId) {
                 const el1 = document.getElementById('gist-id-input');
                 const el2 = document.getElementById('gist-token-input');
@@ -756,29 +795,23 @@
                 if(el2) el2.value = gistToken;
             } 
         }
-// ✨ 修改目前行程名稱功能
+
         function renameCurrentTrip() {
             const newName = prompt("✍️ 請輸入新的行程名稱：", currentTrip.name);
             if (newName && newName.trim() !== "") {
                 currentTrip.name = newName.trim();
-                
-                // 同步更新總行程管理選單 (tripList)
                 const idx = tripList.findIndex(t => t.id === currentTripId);
                 if (idx > -1) {
                     tripList[idx].name = currentTrip.name;
                     localStorage.setItem('app_trip_list', JSON.stringify(tripList));
                 }
-                
-                saveData(); // 儲存本機
-                window.refreshUI(); // 重新渲染標題畫面
-                
-                // 觸發自動上傳，把新名稱同步到雲端
-                if (gistId && gistToken) {
-                    setTimeout(() => forceUpload(false), 500);
-                }
+                saveData(); 
+                window.refreshUI(); 
+                if (gistId && gistToken) setTimeout(() => forceUpload(false), 500);
                 alert("🎯 行程名稱已成功修改！");
             }
         }
+        
         function openTripManager() { renderTripList(); openModal('trip-manager-modal'); }
         function renderTripList() {
             document.getElementById('trip-list-container').innerHTML = tripList.map(t => `
@@ -810,16 +843,11 @@
             const country = document.getElementById('new-trip-country').value;
             if(!name) return alert("請輸入行程名稱");
 
-            // 💡 關鍵修復 4：自動複製當前的 Token，讓新行程直接連上雲端保險箱
             const newTrip = { 
                 id: 'trip_' + Date.now(), 
-                name: name, 
-                currency: currency, 
-                country: country, 
-                gistId: gistId || '', 
-                gistToken: gistToken || '' 
+                name: name, currency: currency, country: country, 
+                gistId: gistId || '', gistToken: gistToken || '' 
             };
-            
             tripList.push(newTrip);
             localStorage.setItem('app_trip_list', JSON.stringify(tripList));
             document.getElementById('new-trip-name').value = '';
@@ -833,7 +861,6 @@
             }
         }
 
-        // --- 3. 核心儲存引擎 ---
         // --- 3. 核心儲存引擎 ---
         function applyCloudData(c) {
             const p = currentTripId + '_';
@@ -875,7 +902,7 @@
             customStickers = JSON.parse(localStorage.getItem(p+'customStickers')) || [];
             transMaps = JSON.parse(localStorage.getItem(p+'transMaps')) || [];
             
-            // ✨ 萬能鑰匙：從獨立的本機庫讀取，不鎖死在單一國家物件裡
+            // ✨ 萬能鑰匙：從獨立的本機庫讀取
             gistId = localStorage.getItem('app_global_gist_id') || currentTrip.gistId || ""; 
             gistToken = localStorage.getItem('app_global_gist_token') || currentTrip.gistToken || "";
             
@@ -930,12 +957,12 @@
                 if (r.status === 401) throw new Error("Unauthorized");
                 const d = await r.json();
 
-                // ✨ 安全合併：如果雲端檔案存在，與本機名單合併，絕不暴力覆蓋
+                // ✨ 安全合併
                 if (d.files["global_trip_list.json"]) {
                     const cloudTripList = JSON.parse(d.files["global_trip_list.json"].content);
                     cloudTripList.forEach(cloudTrip => {
                         if (!tripList.some(localTrip => localTrip.id === cloudTrip.id)) {
-                            tripList.push(cloudTrip); // 把雲端有、本地沒有的加進來
+                            tripList.push(cloudTrip);
                         }
                     });
                     tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
@@ -964,7 +991,7 @@
             updateCloudStatus("上傳中...");
             const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, lastUpdate: new Date().toISOString() };
             
-            // ✨ 隱形安全盾：上傳前把選單裡的真實密碼全部抹空，絕不傳給 GitHub 機器人看！
+            // ✨ 隱形安全盾
             const uploadTripList = tripList.map(t => ({...t, gistToken: ""}));
 
             try { 
@@ -985,11 +1012,6 @@
                 updateCloudStatus("上傳失敗"); 
                 if(isManual) alert("❌ 上傳失敗，請檢查網路。"); 
             }
-        }
-
-        function saveGConfig() {
-            // 這邊相容舊的點擊
-            saveGistConfig();
         }
 
         function saveGistConfig() { 
@@ -1015,8 +1037,6 @@
             const el = document.getElementById('cloud-status');
             if (el) el.innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
         }
-
-        // --- 4. 基礎 UI 工具箱 --- (後面不變，一路保留到 window.onload 之前)
 
         // --- 4. 基礎 UI 工具箱 ---
         function openModal(id){ 
@@ -1058,7 +1078,16 @@
         }
 
         function goBackToPlan() { switchTab('plan'); document.getElementById('btn-back-to-plan').classList.add('hidden'); }
-        function checkUrl(str) { if(!str) return null; if(str.startsWith('http') || str.startsWith('www')) return str; return null; }
+        
+        function checkUrl(str) { 
+            if(!str) return null; 
+            str = str.trim();
+            if(str.startsWith('http://') || str.startsWith('https://')) return str; 
+            if(str.startsWith('www.')) return 'https://' + str;
+            if(str.includes('.') && !str.includes(' ')) return 'https://' + str;
+            return null; 
+        }
+        
         function quickExpense(note, cat) { openExpenseModal(null, true); document.getElementById('ex-note').value = note; selectedCat = cat; renderCategoryUI(); }
         
         function jumpToGuide(title) { 
@@ -1077,78 +1106,106 @@
         function linkifyContent(text) { 
             if(!text) return '';
             let html = text; 
+            
+            // 處理導覽景點的自動連結
             guides.forEach(g => { 
                 if (g.title.length > 1) { 
                     const regex = new RegExp(`(${g.title})`, 'g'); 
                     html = html.replace(regex, `<span class="guide-link" onclick="jumpToGuide('$1')">$1</span>`); 
                 } 
             }); 
+            
+            // 支援使用 \ 或換行來分隔不同的活動
             const lines = html.split(/\\|\n/).filter(l => l.trim() !== '');
+            
             return lines.map(line => {
-                let activity = line; let note = '';
-                if (activity.includes('*')) { const parts = activity.split('*'); activity = parts[0].trim(); note = parts.slice(1).join('*').trim(); } 
-                else if (activity.includes('|')) { const parts = activity.split('|'); activity = parts[0].trim(); note = parts.slice(1).join('|').trim(); }
+                let activity = line.trim(); 
+                let note = '';
+                
+                // 支援使用 * 或 | 來標示備註
+                if (activity.includes('*')) { 
+                    const parts = activity.split('*'); 
+                    activity = parts[0].trim(); 
+                    note = parts.slice(1).join('*').trim(); 
+                } else if (activity.includes('|')) { 
+                    const parts = activity.split('|'); 
+                    activity = parts[0].trim(); 
+                    note = parts.slice(1).join('|').trim(); 
+                }
+
+                // 處理連結 (自動將 http 轉成可點擊的網址)
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                activity = activity.replace(urlRegex, url => `<a href="${url}" target="_blank" class="text-blue-500 hover:text-blue-700 underline decoration-dotted ml-1"><i class="fa-solid fa-link text-[10px]"></i> 連結</a>`);
+                
                 const noteHtml = note ? `<div class="text-xs text-gray-400 mt-1 font-hand tracking-wide leading-snug"><i class="fa-solid fa-comment-dots text-[10px] mr-1 opacity-50"></i>${note}</div>` : '';
                 return `<li class="flex items-start text-base mb-3 group/item"><span class="mr-2 mt-2 w-2 h-2 bg-fuji rounded-full flex-shrink-0 border border-blue-200 group-hover/item:scale-125 transition-transform duration-300"></span><div class="flex-1 min-w-0"><div class="leading-relaxed text-gray-700 font-bold">${activity}</div>${noteHtml}</div></li>`;
             }).join(''); 
         }
 
         // --- 5. Info 區塊動態渲染 ---
-function renderInfoLinks() {
+        function renderInfoLinks() {
             const container = document.getElementById('info-container-dynamic');
             if(!container) return;
-            const country = currentTrip.country || 'JP'; 
-            let entryDocHtml = '', quickLinksHtml = '', mapHtml = '', langTarget = 'ja', phraseTitle = '生存日語字卡';
-
-            // ✨ 補回遺失的 VJW 圖片上傳容器
+            
+            const module = COUNTRY_MODULES[currentTrip.country] || COUNTRY_MODULES['OTHER'];
+            let entryDocHtml = '';
             const vjwContainerHtml = `<div id="vjw-content" class="transition-all duration-300 overflow-hidden"><div class="p-4 pb-6"><div id="vjw-container" class="flex overflow-x-auto gap-4 snap-x snap-mandatory pb-4 no-scrollbar items-start"></div></div></div>`;
 
-            if (country === 'JP') {
+            if (currentTrip.country === 'JP') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>Visit Japan Web</h3><div class="flex gap-2 items-center"><a href="https://www.vjw.digital.go.jp/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-                quickLinksHtml = `<a href="https://tenki.jp/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-cloud-sun-rain text-xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">天氣</span></a><a href="https://tabelog.com/" target="_blank" class="flex flex-col items-center justify-center bg-orange-50 hover:bg-orange-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-utensils text-xl text-orange-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">Tabelog</span></a><a href="https://transit.yahoo.co.jp/" target="_blank" class="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-train-subway text-xl text-red-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">乘換案內</span></a><a href="https://m.uber.com/" target="_blank" class="flex flex-col items-center justify-center bg-gray-100 hover:bg-gray-200 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-brands fa-uber text-xl text-gray-800 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-600">Uber</span></a><a href="https://go.mo-t.com/" target="_blank" class="flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-taxi text-xl text-emerald-500 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-emerald-600">GO Taxi</span></a>`;
-                mapHtml = `<div class="mt-6 mb-6"><div class="hand-card p-4 border-l-8 border-blue-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-map-location-dot"></i> 交通路線圖庫</h3><div class="relative overflow-hidden inline-block"><button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增圖資</button><input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)"></div></div><div id="trans-maps-container" class="space-y-4"></div></div></div>`;
-            } else if (country === 'TH') {
+            } else if (currentTrip.country === 'TH') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>入境文件 (TDAC)</h3><div class="flex gap-2 items-center"><a href="https://tdac.immigration.go.th/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-                quickLinksHtml = `<a href="https://weather.com/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-cloud-sun-rain text-xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">天氣</span></a><a href="https://www.google.com/maps/search/drugstore" target="_blank" class="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-store text-xl text-thai-red mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">便利店</span></a><a href="https://www.wongnai.com/" target="_blank" class="flex flex-col items-center justify-center bg-orange-50 hover:bg-orange-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-utensils text-xl text-orange-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">Wongnai</span></a><a href="https://grab.onelink.me/2695613898" target="_blank" class="flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-taxi text-xl text-emerald-500 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-emerald-600">Grab</span></a><a href="https://bolt.eu/" target="_blank" class="flex flex-col items-center justify-center bg-cyan-50 hover:bg-cyan-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-car-side text-xl text-cyan-500 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-cyan-600">Bolt</span></a>`;
-                mapHtml = `<div class="mt-6 mb-6"><div class="hand-card p-4 border-l-8 border-blue-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-map-location-dot"></i> 交通路線圖庫</h3><div class="relative overflow-hidden inline-block"><button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增圖資</button><input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)"></div></div><div id="trans-maps-container" class="space-y-4"></div></div></div>`;
-                langTarget = 'th'; phraseTitle = '生存泰語字卡';
-            } else if (country === 'KR') {
-                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國電子旅行許可 (K-ETA)</h3><div class="flex gap-2 items-center"><a href="https://www.k-eta.go.kr/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-                quickLinksHtml = `<a href="https://weather.com/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-cloud-sun-rain text-xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">天氣</span></a><a href="https://map.naver.com/" target="_blank" class="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-map-location-dot text-xl text-green-500 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-green-600">Naver Map</span></a><a href="https://app.catchtable.co.kr/" target="_blank" class="flex flex-col items-center justify-center bg-red-50 hover:bg-red-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-utensils text-xl text-red-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">CatchTable</span></a><a href="https://www.kakaocorp.com/page/service/service/KakaoT" target="_blank" class="flex flex-col items-center justify-center bg-yellow-50 hover:bg-yellow-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-taxi text-xl text-yellow-600 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-yellow-700">Kakao T</span></a>`;
-                mapHtml = `<div class="mt-6 mb-6"><div class="hand-card p-4 border-l-8 border-blue-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-subway"></i> 韓國地鐵/交通圖</h3><div class="relative overflow-hidden inline-block"><button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增圖資</button><input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)"></div></div><div id="trans-maps-container" class="space-y-4"></div></div></div>`;
-                langTarget = 'ko'; phraseTitle = '生存韓語字卡';
+            } else if (currentTrip.country === 'KR') {
+                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 K-ETA / 填寫健康 Q-Code</h3><div class="flex gap-2 items-center"><a href="https://www.k-eta.go.kr/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else {
-                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>入境文件/電子簽證</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-                quickLinksHtml = `<a href="https://weather.com/" target="_blank" class="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-cloud-sun-rain text-xl text-blue-400 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-gray-500">天氣</span></a><a href="https://www.google.com/maps/search/drugstore" target="_blank" class="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-2 rounded-xl transition group no-underline text-center h-20"><i class="fa-solid fa-map-location-dot text-xl text-green-500 mb-1 group-hover:scale-110 transition-transform"></i><span class="text-[10px] font-bold text-green-600">Google Map</span></a>`;
-                mapHtml = `<div class="mt-6 mb-6"><div class="hand-card p-4 border-l-8 border-blue-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-map-location-dot"></i> 交通路線圖庫</h3><div class="relative overflow-hidden inline-block"><button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增圖資</button><input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)"></div></div><div id="trans-maps-container" class="space-y-4"></div></div></div>`;
-                langTarget = 'en'; phraseTitle = '生存英語字卡';
+                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>通用入境/電子簽證網站</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             }
+
+            const quickLinksHtml = module.quickLinks.map(link => `
+                <a href="${link.url}" target="_blank" class="flex flex-col items-center justify-center ${link.color} p-2 rounded-xl transition group no-underline text-center h-20 shadow-sm border border-gray-100 hover:scale-105">
+                    <i class="fa-solid ${link.icon} text-xl mb-1 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-[10px] font-bold font-maru">${link.name}</span>
+                </a>
+            `).join('');
+
+            const mapHtml = `
+                <div class="mt-6 mb-6">
+                    <div class="hand-card p-4 border-l-8 border-blue-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-map-location-dot"></i> ${module.mapTitle}</h3>
+                            <div class="relative overflow-hidden inline-block">
+                                <button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增圖資</button>
+                                <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)">
+                            </div>
+                        </div>
+                        <div id="trans-maps-container" class="space-y-4"></div>
+                    </div>
+                </div>`;
 
             container.innerHTML = `
                 <div class="hand-card p-6 relative overflow-hidden group border-l-8 border-blue-200">
-                    <h3 class="font-bold text-blue-500 handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> 隨身翻譯</h3>
+                    <h3 class="font-bold text-blue-500 handwritten text-xl flex items-center gap-2 mb-4"><i class="fa-solid fa-language"></i> 隨身萬能翻譯 & AI 工具</h3>
                     <div class="relative mb-3">
-                        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-blue-50/30 border border-blue-100 rounded-xl resize-none text-sm outline-none focus:border-blue-300 transition font-hand placeholder-gray-400" placeholder="輸入文字或按右下角說話..."></textarea>
+                        <textarea id="trans-input" class="w-full h-24 p-3 pr-14 bg-blue-50/30 border border-blue-100 rounded-xl resize-none text-sm outline-none focus:border-blue-300 transition font-hand placeholder-gray-400" placeholder="輸入文字 (可點右側拍照翻譯，或按說話按鈕由 AI 處理)..."></textarea>
                         <button id="btn-mic" onclick="toggleVoiceInput()" class="absolute right-2 bottom-2 w-10 h-10 bg-white border border-blue-200 text-blue-500 rounded-full shadow-md flex items-center justify-center hover:bg-blue-500 hover:text-white transition active:scale-95 z-10"><i class="fa-solid fa-microphone"></i></button>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <a href="https://translate.google.com/?sl=auto&tl=${langTarget}&op=images" target="_blank" class="bg-blue-100 text-blue-600 border border-blue-200 py-3 rounded-xl font-bold shadow-sm hover:bg-blue-500 hover:text-white transition flex items-center justify-center gap-2 no-underline text-sm"><i class="fa-solid fa-camera"></i> 拍照翻譯</a>
-                        <button onclick="openGoogleTranslate('${langTarget}')" class="bg-blue-500 text-white py-3 rounded-xl font-bold shadow-sm hover:bg-blue-600 transition flex items-center justify-center gap-2 text-sm active:scale-95"><i class="fa-solid fa-paper-plane"></i> 文字翻譯</button>
+                        <a href="https://translate.google.com/?sl=auto&tl=${module.langTarget}&op=images" target="_blank" class="bg-blue-100 text-blue-600 border border-blue-200 py-3 rounded-xl font-bold shadow-sm hover:bg-blue-500 hover:text-white transition flex items-center justify-center gap-2 no-underline text-sm"><i class="fa-solid fa-camera"></i> 鏡頭/拍照翻譯</a>
+                        <button onclick="openGoogleTranslate('${module.langTarget}')" class="bg-blue-500 text-white py-3 rounded-xl font-bold shadow-sm hover:bg-blue-600 transition flex items-center justify-center gap-2 text-sm active:scale-95"><i class="fa-solid fa-paper-plane"></i> 精準文字翻譯</button>
                     </div>
                 </div>
 
                 <details class="hand-card p-0 border-l-8 border-sakura/20 group transition-all duration-300">
                     <summary class="p-6 cursor-pointer list-none flex justify-between items-center hover:bg-gray-50 transition relative select-none">
-                        <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> ${phraseTitle}</h3>
+                        <h3 class="font-bold text-sakura handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-comment-dots"></i> ${module.phraseTitle}</h3>
                         <span class="text-sakura/50 group-open:rotate-180 transition-transform duration-300"><i class="fa-solid fa-chevron-down"></i></span>
                     </summary>
                     <div class="px-6 pb-6 animate-slide-in border-t border-gray-100/50 pt-4">
                          <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar mb-3">
-                            <button onclick="renderPhrases('food')" class="phrase-btn active whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-sakura hover:text-white hover:border-sakura transition" data-cat="food">🍱 食</button>
-                            <button onclick="renderPhrases('vege')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-veggie hover:text-white hover:border-veggie transition" data-cat="vege">🥗 素食</button>
-                            <button onclick="renderPhrases('shopping')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-400 hover:text-white hover:border-red-400 transition" data-cat="shopping">👕 衣 (購物)</button>
-                            <button onclick="renderPhrases('stay')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-yellow-400 hover:text-white hover:border-yellow-400 transition" data-cat="stay">🏠 住</button>
-                            <button onclick="renderPhrases('transport')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-400 hover:text-white hover:border-blue-400 transition" data-cat="transport">🚅 行</button>
+                            <button onclick="renderPhrases('food')" class="phrase-btn active whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-sakura hover:text-white hover:border-sakura transition" data-cat="food">🍱 食/餐廳</button>
+                            <button onclick="renderPhrases('shopping')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-400 hover:text-white hover:border-red-400 transition" data-cat="shopping">👕 衣/購物</button>
+                            <button onclick="renderPhrases('stay')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-yellow-400 hover:text-white hover:border-yellow-400 transition" data-cat="stay">🏠 住/飯店</button>
+                            <button onclick="renderPhrases('transport')" class="phrase-btn whitespace-nowrap bg-white border border-gray-200 text-gray-500 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-blue-400 hover:text-white hover:border-blue-400 transition" data-cat="transport">🚅 行/交通</button>
                         </div>
                         <div id="phrase-container" class="space-y-2 max-h-60 overflow-y-auto"></div>
                     </div>
@@ -1156,7 +1213,7 @@ function renderInfoLinks() {
                 
                 <div class="col-span-1 md:col-span-2">
                     ${mapHtml}
-                    <div class="grid grid-cols-5 gap-2 mb-6">${quickLinksHtml}</div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">${quickLinksHtml}</div>
                     
                     <div class="space-y-6">
                         ${entryDocHtml}
@@ -1165,10 +1222,7 @@ function renderInfoLinks() {
                             <div class="p-4 bg-white space-y-3 border-t border-gray-100">
                                 <div class="text-[10px] text-gray-400 mb-2">設定 Gist ID 後，資料變動將自動上傳。</div>
                                 <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Gist ID</label><input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
-                                <div>
-    <label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label>
-    <input type="text" id="gist-token-input" placeholder="請貼上 ghp_ 開頭的 Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha">
-</div>
+                                <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="text" id="gist-token-input" placeholder="請貼上 ghp_ 開頭的 Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
                                 <button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
                                 <button onclick="forceUpload(true)" class="w-full bg-red-100 text-red-500 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> 強制上傳 (覆蓋雲端)</button>
                             </div>
@@ -1179,23 +1233,36 @@ function renderInfoLinks() {
             setTimeout(() => renderPhrases('food'), 100);
             renderTransMaps();
         }
+
         // --- 字卡動態載入 ---
         function renderPhrases(cat) { 
             document.querySelectorAll('.phrase-btn').forEach(btn => { if(btn.dataset.cat === cat) btn.classList.add('active'); else btn.classList.remove('active'); }); 
-            const countryDict = MULTI_PHRASES[currentTrip.country] || MULTI_PHRASES['OTHER'];
-            const list = countryDict[cat] || []; 
+            
+            const module = COUNTRY_MODULES[currentTrip.country] || COUNTRY_MODULES['OTHER'];
+            const list = module.phrases[cat] || []; 
             const container = document.getElementById('phrase-container'); 
             if(!container) return;
-            const langCode = currentTrip.country === 'JP' ? 'ja-JP' : (currentTrip.country === 'TH' ? 'th-TH' : (currentTrip.country === 'KR' ? 'ko-KR' : 'en-US'));
-            container.innerHTML = list.length === 0 ? '<div class="text-xs text-gray-400 text-center py-4">無字卡資料</div>' : list.map(item => `<div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2 hover:shadow-sm transition relative"><div class="flex justify-between items-start gap-2"><div class="flex-1"><div class="font-bold text-gray-800 text-base mb-1">${item.ja}</div><div class="text-[10px] text-gray-400 font-serif italic mb-1">${item.p}</div><div class="text-xs text-fuji font-bold">${item.zh}</div></div><button onclick="speak('${item.ja}', '${langCode}')" class="shrink-0 w-8 h-8 rounded-full bg-white border border-fuji/30 text-fuji flex items-center justify-center shadow-sm active:scale-95 transition hover:bg-fuji hover:text-white"><i class="fa-solid fa-volume-high"></i></button></div></div>`).join(''); 
+            
+            container.innerHTML = list.length === 0 ? '<div class="text-xs text-gray-400 text-center py-4">無字卡資料</div>' : list.map(item => `
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 mb-2 hover:shadow-sm transition relative">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-800 text-base mb-1">${item.ja}</div>
+                            <div class="text-[10px] text-gray-400 font-serif italic mb-1">${item.p}</div>
+                            <div class="text-xs text-fuji font-bold">${item.zh}</div>
+                        </div>
+                        <button onclick="speak('${item.ja.replace(/'/g, "\\'")}', '${module.langCode}')" class="shrink-0 w-8 h-8 rounded-full bg-white border border-fuji/30 text-fuji flex items-center justify-center shadow-sm active:scale-95 transition hover:bg-fuji hover:text-white"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>`).join(''); 
         }
+
         function speak(text, lang) { if (!window.speechSynthesis) return alert("不支援發音"); window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.8; window.speechSynthesis.speak(u); }
-        function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) return alert("您的瀏覽器不支援語音"); const recognition = new webkitSpeechRecognition(); recognition.lang = 'auto'; const btn = document.getElementById('btn-mic'); const icon = btn.querySelector('i'); recognition.onstart = () => { btn.classList.add('bg-red-500', 'text-white', 'animate-pulse'); icon.className = 'fa-solid fa-microphone-lines'; document.getElementById('trans-input').placeholder = "正在聆聽..."; }; recognition.onend = () => { btn.classList.remove('bg-red-500', 'text-white', 'animate-pulse'); icon.className = 'fa-solid fa-microphone'; document.getElementById('trans-input').placeholder = "輸入文字..."; }; recognition.onresult = (e) => { const text = e.results[0][0].transcript; document.getElementById('trans-input').value = text; const langTarget = currentTrip.country === 'JP' ? 'ja' : (currentTrip.country === 'TH' ? 'th' : (currentTrip.country === 'KR' ? 'ko' : 'en')); openGoogleTranslate(langTarget); }; recognition.start(); }
+        function toggleVoiceInput() { if (!('webkitSpeechRecognition' in window)) return alert("您的瀏覽器不支援語音"); const recognition = new webkitSpeechRecognition(); recognition.lang = 'auto'; const btn = document.getElementById('btn-mic'); const icon = btn.querySelector('i'); recognition.onstart = () => { btn.classList.add('bg-red-500', 'text-white', 'animate-pulse'); icon.className = 'fa-solid fa-microphone-lines'; document.getElementById('trans-input').placeholder = "正在聆聽..."; }; recognition.onend = () => { btn.classList.remove('bg-red-500', 'text-white', 'animate-pulse'); icon.className = 'fa-solid fa-microphone'; document.getElementById('trans-input').placeholder = "輸入文字..."; }; recognition.onresult = (e) => { const text = e.results[0][0].transcript; document.getElementById('trans-input').value = text; const module = COUNTRY_MODULES[currentTrip.country] || COUNTRY_MODULES['OTHER']; openGoogleTranslate(module.langTarget); }; recognition.start(); }
         function openGoogleTranslate(langTarget) { const txt = document.getElementById('trans-input').value; if(!txt) return alert("沒有文字"); window.open(`https://translate.google.com/?sl=auto&tl=${langTarget}&text=${encodeURIComponent(txt)}&op=translate`, '_blank'); }
 
         // --- 圖片上傳與地圖 ---
         async function uploadImageToGitHub(base64Content) {
-            const username = 'kaiwen926'; const repo = 'tokyo.com'; const folder = 'images'; const token = localStorage.getItem('thai_gist_token') || localStorage.getItem('japan_gist_token') || currentTrip.gistToken || ""; 
+            const username = 'kaiwen926'; const repo = 'tokyo.com'; const folder = 'images'; const token = localStorage.getItem('app_global_gist_token') || ""; 
             if (!token) { alert("請先在「資訊 > 雲端同步設定」填寫 Token，才能上傳照片！"); return null; }
             updateCloudStatus("圖片上傳中..."); 
             const timestamp = new Date().getTime(); const fileName = `${folder}/img_${timestamp}.jpg`; const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${fileName}`;
@@ -1219,7 +1286,7 @@ function renderInfoLinks() {
         function renderTransMaps() {
             const container = document.getElementById('trans-maps-container');
             if(!container) return;
-            if (transMaps.length === 0) { container.innerHTML = '<div class="text-center text-gray-400 text-sm py-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">尚無交通圖<br><span class="text-xs opacity-60">點擊右上角新增</span></div>'; return; }
+            if (transMaps.length === 0) { container.innerHTML = '<div class="text-center text-gray-400 text-sm py-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">尚無圖資<br><span class="text-xs opacity-60">點擊右上角新增</span></div>'; return; }
             container.innerHTML = transMaps.map((map, i) => `
                 <div class="relative rounded-xl overflow-hidden shadow-sm border border-gray-200 group bg-white">
                     <button onclick="deleteTransMap(${i})" class="absolute top-3 right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-50 active:scale-95" title="刪除這張圖"><i class="fa-solid fa-trash-can"></i></button>
@@ -1227,8 +1294,8 @@ function renderInfoLinks() {
                     <div class="cursor-pointer bg-gray-50" onclick="viewPhoto('${map.src}')"><img src="${map.src}" class="w-full h-48 object-cover object-center group-hover:scale-105 transition duration-500"><div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition pointer-events-none z-30"><span class="bg-white/90 px-4 py-1.5 rounded-full text-sm font-bold text-gray-700 backdrop-blur-md shadow-lg"><i class="fa-solid fa-magnifying-glass-plus"></i> 點擊放大</span></div></div>
                 </div>`).join('');
         }
-        function addTransMapPhoto(input) { processImage(input, (base64) => { const title = prompt("請輸入這張路線圖的名稱：") || "自訂路線圖"; transMaps.push({ id: Date.now(), title: title, src: base64, link: "" }); saveData(); renderTransMaps(); }); input.value = ''; }
-        function deleteTransMap(index) { if(confirm("確定要移除這張交通圖嗎？")) { transMaps.splice(index, 1); saveData(); renderTransMaps(); } }
+        function addTransMapPhoto(input) { processImage(input, (base64) => { const title = prompt("請輸入這張圖的名稱：") || "自訂圖資"; transMaps.push({ id: Date.now(), title: title, src: base64, link: "" }); saveData(); renderTransMaps(); }); input.value = ''; }
+        function deleteTransMap(index) { if(confirm("確定要移除這張圖嗎？")) { transMaps.splice(index, 1); saveData(); renderTransMaps(); } }
 
         // --- 貼紙拖曳 ---
         function processStickerImage(input) {
@@ -1743,7 +1810,6 @@ function renderInfoLinks() {
             const c = document.getElementById('vjw-content'); 
             const container = document.getElementById('vjw-container');
             
-            // 🛡️ 防呆機制：如果畫面上還沒有這個元素，就安靜退出，不准報錯卡死系統！
             if (!c || !container) return;
 
             if(vjwData.isOpen) { 
@@ -1793,7 +1859,7 @@ function renderInfoLinks() {
             });
         }
         
-// --- 最底部的 window.onload 初始化 ---
+        // --- 最底部的 window.onload 初始化 ---
         window.onload = async function() {
             fetchGlobalRates();
             reloadLocalData();
