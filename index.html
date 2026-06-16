@@ -88,9 +88,10 @@
                 載入中...
                 <div class="absolute bottom-1 left-0 w-full h-3 bg-fuji/20 -z-10 rounded-full transform -rotate-1"></div>
             </h1>
-            <button onclick="openTripManager()" class="text-fuji bg-fuji/10 w-8 h-8 rounded-full flex items-center justify-center hover:bg-fuji hover:text-white transition shadow-sm"><i class="fa-solid fa-earth-asia"></i></button>
+            <button onclick="openTripManager()" class="text-fuji bg-fuji/10 w-8 h-8 rounded-full flex items-center justify-center hover:bg-fuji hover:text-white transition shadow-sm" title="切換行程"><i class="fa-solid fa-earth-asia"></i></button>
+            <button onclick="renameCurrentTrip()" class="text-pencil bg-gray-200/60 w-8 h-8 rounded-full flex items-center justify-center hover:bg-sakura hover:text-white transition shadow-sm" title="修改目前行程名稱"><i class="fa-solid fa-pen text-xs"></i></button>
         </div>
-        <div class="flex justify-center items-center gap-3 mt-2">
+      <div class="flex justify-center items-center gap-3 mt-2">
             <p class="text-[10px] text-fuji font-bold tracking-[0.2em] font-serif uppercase handwritten">Travel Logbook</p>
             <div id="cloud-status" class="text-[10px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 cursor-default"><i class="fa-solid fa-code-branch"></i> <span>未連線</span></div>
             <button onclick="forceDownload()" class="text-[10px] bg-white text-gray-400 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors border border-gray-200 hover:bg-fuji-light hover:text-fuji hover:border-fuji-light shadow-sm"><i class="fa-solid fa-rotate-right"></i> <span>同步</span></button>
@@ -755,7 +756,29 @@
                 if(el2) el2.value = gistToken;
             } 
         }
-
+// ✨ 修改目前行程名稱功能
+        function renameCurrentTrip() {
+            const newName = prompt("✍️ 請輸入新的行程名稱：", currentTrip.name);
+            if (newName && newName.trim() !== "") {
+                currentTrip.name = newName.trim();
+                
+                // 同步更新總行程管理選單 (tripList)
+                const idx = tripList.findIndex(t => t.id === currentTripId);
+                if (idx > -1) {
+                    tripList[idx].name = currentTrip.name;
+                    localStorage.setItem('app_trip_list', JSON.stringify(tripList));
+                }
+                
+                saveData(); // 儲存本機
+                window.refreshUI(); // 重新渲染標題畫面
+                
+                // 觸發自動上傳，把新名稱同步到雲端
+                if (gistId && gistToken) {
+                    setTimeout(() => forceUpload(false), 500);
+                }
+                alert("🎯 行程名稱已成功修改！");
+            }
+        }
         function openTripManager() { renderTripList(); openModal('trip-manager-modal'); }
         function renderTripList() {
             document.getElementById('trip-list-container').innerHTML = tripList.map(t => `
@@ -786,13 +809,22 @@
             const currency = document.getElementById('new-trip-currency').value;
             const country = document.getElementById('new-trip-country').value;
             if(!name) return alert("請輸入行程名稱");
-            const newTrip = { id: 'trip_' + Date.now(), name: name, currency: currency, country: country, gistId: '', gistToken: '' };
+
+            // 💡 關鍵修復 4：自動複製當前的 Token，讓新行程直接連上雲端保險箱
+            const newTrip = { 
+                id: 'trip_' + Date.now(), 
+                name: name, 
+                currency: currency, 
+                country: country, 
+                gistId: gistId || '', 
+                gistToken: gistToken || '' 
+            };
+            
             tripList.push(newTrip);
             localStorage.setItem('app_trip_list', JSON.stringify(tripList));
             document.getElementById('new-trip-name').value = '';
             switchTrip(newTrip.id);
         }
-
         function deleteTrip(id) {
             if(confirm("確定要刪除這個行程嗎？（本機紀錄會清空）")) {
                 tripList = tripList.filter(t => t.id !== id);
@@ -881,41 +913,40 @@
             } catch (e) { console.error(e); }
         }
 
-        function forceDownload(isAuto = false) {
-            if(!gistId) return updateCloudStatus("未連線");
+        async function forceDownload(isAuto = false) {
+            if(!gistId || !gistToken) return;
             if(!isAuto) updateCloudStatus("檢查中...");
-            fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers: { 'Authorization': `token ${gistToken}` } })
-            .then(r => r.json())
-            .then(async d => {
+            
+            try {
+                const r = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { 
+                    headers: { 'Authorization': `token ${gistToken}` } 
+                });
+                if (r.status === 401) throw new Error("Unauthorized");
+                const d = await r.json();
+
+                // 1. 同步總清單
+                if (d.files["global_trip_list.json"]) {
+                    const cloudTripList = JSON.parse(d.files["global_trip_list.json"].content);
+                    // 保持 Token
+                    tripList = cloudTripList.map(t => ({...t, gistId, gistToken}));
+                    localStorage.setItem('app_trip_list', JSON.stringify(tripList));
+                }
+
+                // 2. 同步資料檔
                 const cloudFileName = currentTripId + "_data.json";
-                let targetFile = d.files[cloudFileName];
-
-                // ✨ 修正：新國家在雲端還沒有檔案時，不要再去抓舊的日本資料
-                // 直接把本機目前的全新空白內容自動同步上去建立新檔案
-                if (!targetFile) {
-                    forceUpload(false); 
-                    updateCloudStatus("已建立新雲端檔");
-                    return;
+                if (d.files[cloudFileName]) {
+                    let content = d.files[cloudFileName].content;
+                    if(d.files[cloudFileName].truncated) {
+                        const r2 = await fetch(d.files[cloudFileName].raw_url + '?t=' + Date.now());
+                        content = await r2.text();
+                    }
+                    applyCloudData(JSON.parse(content));
                 }
-                
-                let content = targetFile.content;
-                if(targetFile.truncated) { const r = await fetch(targetFile.raw_url + '?t=' + Date.now()); content = await r.text(); }
-                const cloudData = JSON.parse(content);
-                const cloudTime = new Date(cloudData.lastUpdate || 0).getTime();
-                const p = currentTripId + '_';
-                const localLastUpdate = localStorage.getItem(p+'lastUpdate');
-                const localTime = localLastUpdate ? new Date(localLastUpdate).getTime() : 0;
-
-                if (cloudTime > localTime) {
-                    applyCloudData(cloudData); 
-                } 
-                else if (localTime > cloudTime) {
-                    forceUpload(false); 
-                } 
-                else {
-                    updateCloudStatus("已同步");
-                }
-            }).catch(e => { updateCloudStatus("連線失敗"); });
+                updateCloudStatus("同步完成");
+            } catch(e) {
+                console.error("同步失敗:", e);
+                updateCloudStatus("連線失敗");
+            }
         }
        async function forceUpload(isManual = false) {
             if(!gistId) return;
@@ -926,16 +957,19 @@
                 await fetch(`https://api.github.com/gists/${gistId}`, { 
                     method: 'PATCH', 
                     headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ files: { [cloudFileName]: { content: JSON.stringify(payload) } } }) 
+                    body: JSON.stringify({ 
+                        files: { 
+                            [cloudFileName]: { content: JSON.stringify(payload) },
+                            // ✨ 順便把整份行程總選單上傳備份
+                            "global_trip_list.json": { content: JSON.stringify(tripList) }
+                        } 
+                    }) 
                 }); 
                 updateCloudStatus("上傳成功"); 
-                
-                // 👉 補回被閹割的強制上傳成功提示
-                if(isManual) alert("✅ 強制上傳成功！已將目前畫面覆蓋至雲端。"); 
-                
+                if(isManual) alert("✅ 強制上傳成功！已將目前畫面與行程選單同步至雲端。"); 
             } catch(e){ 
                 updateCloudStatus("上傳失敗"); 
-                if(isManual) alert("❌ 上傳失敗，請檢查 Token 是否過期或網路連線。"); 
+                if(isManual) alert("❌ 上傳失敗，請檢查設定。"); 
             }
         }
         function saveGistConfig() { 
@@ -1730,46 +1764,32 @@ function renderInfoLinks() {
             });
         }
         
-window.onload = function() {
-            // ✨ 自動擴充多國幣值與國家名稱
-            const currencyNames = {
-                'JPY': '日本', 'THB': '泰國', 'KRW': '韓國', 'TWD': '台灣',
-                'VND': '越南', 'AUD': '澳洲', 'CNY': '中國', 'HKD': '香港',
-                'EUR': '歐洲', 'GBP': '英國', 'USD': '美國'
-            };
+window.onload = async function() {
+            fetchGlobalRates();
+            reloadLocalData();
+            
+            // 必須在渲染 UI 前先同步清單
+            if (gistId && gistToken) {
+                updateCloudStatus("連線中...");
+                await forceDownload(true); 
+            }
+            
+            // 最後才渲染
+            window.refreshUI();
+            switchTab('plan');
+            enableAutoSaveOnOutsideClick();
+            
+            // 幣值選單邏輯
+            const currencyNames = {'JPY': '日本', 'THB': '泰國', 'KRW': '韓國', 'TWD': '台灣', 'VND': '越南', 'AUD': '澳洲', 'CNY': '中國', 'HKD': '香港', 'EUR': '歐洲', 'GBP': '英國', 'USD': '美國'};
             ['new-trip-currency', 'calc-currency', 'ex-currency'].forEach(id => {
                 const select = document.getElementById(id);
                 if(select) {
-                    // 記住原本選的幣值
                     const currentVal = select.value;
-                    // 清空並重建帶有括號國家的選項
-                    select.innerHTML = ''; 
-                    Object.keys(currencyNames).forEach(c => {
-                        select.innerHTML += `<option value="${c}">${c} (${currencyNames[c]})</option>`;
-                    });
-                    // 恢復原本的選項
+                    select.innerHTML = Object.keys(currencyNames).map(c => `<option value="${c}">${c} (${currencyNames[c]})</option>`).join('');
                     if(currentVal) select.value = currentVal;
-                    
-                    // 稍微拉寬計算機的下拉選單，確保文字不會被切斷
-                    if(id === 'calc-currency') {
-                        select.classList.remove('w-16');
-                        select.classList.add('w-24');
-                    }
                 }
             });
-            fetchGlobalRates();
-            reloadLocalData();
-            window.refreshUI(); 
-            if(gistId) { 
-                document.getElementById('gist-id-input').value = gistId; 
-                document.getElementById('gist-token-input').value = gistToken; 
-                updateCloudStatus("連線中..."); 
-                setTimeout(() => forceDownload(true), 500); 
-                setInterval(() => forceDownload(true), 10000);
-            }
-            switchTab('plan');
-            enableAutoSaveOnOutsideClick();
-        }
-    </script>
+        };
+ </script>
 </body>
 </html>
