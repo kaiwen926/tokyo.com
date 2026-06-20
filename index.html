@@ -130,6 +130,13 @@
             </div>
             <div id="guide-list" class="space-y-6 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6"></div>
             <p class="text-center text-xs text-gray-300 mt-6 handwritten"><i class="fa-solid fa-grip-vertical mr-1"></i> 按住左側拖曳排序</p>
+            
+            <!-- ✨ 新增：置底的「新增更多景點」按鈕 -->
+            <div class="mt-8 text-center pb-8 animate-fade">
+                <button onclick="openGuideModal()" class="w-full border-2 border-dashed border-matcha/50 text-matcha rounded-2xl py-4 hover:bg-white hover:border-matcha transition font-bold text-sm bg-matcha/5 handwritten flex items-center justify-center gap-2 group shadow-sm">
+                    <i class="fa-solid fa-plus-circle group-hover:scale-110 transition text-lg"></i> 新增更多景點
+                </button>
+            </div>
         </section>
 
         <section id="view-wallet" class="view-section hidden relative z-10">
@@ -358,7 +365,7 @@
         </div>
     </div>
 
-    <div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
+<div id="day-modal" class="modal hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-[#f9f7f2] w-full max-w-lg rounded-2xl p-4 shadow-2xl relative hand-card h-[85vh] overflow-y-auto border-4 border-white">
             <button onclick="closeModal('day-modal')" class="absolute top-3 right-3 text-gray-400"><i class="fa-solid fa-times"></i></button>
             <h3 class="text-lg font-bold mb-2 text-center handwritten">編輯行程</h3>
@@ -397,11 +404,10 @@
                 <div id="day-trans-list" class="space-y-3"></div>
             </div>  
             
-            <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed placeholder-gray-300" placeholder="在這裡寫下你的行程規劃...
-1️⃣換行 或 輸入 \ 可以分隔不同活動
-2️⃣輸入 * 或 | 可以加上灰色的備註 
-3️⃣ 直接貼上網址會自動變成超連結"></textarea>
+            <!-- ✨ 這裡換成了帶有 4 點教學提示的全新文字框 -->
+            <textarea id="day-content-edit" class="w-full h-32 p-3 border rounded-lg bg-white text-sm mb-4 font-hand leading-relaxed placeholder-gray-300" placeholder="在這裡寫下你的行程規劃...&#10;1️⃣ 換行 或 \ 分隔活動&#10;2️⃣ 輸入 * 或 | 加上灰色一般備註&#10;3️⃣ 輸入 ~ 加上水藍色專屬雨備 (例: 淺草 ~下雨改去室內)&#10;4️⃣ 貼上網址自動變超連結"></textarea>
             
+            <!-- ✨ 動態美食模組區塊保留不動 -->
             <div class="mb-4 border-t pt-3 bg-orange-50/50 p-2 rounded-lg border border-orange-100 shadow-sm">
                 <div class="flex justify-between items-center mb-2">
                     <h4 class="text-xs font-bold text-orange-500 flex items-center gap-1"><i class="fa-solid fa-utensils"></i> 美食/餐飲安排</h4>
@@ -410,6 +416,7 @@
                 <div id="day-meal-list" class="space-y-3"></div>
             </div>
 
+            <!-- ✨ 按摩/SPA區塊保留不動 -->
             <div class="mb-4 border-t pt-3 bg-purple-50 p-2 rounded-lg border border-purple-100">
                 <div class="flex justify-between items-center mb-2">
                     <h4 class="text-xs font-bold text-purple-400 flex items-center gap-1"><i class="fa-solid fa-spa"></i> 按摩/SPA</h4>
@@ -418,6 +425,7 @@
                 <div id="day-massage-list" class="space-y-3"></div>
             </div>
             
+            <!-- ✨ 備註區塊還原為乾淨的每日備註 -->
             <textarea id="day-note-edit" class="w-full h-20 p-2 border border-yellow-200 bg-yellow-50 rounded text-sm mb-4 handwritten" placeholder="每日備註..."></textarea>
             
             <div class="mb-4 bg-white p-2 rounded border border-gray-200 shadow-inner">
@@ -1101,6 +1109,7 @@
             if(!text) return '';
             let html = text; 
             
+            // 處理導覽景點的自動連結
             guides.forEach(g => { 
                 if (g.title.length > 1) { 
                     const regex = new RegExp(`(${g.title})`, 'g'); 
@@ -1108,13 +1117,23 @@
                 } 
             }); 
             
+            // 支援使用 \ 或換行來分隔不同的活動
             const lines = html.split(/\\|\n/).filter(l => l.trim() !== '');
             
             return lines.map(line => {
                 let activity = line.trim(); 
                 let note = '';
+                let isRainBackup = false;
                 
-                if (activity.includes('*')) { 
+                // ✨ 新增：優先判斷是否使用了 ~ (波浪號) 作為雨備
+                if (activity.includes('~')) {
+                    const parts = activity.split('~'); 
+                    activity = parts[0].trim(); 
+                    note = parts.slice(1).join('~').trim(); 
+                    isRainBackup = true;
+                } 
+                // 否則判斷是否使用了 * 或 | 作為一般備註
+                else if (activity.includes('*')) { 
                     const parts = activity.split('*'); 
                     activity = parts[0].trim(); 
                     note = parts.slice(1).join('*').trim(); 
@@ -1124,14 +1143,24 @@
                     note = parts.slice(1).join('|').trim(); 
                 }
 
+                // 處理連結 (自動將 http 轉成可點擊的網址)
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 activity = activity.replace(urlRegex, url => `<a href="${url}" target="_blank" class="text-blue-500 hover:text-blue-700 underline decoration-dotted ml-1"><i class="fa-solid fa-link text-[10px]"></i> 連結</a>`);
                 
-                const noteHtml = note ? `<div class="text-xs text-gray-400 mt-1 font-hand tracking-wide leading-snug"><i class="fa-solid fa-comment-dots text-[10px] mr-1 opacity-50"></i>${note}</div>` : '';
+                let noteHtml = '';
+                if (note) {
+                    if (isRainBackup) {
+                        // ☂️ 專屬雨備樣式 (水藍色背景小標籤)
+                        noteHtml = `<div class="text-xs text-blue-500 bg-blue-50 inline-block px-2 py-0.5 rounded-md mt-1 font-hand tracking-wide leading-snug border border-blue-100 shadow-sm"><i class="fa-solid fa-umbrella text-[10px] mr-1"></i>${note}</div>`;
+                    } else {
+                        // 💬 一般備註樣式 (灰色文字)
+                        noteHtml = `<div class="text-xs text-gray-400 mt-1 font-hand tracking-wide leading-snug"><i class="fa-solid fa-comment-dots text-[10px] mr-1 opacity-50"></i>${note}</div>`;
+                    }
+                }
+                
                 return `<li class="flex items-start text-base mb-3 group/item"><span class="mr-2 mt-2 w-2 h-2 bg-fuji rounded-full flex-shrink-0 border border-blue-200 group-hover/item:scale-125 transition-transform duration-300"></span><div class="flex-1 min-w-0"><div class="leading-relaxed text-gray-700 font-bold">${activity}</div>${noteHtml}</div></li>`;
             }).join(''); 
         }
-
         // --- 5. Info 區塊動態渲染 ---
         function renderInfoLinks() {
             const container = document.getElementById('info-container-dynamic');
@@ -1331,15 +1360,15 @@
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded object-cover"><button onclick="tempDayPhotos.splice(${i},1);renderDayPhotosPreview()" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs rounded-bl">x</button></div>`).join(''); }
 
-        function renderItinerary() {
+function renderItinerary() {
             const c = document.getElementById('itinerary-container'); const navC = document.getElementById('quick-nav-container'); if (!c) return; c.innerHTML = '';
             if (navC && itinerary.length > 0) {
                 const stickersHtml = itinerary.map((day, idx) => {
                     const themes = [ { cloud: 'text-pink-200', text: 'text-pink-600' }, { cloud: 'text-yellow-200', text: 'text-yellow-700' }, { cloud: 'text-blue-200', text: 'text-blue-600' }, { cloud: 'text-green-200', text: 'text-green-600' }, { cloud: 'text-purple-200', text: 'text-purple-600' }, { cloud: 'text-orange-200', text: 'text-orange-700' }, { cloud: 'text-cyan-200', text: 'text-cyan-700' } ];
                     const theme = themes[idx % 7];
-                    return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-full aspect-square flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300"><i class="fa-solid fa-cloud text-5xl sm:text-6xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-3 pb-1"><span class="text-[8px] font-bold opacity-60 tracking-wider mb-px font-sans ${theme.text}">DAY</span><span class="text-xl font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
+                    return `<button onclick="document.getElementById('${day.id}').scrollIntoView({behavior: 'smooth', block: 'center'})" class="relative w-12 h-12 flex items-center justify-center group hover:-translate-y-1 transition-transform duration-300 shrink-0"><i class="fa-solid fa-cloud text-5xl ${theme.cloud} drop-shadow-md group-hover:scale-110 transition-transform duration-300 absolute"></i><div class="absolute inset-0 flex flex-col items-center justify-center pt-1"><span class="text-[8px] font-bold opacity-80 tracking-wider mb-[-2px] font-sans ${theme.text}">DAY</span><span class="text-lg font-black font-maru leading-none ${theme.text}">${idx + 1}</span></div></button>`;
                 }).join('');
-                navC.innerHTML = `<div class="grid grid-cols-7 gap-1 max-w-md mx-auto px-1">${stickersHtml}</div><div class="text-center text-[10px] text-gray-400 mt-3 font-hand tracking-widest opacity-60"><i class="fa-solid fa-hand-pointer mr-1"></i> 提示：長按 DAY 標籤可開啟刪除模式或拖曳排序</div>`;
+                navC.innerHTML = `<div class="flex flex-wrap justify-center gap-3 max-w-md mx-auto px-1">${stickersHtml}</div><div class="text-center text-[10px] text-gray-400 mt-3 font-hand tracking-widest opacity-60"><i class="fa-solid fa-hand-pointer mr-1"></i> 提示：長按 DAY 標籤可開啟刪除模式或拖曳排序</div>`;
             } else if (navC) { navC.innerHTML = ''; }
 
             itinerary.forEach((day, idx) => {
@@ -1362,7 +1391,8 @@
                     if (!isNaN(tempVal)) { if (tempVal >= 28) tempClass = 'temp-hot'; else if (tempVal >= 20) tempClass = 'temp-warm'; else if (tempVal >= 10) tempClass = 'temp-cool'; else tempClass = 'temp-cold'; }
                     tempBadgeHtml = `<span class="temp-badge ${tempClass} px-2 min-w-[3rem] text-center inline-block shadow-sm border border-white/50">${day.temp.replace(/c/ig, '').trim()}°C</span>`;
                 }
-                const weatherGroupHtml = (day.weather || day.temp) ? `<a href="#" class="weather-group group/weather no-underline mt-1 flex flex-col items-center">${tempBadgeHtml}<div class="weather-badge group-hover/weather:scale-110 transition-transform text-lg shadow-md border-2 border-white mt-0.5">${wIcon}</div></a>` : '';
+                
+                const weatherGroupHtml = (day.weather || day.temp) ? `<a href="#" class="group/weather no-underline mt-1 flex flex-col items-center relative z-10">${tempBadgeHtml}<div class="w-8 h-8 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center text-lg group-hover/weather:scale-110 transition-transform mt-0.5 text-gray-500">${wIcon}</div></a>` : '';
 
                 const photosHtml = day.photos?.length ? `<div class="mt-3 grid grid-cols-3 gap-1 rounded-lg overflow-hidden">${day.photos.map(p=>`<img src="${p}" class="w-full aspect-square object-cover cursor-pointer hover:opacity-90" onclick="viewPhoto('${p}')">`).join('')}</div>` : '';
                 const accHtml = day.accommodation ? `<div class="mt-3 text-sm text-gray-600 border-t pt-3 border-dashed border-gray-200"><div class="flex items-start gap-2"><button onclick="openAccModal('${day.id}')" class="w-8 h-8 rounded-full bg-fuji/10 hover:bg-fuji/20 text-fuji flex items-center justify-center transition shadow-sm active:scale-95 group relative flex-shrink-0" title="管理住宿照片"><i class="fa-solid fa-bed"></i>${day.accPhotos && day.accPhotos.length > 0 ? `<span class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full border-2 border-white"></span>` : ''}</button><div class="flex-1 min-w-0 pt-1">${accLink ? `<a href="${accLink}" target="_blank" class="underline decoration-dotted hover:text-fuji font-bold block truncate text-base">${day.accommodation}</a>` : `<span class="font-bold block truncate text-base">${day.accommodation}</span>`}${day.accommodationNote ? `<div class="text-xs text-gray-400 mt-1 font-hand"><i class="fa-solid fa-circle-info mr-1 text-[10px]"></i>${day.accommodationNote}</div>` : ''}</div></div></div>` : '';
@@ -1430,7 +1460,6 @@
                 }
             });
         }
-
         function openDayEditor(id){ 
             const d=itinerary.find(i=>i.id===id); if(!d)return; 
             document.getElementById('day-id-edit').value=d.id; 
@@ -1441,8 +1470,7 @@
             document.getElementById('day-content-edit').value=d.content; 
             document.getElementById('day-accommodation-edit').value=d.accommodation||""; 
             document.getElementById('day-accommodation-url-edit').value=d.accommodationUrl||""; 
-            document.getElementById('day-accommodation-note-edit').value = d.accommodationNote || ''; 
-            
+            document.getElementById('day-accommodation-note-edit').value =d.accommodationNote||'';                                                    
             tempTrans = []; 
             if (d.transportation) { 
                 let rawTrans = Array.isArray(d.transportation) ? d.transportation : [d.transportation];
@@ -1531,10 +1559,10 @@
 
         function renderMealRows() {
             const icons = {
-                'fa-mug-hot text-orange-400': '☕ 早餐',
-                'fa-utensils text-green-500': '🍽️ 午餐',
-                'fa-wine-glass text-purple-500': '🍷 晚餐',
-                'fa-bowl-food text-red-500': '🍜 消夜',
+                'fa-mug-hot text-orange-400': '☕ 咖啡/早餐',
+                'fa-utensils text-green-500': '🍽️ 正餐',
+                'fa-wine-glass text-purple-500': '🍷 酒吧/晚餐',
+                'fa-bowl-food text-red-500': '🍜 消夜/麵食',
                 'fa-ice-cream text-pink-500': '🍨 甜點/下午茶',
                 'fa-burger text-yellow-600': '🍔 小吃/速食'
             };
