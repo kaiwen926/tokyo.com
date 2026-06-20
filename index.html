@@ -1105,7 +1105,7 @@
             } 
         }
 
-        function linkifyContent(text) { 
+       function linkifyContent(text) { 
             if(!text) return '';
             let html = text; 
             
@@ -1122,46 +1122,46 @@
             
             return lines.map(line => {
                 let activity = line.trim(); 
-                let note = '';
-                let isRainBackup = false;
+                let generalNote = '';
+                let rainBackupNote = '';
                 
-                // ✨ 新增：優先判斷是否使用了 ~ (波浪號) 作為雨備
+                // ✨ 1. 先從最後面抓出「雨備 (~)」
                 if (activity.includes('~')) {
-                    const parts = activity.split('~'); 
-                    activity = parts[0].trim(); 
-                    note = parts.slice(1).join('~').trim(); 
-                    isRainBackup = true;
-                } 
-                // 否則判斷是否使用了 * 或 | 作為一般備註
-                else if (activity.includes('*')) { 
+                    const parts = activity.split('~');
+                    rainBackupNote = parts.pop().trim(); // 取最後一個 ~ 後面的字
+                    activity = parts.join('~').trim();   // 剩下的部分放回去繼續處理
+                }
+
+                // ✨ 2. 再從剩下的文字中抓出「一般備註 (* 或 |)」
+                if (activity.includes('*')) { 
                     const parts = activity.split('*'); 
-                    activity = parts[0].trim(); 
-                    note = parts.slice(1).join('*').trim(); 
+                    generalNote = parts.pop().trim(); 
+                    activity = parts.join('*').trim(); 
                 } else if (activity.includes('|')) { 
                     const parts = activity.split('|'); 
-                    activity = parts[0].trim(); 
-                    note = parts.slice(1).join('|').trim(); 
+                    generalNote = parts.pop().trim(); 
+                    activity = parts.join('|').trim(); 
                 }
 
                 // 處理連結 (自動將 http 轉成可點擊的網址)
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 activity = activity.replace(urlRegex, url => `<a href="${url}" target="_blank" class="text-blue-500 hover:text-blue-700 underline decoration-dotted ml-1"><i class="fa-solid fa-link text-[10px]"></i> 連結</a>`);
                 
+                // ✨ 3. 將抓出來的備註與雨備分別渲染成 HTML
                 let noteHtml = '';
-                if (note) {
-                    if (isRainBackup) {
-                        // ☂️ 專屬雨備樣式 (水藍色背景小標籤)
-                        noteHtml = `<div class="text-xs text-blue-500 bg-blue-50 inline-block px-2 py-0.5 rounded-md mt-1 font-hand tracking-wide leading-snug border border-blue-100 shadow-sm"><i class="fa-solid fa-umbrella text-[10px] mr-1"></i>${note}</div>`;
-                    } else {
-                        // 💬 一般備註樣式 (灰色文字)
-                        noteHtml = `<div class="text-xs text-gray-400 mt-1 font-hand tracking-wide leading-snug"><i class="fa-solid fa-comment-dots text-[10px] mr-1 opacity-50"></i>${note}</div>`;
-                    }
+                if (generalNote) {
+                    // 一般備註樣式 (灰色)
+                    noteHtml += `<div class="text-xs text-gray-400 mt-1 font-hand tracking-wide leading-snug"><i class="fa-solid fa-comment-dots text-[10px] mr-1 opacity-50"></i>${generalNote}</div>`;
+                }
+                if (rainBackupNote) {
+                    // 雨備樣式 (水藍色標籤)
+                    noteHtml += `<div class="mt-1"><div class="text-xs text-blue-500 bg-blue-50 inline-block px-2 py-0.5 rounded-md font-hand tracking-wide leading-snug border border-blue-100 shadow-sm"><i class="fa-solid fa-umbrella text-[10px] mr-1"></i>${rainBackupNote}</div></div>`;
                 }
                 
                 return `<li class="flex items-start text-base mb-3 group/item"><span class="mr-2 mt-2 w-2 h-2 bg-fuji rounded-full flex-shrink-0 border border-blue-200 group-hover/item:scale-125 transition-transform duration-300"></span><div class="flex-1 min-w-0"><div class="leading-relaxed text-gray-700 font-bold">${activity}</div>${noteHtml}</div></li>`;
             }).join(''); 
         }
-        // --- 5. Info 區塊動態渲染 ---
+    // --- 5. Info 區塊動態渲染 ---
         function renderInfoLinks() {
             const container = document.getElementById('info-container-dynamic');
             if(!container) return;
