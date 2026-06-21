@@ -1174,9 +1174,9 @@
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>Visit Japan Web</h3><div class="flex gap-2 items-center"><a href="https://www.vjw.digital.go.jp/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else if (currentTrip.country === 'TH') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>入境文件 (TDAC)</h3><div class="flex gap-2 items-center"><a href="https://tdac.immigration.go.th/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-            } else if (currentTrip.country === 'KR') {
-                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 K-ETA / 填寫健康 Q-Code</h3><div class="flex gap-2 items-center"><a href="https://www.k-eta.go.kr/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-            } else {
+           } else if (currentTrip.country === 'KR') {
+                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 e-Arrival</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
+            }
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>通用入境/電子簽證網站</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             }
 
@@ -1302,20 +1302,49 @@
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-        function renderTransMaps() {
+      function renderTransMaps() {
             const container = document.getElementById('trans-maps-container');
             if(!container) return;
             if (transMaps.length === 0) { container.innerHTML = '<div class="text-center text-gray-400 text-sm py-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">尚無圖資<br><span class="text-xs opacity-60">點擊右上角新增</span></div>'; return; }
-            container.innerHTML = transMaps.map((map, i) => `
-                <div class="relative rounded-xl overflow-hidden shadow-sm border border-gray-200 group bg-white">
-                    <button onclick="deleteTransMap(${i})" class="absolute top-3 right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-50 active:scale-95" title="刪除這張圖"><i class="fa-solid fa-trash-can"></i></button>
-                    ${map.title ? `<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl text-fuji z-40 shadow-lg flex items-center gap-2 border border-white transform rotate-[-1deg] origin-top-left max-w-[70%]"><i class="fa-solid fa-compass text-fuji opacity-70 text-base shrink-0"></i><span class="font-hand font-black text-xl tracking-wide truncate">${map.title}</span>${map.link ? `<a href="${map.link}" target="_blank" class="text-blue-500 hover:text-blue-700 transition ml-1 shrink-0"><i class="fa-solid fa-link text-xs"></i></a>` : ''}</div>` : ''}
-                    <div class="cursor-pointer bg-gray-50" onclick="viewPhoto('${map.src}')"><img src="${map.src}" class="w-full h-48 object-cover object-center group-hover:scale-105 transition duration-500"><div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition pointer-events-none z-30"><span class="bg-white/90 px-4 py-1.5 rounded-full text-sm font-bold text-gray-700 backdrop-blur-md shadow-lg"><i class="fa-solid fa-magnifying-glass-plus"></i> 點擊放大</span></div></div>
-                </div>`).join('');
+            
+            container.innerHTML = transMaps.map((map, i) => {
+                // ✨ 如果是外部網址或 PDF，顯示紫色檔案卡片
+                if (map.isExternal || (!map.src && map.link)) {
+                    return `
+                    <div class="relative rounded-xl overflow-hidden shadow-sm border border-purple-100 bg-purple-50/40 p-4 flex items-center gap-4 group">
+                        <button onclick="deleteTransMap(${i})" class="absolute top-2 right-2 bg-red-50 text-red-500 w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white transition z-50 active:scale-95" title="刪除"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center text-2xl shrink-0 shadow-inner"><i class="fa-solid fa-file-pdf"></i></div>
+                        <div class="flex-1 min-w-0 pr-6">
+                            <div class="font-hand font-black text-lg text-gray-700 tracking-wide truncate mb-1">${map.title}</div>
+                            <a href="${map.link}" target="_blank" class="text-[10px] bg-purple-500 text-white px-3 py-1 rounded-full inline-flex items-center gap-1 hover:bg-purple-600 transition font-bold shadow-sm active:scale-95"><i class="fa-solid fa-arrow-up-right-from-square"></i> 開啟高畫質檔案</a>
+                        </div>
+                    </div>`;
+                } else {
+                    // ✨ 如果是原本的照片，維持圖片顯示
+                    return `
+                    <div class="relative rounded-xl overflow-hidden shadow-sm border border-gray-200 group bg-white">
+                        <button onclick="deleteTransMap(${i})" class="absolute top-3 right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-50 active:scale-95" title="刪除這張圖"><i class="fa-solid fa-trash-can"></i></button>
+                        ${map.title ? `<div class="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl text-fuji z-40 shadow-lg flex items-center gap-2 border border-white transform rotate-[-1deg] origin-top-left max-w-[70%]"><i class="fa-solid fa-compass text-fuji opacity-70 text-base shrink-0"></i><span class="font-hand font-black text-xl tracking-wide truncate">${map.title}</span>${map.link ? `<a href="${map.link}" target="_blank" class="text-blue-500 hover:text-blue-700 transition ml-1 shrink-0"><i class="fa-solid fa-link text-xs"></i></a>` : ''}</div>` : ''}
+                        <div class="cursor-pointer bg-gray-50" onclick="viewPhoto('${map.src}')"><img src="${map.src}" class="w-full h-48 object-cover object-center group-hover:scale-105 transition duration-500"><div class="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition pointer-events-none z-30"><span class="bg-white/90 px-4 py-1.5 rounded-full text-sm font-bold text-gray-700 backdrop-blur-md shadow-lg"><i class="fa-solid fa-magnifying-glass-plus"></i> 點擊放大</span></div></div>
+                    </div>`;
+                }
+            }).join('');
         }
-        function addTransMapPhoto(input) { processImage(input, (base64) => { const title = prompt("請輸入這張圖的名稱：") || "自訂圖資"; transMaps.push({ id: Date.now(), title: title, src: base64, link: "" }); saveData(); renderTransMaps(); }); input.value = ''; }
-        function deleteTransMap(index) { if(confirm("確定要移除這張圖嗎？")) { transMaps.splice(index, 1); saveData(); renderTransMaps(); } }
 
+        function addTransMapPhoto(input) { processImage(input, (base64) => { const title = prompt("請輸入這張圖的名稱：") || "自訂圖資"; transMaps.push({ id: Date.now(), title: title, src: base64, link: "" }); saveData(); renderTransMaps(); }); input.value = ''; }
+        
+        // ✨ 全新的功能：新增 PDF 或網址
+        function addTransMapLink() { 
+            const title = prompt("請輸入檔案名稱：\n(如: 韓國首爾地鐵圖 PDF)") || "高畫質地圖"; 
+            const link = prompt("請貼上 PDF 或高畫質地圖的網址："); 
+            if(link) { 
+                transMaps.push({ id: Date.now(), title: title, src: "", link: checkUrl(link), isExternal: true }); 
+                saveData(); 
+                renderTransMaps(); 
+            } 
+        }
+
+        function deleteTransMap(index) { if(confirm("確定要移除這張圖嗎？")) { transMaps.splice(index, 1); saveData(); renderTransMaps(); } }
         // --- 貼紙拖曳 ---
         function processStickerImage(input) {
             if(input.files && input.files.length > 0){ 
