@@ -1105,11 +1105,10 @@
             } 
         }
 
-       function linkifyContent(text) { 
+ function linkifyContent(text) { 
             if(!text) return '';
             let html = text; 
             
-            // 處理導覽景點的自動連結
             guides.forEach(g => { 
                 if (g.title.length > 1) { 
                     const regex = new RegExp(`(${g.title})`, 'g'); 
@@ -1117,7 +1116,6 @@
                 } 
             }); 
             
-            // 支援使用 \ 或換行來分隔不同的活動
             const lines = html.split(/\\|\n/).filter(l => l.trim() !== '');
             
             return lines.map(line => {
@@ -1125,44 +1123,41 @@
                 let generalNote = '';
                 let rainBackupNote = '';
                 
-                // ✨ 1. 先從最後面抓出「雨備 (~)」
-                if (activity.includes('~')) {
-                    const parts = activity.split('~');
-                    rainBackupNote = parts.pop().trim(); // 取最後一個 ~ 後面的字
-                    activity = parts.join('~').trim();   // 剩下的部分放回去繼續處理
+                // ✨ 1. 抓出雨備 (支援半形 ~ 或全形 ～)
+                const rainMatch = activity.match(/[~～]/);
+                if (rainMatch) {
+                    const idx = activity.indexOf(rainMatch[0]);
+                    rainBackupNote = activity.substring(idx + 1).trim();
+                    activity = activity.substring(0, idx).trim();
                 }
 
-                // ✨ 2. 再從剩下的文字中抓出「一般備註 (* 或 |)」
-                if (activity.includes('*')) { 
-                    const parts = activity.split('*'); 
-                    generalNote = parts.pop().trim(); 
-                    activity = parts.join('*').trim(); 
-                } else if (activity.includes('|')) { 
-                    const parts = activity.split('|'); 
-                    generalNote = parts.pop().trim(); 
-                    activity = parts.join('|').trim(); 
+                // ✨ 2. 抓出一般備註 (支援半形 * 或全形 ＊ 或 |)
+                const noteMatch = activity.match(/[*＊|]/);
+                if (noteMatch) {
+                    const idx = activity.indexOf(noteMatch[0]);
+                    generalNote = activity.substring(idx + 1).trim();
+                    activity = activity.substring(0, idx).trim();
                 }
 
-                // 處理連結 (自動將 http 轉成可點擊的網址)
+                // 處理網址超連結
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 activity = activity.replace(urlRegex, url => `<a href="${url}" target="_blank" class="text-blue-500 hover:text-blue-700 underline decoration-dotted ml-1"><i class="fa-solid fa-link text-[10px]"></i> 連結</a>`);
                 
-                // ✨ 3. 將抓出來的備註與雨備分別渲染成 HTML
+                // ✨ 3. 同時顯示兩種備註！
                 let noteHtml = '';
                 if (generalNote) {
-                    // 一般備註樣式 (灰色)
                     noteHtml += `<div class="text-xs text-gray-400 mt-1 font-hand tracking-wide leading-snug"><i class="fa-solid fa-comment-dots text-[10px] mr-1 opacity-50"></i>${generalNote}</div>`;
                 }
                 if (rainBackupNote) {
-                    // 雨備樣式 (水藍色標籤)
                     noteHtml += `<div class="mt-1"><div class="text-xs text-blue-500 bg-blue-50 inline-block px-2 py-0.5 rounded-md font-hand tracking-wide leading-snug border border-blue-100 shadow-sm"><i class="fa-solid fa-umbrella text-[10px] mr-1"></i>${rainBackupNote}</div></div>`;
                 }
                 
                 return `<li class="flex items-start text-base mb-3 group/item"><span class="mr-2 mt-2 w-2 h-2 bg-fuji rounded-full flex-shrink-0 border border-blue-200 group-hover/item:scale-125 transition-transform duration-300"></span><div class="flex-1 min-w-0"><div class="leading-relaxed text-gray-700 font-bold">${activity}</div>${noteHtml}</div></li>`;
             }).join(''); 
         }
-    // --- 5. Info 區塊動態渲染 ---
-function renderInfoLinks() {
+
+// --- 5. Info 區塊動態渲染 ---
+        function renderInfoLinks() {
             const container = document.getElementById('info-container-dynamic');
             if(!container) return;
             
@@ -1175,9 +1170,9 @@ function renderInfoLinks() {
             } else if (currentTrip.country === 'TH') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>入境文件 (TDAC)</h3><div class="flex gap-2 items-center"><a href="https://tdac.immigration.go.th/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else if (currentTrip.country === 'KR') {
-                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 e-Arrival</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
+                // ✨ 修正韓國連結：換成官方 Q-Code 網站
+                entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 Q-CODE / e-Arrival</h3><div class="flex gap-2 items-center"><a href="https://qcode.kdca.go.kr/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else {
-                // ✨ 這裡就是剛剛不小心刪掉的 else { 幫你補回來了！
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>通用入境/電子簽證網站</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             }
 
@@ -1193,9 +1188,12 @@ function renderInfoLinks() {
                     <div class="hand-card p-4 border-l-8 border-blue-200">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-blue-400 handwritten text-xl flex items-center gap-2"><i class="fa-solid fa-map-location-dot"></i> ${module.mapTitle}</h3>
-                            <div class="relative overflow-hidden inline-block">
-                                <button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-plus"></i> 新增圖資</button>
-                                <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)">
+                            <div class="flex gap-2">
+                                <button onclick="addTransMapLink()" class="text-xs bg-purple-50 text-purple-600 border border-purple-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-purple-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-link"></i> PDF/網址</button>
+                                <div class="relative overflow-hidden inline-block">
+                                    <button class="text-xs bg-blue-50 text-blue-500 border border-blue-200 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold active:scale-95 flex items-center gap-1"><i class="fa-solid fa-image"></i> 圖片</button>
+                                    <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="addTransMapPhoto(this)">
+                                </div>
                             </div>
                         </div>
                         <div id="trans-maps-container" class="space-y-4"></div>
@@ -1303,13 +1301,12 @@ function renderInfoLinks() {
         function viewPhoto(src) { document.getElementById('lightbox-image').src = src; openModal('lightbox-modal'); }
         function toggleZoom(img) { if(img.classList.contains('zoomed')){img.classList.remove('zoomed');}else{img.classList.add('zoomed');} }
 
-      function renderTransMaps() {
+        function renderTransMaps() {
             const container = document.getElementById('trans-maps-container');
             if(!container) return;
             if (transMaps.length === 0) { container.innerHTML = '<div class="text-center text-gray-400 text-sm py-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">尚無圖資<br><span class="text-xs opacity-60">點擊右上角新增</span></div>'; return; }
             
             container.innerHTML = transMaps.map((map, i) => {
-                // ✨ 如果是外部網址或 PDF，顯示紫色檔案卡片
                 if (map.isExternal || (!map.src && map.link)) {
                     return `
                     <div class="relative rounded-xl overflow-hidden shadow-sm border border-purple-100 bg-purple-50/40 p-4 flex items-center gap-4 group">
@@ -1321,7 +1318,6 @@ function renderInfoLinks() {
                         </div>
                     </div>`;
                 } else {
-                    // ✨ 如果是原本的照片，維持圖片顯示
                     return `
                     <div class="relative rounded-xl overflow-hidden shadow-sm border border-gray-200 group bg-white">
                         <button onclick="deleteTransMap(${i})" class="absolute top-3 right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-50 active:scale-95" title="刪除這張圖"><i class="fa-solid fa-trash-can"></i></button>
@@ -1334,7 +1330,6 @@ function renderInfoLinks() {
 
         function addTransMapPhoto(input) { processImage(input, (base64) => { const title = prompt("請輸入這張圖的名稱：") || "自訂圖資"; transMaps.push({ id: Date.now(), title: title, src: base64, link: "" }); saveData(); renderTransMaps(); }); input.value = ''; }
         
-        // ✨ 全新的功能：新增 PDF 或網址
         function addTransMapLink() { 
             const title = prompt("請輸入檔案名稱：\n(如: 韓國首爾地鐵圖 PDF)") || "高畫質地圖"; 
             const link = prompt("請貼上 PDF 或高畫質地圖的網址："); 
@@ -1346,6 +1341,7 @@ function renderInfoLinks() {
         }
 
         function deleteTransMap(index) { if(confirm("確定要移除這張圖嗎？")) { transMaps.splice(index, 1); saveData(); renderTransMaps(); } }
+
         // --- 貼紙拖曳 ---
         function processStickerImage(input) {
             if(input.files && input.files.length > 0){ 
@@ -1390,7 +1386,7 @@ function renderInfoLinks() {
         function addDayPhoto(input) { processImage(input, (base64) => { tempDayPhotos.push(base64); renderDayPhotosPreview(); }); }
         function renderDayPhotosPreview() { document.getElementById('day-photos-preview').innerHTML = tempDayPhotos.map((p, i) => `<div class="relative"><img src="${p}" class="w-full h-full rounded object-cover"><button onclick="tempDayPhotos.splice(${i},1);renderDayPhotosPreview()" class="absolute top-0 right-0 bg-red-500 text-white w-4 h-4 text-xs rounded-bl">x</button></div>`).join(''); }
 
-function renderItinerary() {
+        function renderItinerary() {
             const c = document.getElementById('itinerary-container'); const navC = document.getElementById('quick-nav-container'); if (!c) return; c.innerHTML = '';
             if (navC && itinerary.length > 0) {
                 const stickersHtml = itinerary.map((day, idx) => {
