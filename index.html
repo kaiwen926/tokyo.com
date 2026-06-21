@@ -1162,7 +1162,7 @@
             }).join(''); 
         }
     // --- 5. Info 區塊動態渲染 ---
-        function renderInfoLinks() {
+function renderInfoLinks() {
             const container = document.getElementById('info-container-dynamic');
             if(!container) return;
             
@@ -1174,9 +1174,10 @@
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>Visit Japan Web</h3><div class="flex gap-2 items-center"><a href="https://www.vjw.digital.go.jp/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else if (currentTrip.country === 'TH') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>入境文件 (TDAC)</h3><div class="flex gap-2 items-center"><a href="https://tdac.immigration.go.th/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-           } else if (currentTrip.country === 'KR') {
+            } else if (currentTrip.country === 'KR') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 e-Arrival</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
-            }
+            } else {
+                // ✨ 這裡就是剛剛不小心刪掉的 else { 幫你補回來了！
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>通用入境/電子簽證網站</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             }
 
