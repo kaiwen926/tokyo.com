@@ -1339,7 +1339,15 @@
 
         function deleteTransMap(index) { if(confirm("確定要移除這張圖嗎？")) { transMaps.splice(index, 1); saveData(); renderTransMaps(); } }
 
-        // --- 貼紙拖曳 ---
+        // --- 貼紙拖曳與進階互動引擎 ---
+        let editingStickerId = null;
+        let deletingStickerId = null;
+        let stickerClickTime = 0;
+        let stickerClickedId = null;
+        let stickerLongPressTimer = null;
+        let initialTouchX = 0;
+        let initialTouchY = 0;
+
         function processStickerImage(input) {
             if(input.files && input.files.length > 0){ 
                 const file = input.files[0]; const r = new FileReader(); 
@@ -1351,16 +1359,173 @@
             const container = document.getElementById('custom-stickers-container'); if(!container) return;
             const currentTab = document.querySelector('.nav-item.active').dataset.target;
             const visibleStickers = customStickers.filter(s => s.tab === currentTab || !s.tab);
-            container.innerHTML = visibleStickers.map(s => `
-                <div id="sticker-${s.id}" class="absolute z-40 cursor-grab active:cursor-grabbing group select-none pointer-events-auto" style="left: ${s.x}px; top: ${s.y}px; width: ${s.w}px; -webkit-touch-callout: none;" oncontextmenu="event.preventDefault(); return false;" onmousedown="startDragSticker(event, ${s.id})" ontouchstart="startDragSticker(event, ${s.id})" onmouseup="cancelLongPress()" ontouchend="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchcancel="cancelLongPress()"><img src="${s.src}" class="w-full h-auto drop-shadow-md pointer-events-none" draggable="false"><div onmousedown="startResizeSticker(event, ${s.id})" ontouchstart="startResizeSticker(event, ${s.id})" class="absolute -bottom-2 -right-2 bg-white text-fuji border border-gray-200 w-7 h-7 rounded-full flex items-center justify-center shadow-md opacity-60 hover:opacity-100 cursor-se-resize active:scale-95 z-20 touch-none"><i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i></div></div>`).join('');
+            
+            container.innerHTML = visibleStickers.map(s => {
+                const isEditing = editingStickerId === s.id;
+                const isDeleting = deletingStickerId === s.id;
+                
+                // ✨ 長按編輯模式：顯示放大縮小按鈕
+                const resizeBtn = isEditing ? `<div onmousedown="startResizeSticker(event, ${s.id})" ontouchstart="startResizeSticker(event, ${s.id})" class="absolute -bottom-2 -right-2 bg-white text-fuji border border-gray-200 w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:scale-110 cursor-se-resize active:scale-95 z-20 touch-none"><i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i></div>` : '';
+                
+                // ✨ 雙擊刪除模式：顯示紅色叉叉
+                const deleteBtn = isDeleting ? `<button onclick="confirmDeleteSticker(${s.id})" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] z-20 shadow-md hover:bg-red-600 animate-pulse"><i class="fa-solid fa-times"></i></button>` : '';
+
+                // 在編輯或刪除狀態加上虛線外框，提示目前解鎖狀態
+                const borderClass = (isEditing || isDeleting) ? 'ring-2 ring-fuji/50 ring-dashed rounded-lg bg-white/20 backdrop-blur-sm' : '';
+
+                return `
+                <div id="sticker-${s.id}" class="absolute z-40 select-none pointer-events-auto ${borderClass}" 
+                     style="left: ${s.x}px; top: ${s.y}px; width: ${s.w}px; -webkit-touch-callout: none;" 
+                     oncontextmenu="event.preventDefault(); return false;" 
+                     onmousedown="startStickerInteract(event, ${s.id})" 
+                     ontouchstart="startStickerInteract(event, ${s.id})">
+                    <img src="${s.src}" class="w-full h-auto drop-shadow-md pointer-events-none" draggable="false">
+                    ${resizeBtn}
+                    ${deleteBtn}
+                </div>`;
+            }).join('');
         }
-        function startDragSticker(e, id) { e.stopPropagation(); activeSticker = customStickers.find(s => s.id === id); if (!activeSticker) return; dayLongPressTimer = setTimeout(() => { if(confirm('確定要移除這張貼紙嗎？')) { customStickers = customStickers.filter(s => s.id !== id); saveData(); renderStickers(); } activeSticker = null; dayLongPressTimer = null; }, 800); const el = document.getElementById('sticker-' + id); el.style.zIndex = 999; const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; const pageY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY; const rect = el.getBoundingClientRect(); stickerOffsetX = pageX - (rect.left + window.scrollX); stickerOffsetY = pageY - (rect.top + window.scrollY); }
-        function cancelLongPress() { if (dayLongPressTimer) { clearTimeout(dayLongPressTimer); dayLongPressTimer = null; } }
-        function startResizeSticker(e, id) { cancelLongPress(); e.stopPropagation(); e.preventDefault(); activeResizeSticker = customStickers.find(s => s.id === id); if (!activeResizeSticker) return; startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; startWidth = activeResizeSticker.w; }
-        document.addEventListener('mousemove', e => { if (activeResizeSticker) { e.preventDefault(); const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; const diffX = pageX - startX; let newWidth = startWidth + diffX; if (newWidth < 40) newWidth = 40; if (newWidth > Math.min(window.innerWidth - 40, 600)) newWidth = Math.min(window.innerWidth - 40, 600); const el = document.getElementById('sticker-' + activeResizeSticker.id); if (el) el.style.width = newWidth + 'px'; return; } if (activeSticker) { e.preventDefault(); cancelLongPress(); const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; const pageY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY; const el = document.getElementById('sticker-' + activeSticker.id); if(el) { el.style.left = (pageX - stickerOffsetX) + 'px'; el.style.top = (pageY - stickerOffsetY) + 'px'; } } }, {passive: false}); 
-        document.addEventListener('touchmove', e => { if (activeResizeSticker) { e.preventDefault(); const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; const diffX = pageX - startX; let newWidth = startWidth + diffX; if (newWidth < 40) newWidth = 40; if (newWidth > Math.min(window.innerWidth - 40, 600)) newWidth = Math.min(window.innerWidth - 40, 600); const el = document.getElementById('sticker-' + activeResizeSticker.id); if (el) el.style.width = newWidth + 'px'; return; } if (activeSticker) { e.preventDefault(); cancelLongPress(); const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; const pageY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY; const el = document.getElementById('sticker-' + activeSticker.id); if(el) { el.style.left = (pageX - stickerOffsetX) + 'px'; el.style.top = (pageY - stickerOffsetY) + 'px'; } } }, {passive: false});
-        document.addEventListener('mouseup', handleStickerPointerUp); document.addEventListener('touchend', handleStickerPointerUp);
-        function handleStickerPointerUp(e) { cancelLongPress(); if (activeResizeSticker) { const el = document.getElementById('sticker-' + activeResizeSticker.id); if (el) activeResizeSticker.w = parseFloat(el.style.width); activeResizeSticker = null; saveData(); } if (activeSticker) { const el = document.getElementById('sticker-' + activeSticker.id); if(el) { activeSticker.x = parseFloat(el.style.left); activeSticker.y = parseFloat(el.style.top); el.style.zIndex = 40; } activeSticker = null; saveData(); } }
+
+        function startStickerInteract(e, id) {
+            // 如果點到放大或刪除按鈕，不要觸發貼紙本體
+            if (e.target.closest('button') || e.target.closest('.cursor-se-resize')) return; 
+            e.stopPropagation();
+
+            const now = Date.now();
+            // ✨ 雙擊偵測：300毫秒內連點兩下
+            if (now - stickerClickTime < 300 && stickerClickedId === id) {
+                clearTimeout(stickerLongPressTimer); // 取消長按計時
+                deletingStickerId = id;              // 進入刪除模式
+                editingStickerId = null;
+                renderStickers();
+                return;
+            }
+            stickerClickTime = now;
+            stickerClickedId = id;
+
+            // 如果已經在長按編輯模式中，直接讓他可以拖曳
+            if (editingStickerId === id) {
+                initStickerDrag(e, id);
+                return;
+            }
+
+            // 準備長按判定 (500ms)
+            const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; 
+            const pageY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY; 
+            initialTouchX = pageX;
+            initialTouchY = pageY;
+
+            stickerLongPressTimer = setTimeout(() => {
+                editingStickerId = id; // 進入編輯(拖曳/放大)模式
+                deletingStickerId = null;
+                renderStickers();
+                initStickerDrag(e, id); // 長按成功後自動跟隨手指開始拖曳
+            }, 500); 
+        }
+
+        function initStickerDrag(e, id) {
+            activeSticker = customStickers.find(s => s.id === id);
+            const el = document.getElementById('sticker-' + id);
+            const rect = el.getBoundingClientRect(); 
+            const pageX = e.type.includes('mouse') ? e.pageX : (e.touches ? e.touches[0].pageX : initialTouchX); 
+            const pageY = e.type.includes('mouse') ? e.pageY : (e.touches ? e.touches[0].pageY : initialTouchY); 
+            stickerOffsetX = pageX - (rect.left + window.scrollX); 
+            stickerOffsetY = pageY - (rect.top + window.scrollY); 
+            el.style.zIndex = 999;
+        }
+
+        function confirmDeleteSticker(id) {
+            if(confirm('確定要移除這張貼圖嗎？')) { 
+                customStickers = customStickers.filter(s => s.id !== id); 
+                deletingStickerId = null;
+                saveData(); 
+                renderStickers(); 
+            } else {
+                deletingStickerId = null;
+                renderStickers();
+            }
+        }
+
+        function startResizeSticker(e, id) { 
+            e.stopPropagation(); e.preventDefault(); 
+            activeResizeSticker = customStickers.find(s => s.id === id); 
+            if (!activeResizeSticker) return; 
+            startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; 
+            startWidth = activeResizeSticker.w; 
+        }
+
+        function handleGlobalStickerMove(e) {
+            // 防滾動誤觸：如果手指滑動超過 10px，代表用戶在滾動網頁，取消長按判定
+            if (stickerLongPressTimer) {
+                const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; 
+                const pageY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY; 
+                if (Math.abs(pageX - initialTouchX) > 10 || Math.abs(pageY - initialTouchY) > 10) {
+                    clearTimeout(stickerLongPressTimer);
+                    stickerLongPressTimer = null;
+                }
+            }
+
+            if (activeResizeSticker) { 
+                e.preventDefault(); 
+                const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; 
+                const diffX = pageX - startX; 
+                let newWidth = startWidth + diffX; 
+                if (newWidth < 40) newWidth = 40; 
+                if (newWidth > Math.min(window.innerWidth - 40, 600)) newWidth = Math.min(window.innerWidth - 40, 600); 
+                const el = document.getElementById('sticker-' + activeResizeSticker.id); 
+                if (el) el.style.width = newWidth + 'px'; 
+                return; 
+            } 
+            if (activeSticker) { 
+                e.preventDefault(); 
+                const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX; 
+                const pageY = e.type.includes('mouse') ? e.pageY : e.touches[0].pageY; 
+                const el = document.getElementById('sticker-' + activeSticker.id); 
+                if(el) { 
+                    el.style.left = (pageX - stickerOffsetX) + 'px'; 
+                    el.style.top = (pageY - stickerOffsetY) + 'px'; 
+                } 
+            }
+        }
+
+        function handleGlobalStickerUp(e) {
+            if (stickerLongPressTimer) {
+                clearTimeout(stickerLongPressTimer);
+                stickerLongPressTimer = null;
+            }
+            if (activeResizeSticker) { 
+                const el = document.getElementById('sticker-' + activeResizeSticker.id); 
+                if (el) activeResizeSticker.w = parseFloat(el.style.width); 
+                activeResizeSticker = null; 
+                saveData(); 
+            } 
+            if (activeSticker) { 
+                const el = document.getElementById('sticker-' + activeSticker.id); 
+                if(el) { 
+                    activeSticker.x = parseFloat(el.style.left); 
+                    activeSticker.y = parseFloat(el.style.top); 
+                    el.style.zIndex = 40; 
+                } 
+                activeSticker = null; 
+                saveData(); 
+            }
+        }
+
+        // ✨ 點擊空白處自動還原(退出編輯與刪除模式)
+        document.addEventListener('click', e => {
+            if (!e.target.closest('[id^="sticker-"]')) {
+                if (editingStickerId || deletingStickerId) {
+                    editingStickerId = null;
+                    deletingStickerId = null;
+                    renderStickers();
+                }
+            }
+        });
+
+        document.addEventListener('mousemove', handleGlobalStickerMove, {passive: false}); 
+        document.addEventListener('touchmove', handleGlobalStickerMove, {passive: false});
+        document.addEventListener('mouseup', handleGlobalStickerUp); 
+        document.addEventListener('touchend', handleGlobalStickerUp);
 
         // --- 6. 行程表 (Itinerary) ---
         function deleteDayById(id) { if (confirm("確定要刪除這一天的所有行程嗎？此操作無法復原喔！")) { itinerary = itinerary.filter(d => d.id !== id); saveData(); renderItinerary(); exitDayEditMode(); } }
