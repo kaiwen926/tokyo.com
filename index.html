@@ -737,12 +737,15 @@
         let currentShopOwnerIdx=0, inlineCategoryChart=null, inlineMemberChart=null, settlementChart=null, memberDetailChart=null, gistId="", gistToken="";
         let tempThemes=[], currentPhotoBase64=null, currentGuidePhoto=null, currentShopPhoto=null, tempDayPhotos=[], selectedPayers=[], selectedCat='餐飲';
         
-        // ✨ 新增 tempMeals 以支援動態美食清單
         let tempTrans = [], tempMassages = [], tempMeals = [], currentFlightPhoto = null, currentAccDayId = null; 
         
         let dayLongPressTimer = null, isEditMode = false;
         let activeSticker = null, stickerOffsetX = 0, stickerOffsetY = 0;
         let activeResizeSticker = null, startWidth = 0, startX = 0, longPressTimer = null;
+
+        // ✨ 購物分類管理變數
+        let shopCategories = ['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店'];
+        let isShopCatEditMode = false, shopCatLongPressTimer = null;
 
         // --- 即時匯率資料庫 ---
         let globalExchangeRates = {};
@@ -877,6 +880,7 @@
             localStorage.setItem(p+'vjwData', JSON.stringify(c.vjwData || { isOpen: true, items: [] }));
             localStorage.setItem(p+'customStickers', JSON.stringify(c.customStickers||[]));
             localStorage.setItem(p+'transMaps', JSON.stringify(c.transMaps||[]));
+            localStorage.setItem(p+'shopCategories', JSON.stringify(c.shopCategories||['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店']));
             const cloudTime = c.lastUpdate ? c.lastUpdate : new Date().toISOString();
             localStorage.setItem(p+'lastUpdate', cloudTime);
             updateCloudStatus("同步完成"); 
@@ -903,6 +907,7 @@
             vjwData = JSON.parse(localStorage.getItem(p+'vjwData')) || { isOpen: true, items: [] };
             customStickers = JSON.parse(localStorage.getItem(p+'customStickers')) || [];
             transMaps = JSON.parse(localStorage.getItem(p+'transMaps')) || [];
+            shopCategories = JSON.parse(localStorage.getItem(p+'shopCategories')) || ['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店'];
             
             // ✨ 萬能鑰匙：從獨立的本機庫讀取
             gistId = localStorage.getItem('app_global_gist_id') || currentTrip.gistId || ""; 
@@ -935,6 +940,7 @@
                 localStorage.setItem(p+'publicFundConfig', JSON.stringify(publicFundConfig));
                 localStorage.setItem(p+'vjwData', JSON.stringify(vjwData));
                 localStorage.setItem(p+'customStickers', JSON.stringify(customStickers));
+                localStorage.setItem(p+'shopCategories', JSON.stringify(shopCategories));
                 localStorage.setItem(p+'lastUpdate', now.toISOString());
 
                 // 同步更新所有行程的連線資訊
@@ -959,7 +965,6 @@
                 if (r.status === 401) throw new Error("Unauthorized");
                 const d = await r.json();
 
-                // ✨ 安全合併
                 if (d.files["global_trip_list.json"]) {
                     const cloudTripList = JSON.parse(d.files["global_trip_list.json"].content);
                     cloudTripList.forEach(cloudTrip => {
@@ -991,9 +996,8 @@
         async function forceUpload(isManual = false) {
             if(!gistId || !gistToken) return;
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, lastUpdate: new Date().toISOString() };
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, shopCategories, lastUpdate: new Date().toISOString() };
             
-            // ✨ 隱形安全盾
             const uploadTripList = tripList.map(t => ({...t, gistToken: ""}));
 
             try { 
@@ -1019,20 +1023,13 @@
         function saveGistConfig() { 
             const newId = document.getElementById('gist-id-input').value.trim(); 
             const newTok = document.getElementById('gist-token-input').value.trim();
-            
             if(!newId || !newTok) return alert("請完整填寫 ID 與 Token");
-
-            gistId = newId; 
-            gistToken = newTok;
-            
+            gistId = newId; gistToken = newTok;
             localStorage.setItem('app_global_gist_id', gistId);
             localStorage.setItem('app_global_gist_token', gistToken);
-            
             tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
             localStorage.setItem('app_trip_list', JSON.stringify(tripList)); 
-            
-            alert("✅ 雲端連線設定已成功儲存！"); 
-            forceDownload(true);
+            alert("✅ 雲端連線設定已成功儲存！"); forceDownload(true);
         }
 
         function updateCloudStatus(msg) { 
@@ -1843,24 +1840,149 @@
         function calcCustomDiscount() { calcEqual(); let val = parseFloat(calcVal); let input = prompt("請輸入折扣：\n\n🔸 打折：輸入 95 (代表95折) 或 0.9\n🔸 減錢：輸入 -500 (代表減500元)", "95"); if (input === null || input === "") return; let num = parseFloat(input); if (isNaN(num)) return alert("請輸入數字"); if (num < 0) { val = val + num; } else if (num <= 1) { val = val * num; } else if (num <= 100) { val = val * (num / 100); } else { if(confirm(`您輸入了 ${num}，是要「減去 ${num}」嗎？`)) { val = val - num; } else { return; } } calcVal = String(Math.round(val)); calcResetNext = true; updateCalcDisplay(); }
         function calcToExpense() { calcEqual(); const amount = Math.round(parseFloat(calcVal)); const currency = document.getElementById('calc-currency').value; closeModal('calc-modal'); openExpenseModal(null, true); document.getElementById('ex-amount').value = amount; document.getElementById('ex-currency').value = currency; }
 
-        // --- 9. 購物清單 (Shopping) ---
+       // --- 9. 購物清單 (Shopping) ---
         window.expandedCategories = window.expandedCategories || new Set();
-        function renderShoppingList() { const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner); const container = document.getElementById('shopping-list-container'); container.innerHTML = ''; const grouped = {}; items.forEach(item => { const cat = item.category || '未分類'; if(!grouped[cat]) grouped[cat] = []; grouped[cat].push(item); }); const catStyles = { '藥妝': 'border-pink-400 bg-pink-50 text-pink-600', 'Outlet': 'border-sky-400 bg-sky-50 text-sky-600', '7-11': 'border-orange-400 bg-orange-50 text-orange-600', '全家': 'border-green-500 bg-green-50 text-green-700', 'Lawson': 'border-blue-400 bg-blue-50 text-blue-600', '伴手禮': 'border-red-400 bg-red-50 text-red-600', '電器': 'border-gray-500 bg-gray-100 text-gray-600', '服飾': 'border-purple-400 bg-purple-50 text-purple-600', 'AEON': 'border-fuchsia-400 bg-fuchsia-50 text-fuchsia-600', '超市': 'border-emerald-400 bg-emerald-50 text-emerald-600', '唐吉軻德': 'border-yellow-400 bg-yellow-50 text-yellow-700', '未分類': 'border-gray-300 bg-gray-50 text-gray-500' }; const autoPalettes = [ 'border-teal-400 bg-teal-50 text-teal-600', 'border-indigo-400 bg-indigo-50 text-indigo-600', 'border-lime-400 bg-lime-50 text-lime-700', 'border-cyan-400 bg-cyan-50 text-cyan-600', 'border-rose-400 bg-rose-50 text-rose-600', 'border-amber-400 bg-amber-50 text-amber-700', 'border-violet-400 bg-violet-50 text-violet-600' ]; Object.keys(grouped).sort().forEach(cat => { const catItems = grouped[cat]; const doneCount = catItems.filter(i => i.done).length; const isExpanded = expandedCategories.has(cat); let styleClass = catStyles[cat]; if (!styleClass) { let hash = 0; for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash); const colorIdx = Math.abs(hash) % autoPalettes.length; styleClass = autoPalettes[colorIdx]; } const itemsHtml = catItems.map(s => renderShopItem(s)).join(''); let html = `<div class="mb-3 transition-all duration-300 w-full max-w-full"><div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" onclick="toggleShopCat('${cat}')" style="background-color: white;"><div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div><div class="flex items-center gap-2"><i class="fa-solid fa-tag text-sm opacity-70"></i><h5 class="font-bold text-sm tracking-wide">${cat}</h5><span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span></div><i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i></div><div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">${itemsHtml}</div></div>`; container.innerHTML += html; }); document.getElementById('shop-owner-name').innerText = owner; }
+
+        // ✨ 統一運算所有分類顏色的全能函式
+        function getCatStyle(cat, type='btn') {
+            const autoPalettes = [
+                { btn: 'bg-pink-50 text-pink-600 border-pink-200', card: 'border-pink-400 bg-pink-50 text-pink-600' },
+                { btn: 'bg-sky-50 text-sky-600 border-sky-200', card: 'border-sky-400 bg-sky-50 text-sky-600' },
+                { btn: 'bg-orange-50 text-orange-600 border-orange-200', card: 'border-orange-400 bg-orange-50 text-orange-600' },
+                { btn: 'bg-green-50 text-green-700 border-green-200', card: 'border-green-500 bg-green-50 text-green-700' },
+                { btn: 'bg-blue-50 text-blue-600 border-blue-200', card: 'border-blue-400 bg-blue-50 text-blue-600' },
+                { btn: 'bg-red-50 text-red-600 border-red-200', card: 'border-red-400 bg-red-50 text-red-600' },
+                { btn: 'bg-purple-50 text-purple-600 border-purple-200', card: 'border-purple-400 bg-purple-50 text-purple-600' },
+                { btn: 'bg-emerald-50 text-emerald-600 border-emerald-200', card: 'border-emerald-400 bg-emerald-50 text-emerald-600' },
+                { btn: 'bg-teal-50 text-teal-600 border-teal-200', card: 'border-teal-400 bg-teal-50 text-teal-600' },
+                { btn: 'bg-indigo-50 text-indigo-600 border-indigo-200', card: 'border-indigo-400 bg-indigo-50 text-indigo-600' },
+                { btn: 'bg-lime-50 text-lime-700 border-lime-200', card: 'border-lime-400 bg-lime-50 text-lime-700' },
+                { btn: 'bg-cyan-50 text-cyan-600 border-cyan-200', card: 'border-cyan-400 bg-cyan-50 text-cyan-600' },
+                { btn: 'bg-rose-50 text-rose-600 border-rose-200', card: 'border-rose-400 bg-rose-50 text-rose-600' },
+                { btn: 'bg-amber-50 text-amber-700 border-amber-200', card: 'border-amber-400 bg-amber-50 text-amber-700' },
+                { btn: 'bg-violet-50 text-violet-600 border-violet-200', card: 'border-violet-400 bg-violet-50 text-violet-600' }
+            ];
+            let hash = 0;
+            for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+            return autoPalettes[Math.abs(hash) % autoPalettes.length][type];
+        }
+
+        function renderShoppingList() { 
+            const owner = shoppingOwners[currentShopOwnerIdx] || "我的清單"; 
+            const items = shoppingList.filter(s => (s.owner || shoppingOwners[0]) === owner); 
+            const container = document.getElementById('shopping-list-container'); container.innerHTML = ''; 
+            const grouped = {}; 
+            items.forEach(item => { const cat = item.category || '未分類'; if(!grouped[cat]) grouped[cat] = []; grouped[cat].push(item); }); 
+            
+            Object.keys(grouped).sort().forEach(cat => { 
+                const catItems = grouped[cat]; const doneCount = catItems.filter(i => i.done).length; 
+                const isExpanded = expandedCategories.has(cat); 
+                const styleClass = getCatStyle(cat, 'card'); // ✨ 自動為所有標籤配置顏色
+                const itemsHtml = catItems.map(s => renderShopItem(s)).join(''); 
+                let html = `<div class="mb-3 transition-all duration-300 w-full max-w-full"><div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" onclick="toggleShopCat('${cat}')" style="background-color: white;"><div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div><div class="flex items-center gap-2"><i class="fa-solid fa-tag text-sm opacity-70"></i><h5 class="font-bold text-sm tracking-wide">${cat}</h5><span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span></div><i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i></div><div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">${itemsHtml}</div></div>`; 
+                container.innerHTML += html; 
+            }); 
+            document.getElementById('shop-owner-name').innerText = owner; 
+        }
+
         function renderShopItem(s) { const isDone = s.done; const c = currentTrip.currency === 'JPY' ? '¥' : (currentTrip.currency === 'THB' ? '฿' : (currentTrip.currency === 'KRW' ? '₩' : '$')); return `<div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal(${s.id})"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction(${s.id}, ${isDone})"><i class="fa-solid fa-check text-xs"></i></div><div class="min-w-0"><div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div><div class="text-[11px] text-gray-400 mt-0.5 font-mono">${s.price ? `${c}${s.price} ` : ''}${s.qty && s.qty > 1 ? `<span class="text-gray-300">x</span> ${s.qty}` : ''}</div></div></div>${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}</div>`; }
         function toggleShopCat(cat) { if (expandedCategories.has(cat)) expandedCategories.delete(cat); else expandedCategories.add(cat); renderShoppingList(); }
-        function openShoppingModal(id=null){ ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); document.getElementById('shop-qty').value=1; currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); renderShopCatButtons();if(id){ const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; document.getElementById('shop-category').value=s.category||''; if(s.photo){ currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden') } } openModal('shopping-modal'); }
-        function saveShoppingItem(){ const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:document.getElementById('shop-category').value, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; if(id){ const idx=shoppingList.findIndex(i=>i.id==id); item.done=shoppingList[idx].done; shoppingList[idx]=item; } else { shoppingList.push(item); } saveData(); renderShoppingList(); closeModal('shopping-modal'); }
-        function deleteShoppingItem(){ if(confirm("確定要刪除這個商品嗎？")){ shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value); saveData(); renderShoppingList(); closeModal('shopping-modal'); } }
-        function renderShopCatButtons() { const container = document.getElementById('shop-cat-chips'); if (!container) return; const defaultCats = ['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店']; const customCats = [...new Set(shoppingList.map(i => i.category).filter(c => c && c.trim() !== '' && !defaultCats.includes(c)))]; const allCats = [...defaultCats, ...customCats]; const styleMap = { '藥妝': 'bg-pink-50 text-pink-500 border-pink-100', 'Outlet': 'bg-sky-50 text-sky-500 border-sky-100', '7-11': 'bg-orange-50 text-orange-500 border-orange-100', '全家': 'bg-green-50 text-green-600 border-green-200', 'Lawson': 'bg-blue-50 text-blue-500 border-blue-100', '伴手禮': 'bg-red-50 text-red-500 border-red-100', '服飾': 'bg-purple-50 text-purple-500 border-purple-100', '超市': 'bg-emerald-50 text-emerald-600 border-emerald-200' }; container.innerHTML = allCats.map(cat => { const style = styleMap[cat] || 'bg-teal-50 text-teal-600 border-teal-200'; return `<button onclick="setShopCat('${cat}')" class="text-xs px-2 py-1 rounded-full border transition hover:scale-105 active:scale-95 ${style}">${cat}</button>`; }).join(''); }      
-        function triggerShopAction(id, isDone) { if(isDone) { const s = shoppingList.find(i=>i.id===id); s.done = false; saveData(); renderShoppingList(); } else { document.getElementById('confirm-shop-id').value = id; openModal('shop-confirm-modal'); } }
-        function confirmShopAction(action) { const id = parseInt(document.getElementById('confirm-shop-id').value); const s = shoppingList.find(i=>i.id===id); if(!s) return; if (action === 'expense') { closeModal('shop-confirm-modal'); const categoryNote = s.category ? ` (${s.category})` : ''; openExpenseModal(null, true); document.getElementById('ex-note').value = s.name + categoryNote; document.getElementById('ex-amount').value = s.price * s.qty; selectedCat = '購物'; selectedPayers = ['我']; renderCategoryUI(); renderSplitButtons(); s.done = true; saveData(); renderShoppingList(); } else if (action === 'done_only') { s.done = true; saveData(); renderShoppingList(); closeModal('shop-confirm-modal'); } else if (action === 'cancel') { closeModal('shop-confirm-modal'); } }
-        function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
-        function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
-        function setShopCat(val) { document.getElementById('shop-category').value = val; }
-        function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map((n, i) => `<div class="bg-gray-50 p-2 border rounded text-sm flex justify-between items-center mb-2"><span class="font-bold text-gray-700">${n}</span><button onclick="deleteShopList(${i})" class="text-red-400 hover:text-red-600 px-2 transition"><i class="fa-solid fa-trash-can"></i></button></div>` ).join(''); openModal('manage-shop-lists-modal'); }
-        function deleteShopList(index) { if(confirm("確定刪除這個清單嗎？")) { if (currentShopOwnerIdx === index) currentShopOwnerIdx = 0; else if (index < currentShopOwnerIdx) currentShopOwnerIdx--; shoppingOwners.splice(index, 1); if(shoppingOwners.length === 0) shoppingOwners.push("我的清單"); saveData(); openShopOwnerModal(); renderShoppingList(); } }
-        function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){ shoppingOwners.push(n); saveData(); openShopOwnerModal(); renderShoppingList(); document.getElementById('new-shop-list-name').value=''; } }
+        
+        function openShoppingModal(id=null){ 
+            ['shop-id','shop-name','shop-qty','shop-price','shop-category'].forEach(k=>document.getElementById(k).value=''); 
+            document.getElementById('shop-qty').value=1; currentShopPhoto=null; document.getElementById('shop-photo-preview').classList.add('hidden'); 
+            isShopCatEditMode = false; // ✨ 每次開啟時關閉刪除模式
+            renderShopCatButtons();
+            if(id){ 
+                const s=shoppingList.find(i=>i.id===id); document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; document.getElementById('shop-category').value=s.category||''; 
+                if(s.photo){ currentShopPhoto=s.photo; document.getElementById('shop-photo-preview').src=s.photo; document.getElementById('shop-photo-preview').classList.remove('hidden') } 
+            } 
+            openModal('shopping-modal'); 
+        }
 
+        function saveShoppingItem(){ 
+            const id=document.getElementById('shop-id').value, name=document.getElementById('shop-name').value; if(!name)return; 
+            const cat = document.getElementById('shop-category').value.trim();
+            // ✨ 如果是新的分類，自動加入全域捷徑
+            if(cat && !shopCategories.includes(cat)) { shopCategories.push(cat); }
+
+            const item={ id:id?parseInt(id):Date.now(), name, qty:document.getElementById('shop-qty').value, price:document.getElementById('shop-price').value, category:cat, photo:currentShopPhoto, done:false, owner: shoppingOwners[currentShopOwnerIdx] }; 
+            if(id){ const idx=shoppingList.findIndex(i=>i.id==id); item.done=shoppingList[idx].done; shoppingList[idx]=item; } else { shoppingList.push(item); } 
+            saveData(); renderShoppingList(); closeModal('shopping-modal'); 
+        }
+        
+        function deleteShoppingItem(){ if(confirm("確定要刪除這個商品嗎？")){ shoppingList=shoppingList.filter(s=>s.id!=document.getElementById('shop-id').value); saveData(); renderShoppingList(); closeModal('shopping-modal'); } }
+        
+      // ✨ 全域變數：用來偵測「快點兩下」的時間差
+        window.lastShopCatClickTime = 0;
+        window.lastShopCatClicked = '';
+
+        // ✨ 動態渲染購物分類按鈕 (支援長按刪除、快點兩下編輯)
+        function renderShopCatButtons() { 
+            const container = document.getElementById('shop-cat-chips'); if (!container) return; 
+            container.innerHTML = shopCategories.map(cat => { 
+                const style = getCatStyle(cat, 'btn'); 
+                // 只有右邊紅色叉叉 (刪除)，拔除鉛筆保持畫面乾淨
+                const deleteBtn = isShopCatEditMode ? `<button onclick="event.stopPropagation(); deleteShopCat('${cat}')" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px] z-10 shadow-sm animate-pulse"><i class="fa-solid fa-times"></i></button>` : '';
+                
+                return `<div class="relative inline-block"><button onclick="handleShopCatClick('${cat}')" onmousedown="startShopCatLongPress()" ontouchstart="startShopCatLongPress()" onmouseup="clearShopCatLongPress()" ontouchend="clearShopCatLongPress()" onmouseleave="clearShopCatLongPress()" class="text-xs px-2 py-1 rounded-full border transition hover:scale-105 active:scale-95 ${style}">${cat}</button>${deleteBtn}</div>`; 
+            }).join(''); 
+        }
+
+        // ✨ 處理單擊與雙擊的聰明大腦
+        function handleShopCatClick(val) { 
+            // 抖動刪除模式下，點擊任何地方取消刪除模式，不填入名稱
+            if (isShopCatEditMode) {
+                isShopCatEditMode = false;
+                renderShopCatButtons();
+                return;
+            }
+            
+            const now = new Date().getTime();
+            // 如果 300 毫秒內連續點了兩次同一個標籤，視為「快點兩下」-> 觸發編輯！
+            if (now - window.lastShopCatClickTime < 300 && window.lastShopCatClicked === val) {
+                editShopCat(val);
+            } else {
+                // 單擊 -> 填入分類名稱
+                document.getElementById('shop-category').value = val; 
+            }
+            window.lastShopCatClickTime = now;
+            window.lastShopCatClicked = val;
+        }
+
+        // ✨ 長按觸發刪除模式 (800毫秒)
+        function startShopCatLongPress() { shopCatLongPressTimer = setTimeout(() => { isShopCatEditMode = true; renderShopCatButtons(); }, 800); }
+        function clearShopCatLongPress() { if(shopCatLongPressTimer) clearTimeout(shopCatLongPressTimer); }
+        
+        // ✨ 修改分類名稱 (快點兩下觸發)
+        function editShopCat(oldCat) {
+            const newCat = prompt(`請輸入「${oldCat}」的新名稱：`, oldCat);
+            if (newCat && newCat.trim() !== "" && newCat.trim() !== oldCat) {
+                const idx = shopCategories.indexOf(oldCat);
+                if (idx > -1) shopCategories[idx] = newCat.trim();
+                
+                // 自動將清單內所有同分類商品一起更名
+                shoppingList.forEach(item => {
+                    if (item.category === oldCat) item.category = newCat.trim();
+                });
+                
+                if (document.getElementById('shop-category').value === oldCat) {
+                    document.getElementById('shop-category').value = newCat.trim();
+                }
+                
+                saveData(); 
+                renderShopCatButtons(); 
+                renderShoppingList(); 
+            }
+        }
+
+        // ✨ 刪除分類 (點擊叉叉觸發)
+        function deleteShopCat(cat) { 
+            if(confirm(`確定要刪除快捷標籤「${cat}」嗎？\n(原本清單內的商品不會被刪除)`)) { 
+                shopCategories = shopCategories.filter(c => c !== cat); 
+                saveData(); renderShopCatButtons(); 
+            } 
+        }
         // --- 10. 必吃清單 (Must Eat) ---
         function renderMustEatList() { 
             const c = document.getElementById('must-eat-list'); c.innerHTML = ''; 
