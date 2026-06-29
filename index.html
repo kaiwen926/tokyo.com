@@ -730,7 +730,7 @@
             }
         };
 
-        // --- 全域資料變數 ---
+       // --- 全域資料變數 ---
         let flights=[], itinerary=[], mustEatList=[], expenses=[], guides=[], shoppingList=[], payers=[], payerProfiles={}, manualDebts=[], memoText="", todos=[], shoppingOwners=["我的清單"];
         let vjwData={isOpen:true,items:[]}, publicFundConfig={total:0,currency:'JPY'};
         let transMaps = [], customStickers = [];
@@ -743,9 +743,10 @@
         let activeSticker = null, stickerOffsetX = 0, stickerOffsetY = 0;
         let activeResizeSticker = null, startWidth = 0, startX = 0, longPressTimer = null;
 
-        // ✨ 購物分類管理變數
+        // ✨ 購物分類與雲端密碼鎖變數
         let shopCategories = ['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店'];
         let isShopCatEditMode = false, shopCatLongPressTimer = null;
+        let privacyPin = ""; // 新增全域密碼變數
 
         // --- 即時匯率資料庫 ---
         let globalExchangeRates = {};
@@ -848,11 +849,7 @@
             const country = document.getElementById('new-trip-country').value;
             if(!name) return alert("請輸入行程名稱");
 
-            const newTrip = { 
-                id: 'trip_' + Date.now(), 
-                name: name, currency: currency, country: country, 
-                gistId: gistId || '', gistToken: gistToken || '' 
-            };
+            const newTrip = { id: 'trip_' + Date.now(), name: name, currency: currency, country: country, gistId: gistId || '', gistToken: gistToken || '' };
             tripList.push(newTrip);
             localStorage.setItem('app_trip_list', JSON.stringify(tripList));
             document.getElementById('new-trip-name').value = '';
@@ -881,6 +878,8 @@
             localStorage.setItem(p+'customStickers', JSON.stringify(c.customStickers||[]));
             localStorage.setItem(p+'transMaps', JSON.stringify(c.transMaps||[]));
             localStorage.setItem(p+'shopCategories', JSON.stringify(c.shopCategories||['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店']));
+            localStorage.setItem(p+'privacyPin', c.privacyPin || ""); // ✨ 下載雲端密碼
+            
             const cloudTime = c.lastUpdate ? c.lastUpdate : new Date().toISOString();
             localStorage.setItem(p+'lastUpdate', cloudTime);
             updateCloudStatus("同步完成"); 
@@ -908,8 +907,8 @@
             customStickers = JSON.parse(localStorage.getItem(p+'customStickers')) || [];
             transMaps = JSON.parse(localStorage.getItem(p+'transMaps')) || [];
             shopCategories = JSON.parse(localStorage.getItem(p+'shopCategories')) || ['藥妝', 'Outlet', '7-11', '全家', 'Lawson', '伴手禮', '電器', '服飾', '超市', '免稅店'];
+            privacyPin = localStorage.getItem(p+'privacyPin') || ""; // ✨ 載入密碼設定
             
-            // ✨ 萬能鑰匙：從獨立的本機庫讀取
             gistId = localStorage.getItem('app_global_gist_id') || currentTrip.gistId || ""; 
             gistToken = localStorage.getItem('app_global_gist_token') || currentTrip.gistToken || "";
             
@@ -941,9 +940,9 @@
                 localStorage.setItem(p+'vjwData', JSON.stringify(vjwData));
                 localStorage.setItem(p+'customStickers', JSON.stringify(customStickers));
                 localStorage.setItem(p+'shopCategories', JSON.stringify(shopCategories));
+                localStorage.setItem(p+'privacyPin', privacyPin); // ✨ 儲存密碼設定
                 localStorage.setItem(p+'lastUpdate', now.toISOString());
 
-                // 同步更新所有行程的連線資訊
                 localStorage.setItem('app_global_gist_id', gistId);
                 localStorage.setItem('app_global_gist_token', gistToken);
 
@@ -956,17 +955,14 @@
 
         async function forceDownload(isAuto = false) {
             if(!gistId || !gistToken) return;
-            // ✨ 離線偵測：沒網路就不要轉圈圈
-            if(!navigator.onLine) { updateCloudStatus("離線模式"); return; }
+            if(!navigator.onLine) { updateCloudStatus("離線模式"); return; } // ✨ 防呆：離線不轉圈
             if(!isAuto) updateCloudStatus("檢查中...");
             
             try {
-                // ✨ 超時防護：最多等 8 秒，網路太差就直接切斷放棄，不讓畫面卡死
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // ✨ 防呆：8秒逾時不卡死
                 const r = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { 
-                    headers: { 'Authorization': `token ${gistToken}` },
-                    signal: controller.signal
+                    headers: { 'Authorization': `token ${gistToken}` }, signal: controller.signal 
                 });
                 clearTimeout(timeoutId);
                 
@@ -1003,7 +999,9 @@
             if(!gistId || !gistToken) return;
             if(!navigator.onLine) { updateCloudStatus("離線模式"); if(isManual) alert("❌ 目前離線，無法上傳"); return; }
             updateCloudStatus("上傳中...");
-            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, shopCategories, lastUpdate: new Date().toISOString() };
+            
+            // ✨ 確保 privacyPin 一起被打包上傳雲端
+            const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, shopCategories, privacyPin, lastUpdate: new Date().toISOString() };
             const uploadTripList = tripList.map(t => ({...t, gistToken: ""}));
 
             try { 
@@ -1011,11 +1009,8 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 8000);
                 await fetch(`https://api.github.com/gists/${gistId}`, { 
-                    method: 'PATCH', 
-                    headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ 
-                        files: { [cloudFileName]: { content: JSON.stringify(payload) }, "global_trip_list.json": { content: JSON.stringify(uploadTripList) } } 
-                    }),
+                    method: 'PATCH', headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ files: { [cloudFileName]: { content: JSON.stringify(payload) }, "global_trip_list.json": { content: JSON.stringify(uploadTripList) } } }),
                     signal: controller.signal
                 }); 
                 clearTimeout(timeoutId);
@@ -1043,16 +1038,18 @@
             if (el) el.innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
         }
 
-        // ✨ 新增：儲存密碼鎖設定
+        // ✨ 新增：儲存密碼鎖設定 (升級為雲端同步版)
         function savePrivacyPin() {
             const pin = document.getElementById('privacy-pin-input').value.trim();
-            localStorage.setItem('app_privacy_pin', pin);
+            privacyPin = pin; // 寫入全域變數
+            saveData(); // 儲存並觸發自動上傳到雲端！
+            
             if(pin) {
                 window.sessionUnlocked = true; 
-                alert("✅ 密碼鎖已啟用！你的記帳與清單已被保護。");
+                alert("✅ 密碼鎖已啟用！\n(將在幾秒後自動同步至你所有的裝置)");
             } else {
                 window.sessionUnlocked = true;
-                alert("🔓 密碼鎖已解除！");
+                alert("🔓 密碼鎖已解除！\n(將在幾秒後自動同步至你所有的裝置)");
             }
         }
 
@@ -1066,11 +1063,10 @@
         window.sessionUnlocked = false;
 
         function switchTab(t){ 
-            // ✨ 密碼鎖攔截器：切換到記帳或清單時進行安檢
-            const pin = localStorage.getItem('app_privacy_pin');
-            if ((t === 'wallet' || t === 'lists') && pin && !window.sessionUnlocked) {
+            // ✨ 密碼鎖攔截器：改用雲端同步下來的 privacyPin
+            if ((t === 'wallet' || t === 'lists') && privacyPin && !window.sessionUnlocked) {
                 const input = prompt("🔒 這是私密分頁，請輸入 4 位數密碼解鎖：");
-                if (input === pin) {
+                if (input === privacyPin) {
                     window.sessionUnlocked = true; 
                 } else {
                     if (input !== null) alert("❌ 密碼錯誤！");
@@ -1177,7 +1173,6 @@
             } else if (currentTrip.country === 'TH') {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>入境文件 (TDAC)</h3><div class="flex gap-2 items-center"><a href="https://tdac.immigration.go.th/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else if (currentTrip.country === 'KR') {
-                // ✨ 修正韓國連結：換成官方 Q-Code 網站
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>韓國 Q-CODE / e-Arrival</h3><div class="flex gap-2 items-center"><a href="https://qcode.kdca.go.kr/" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-white text-blue-500 px-3 py-1.5 rounded-full shadow-sm hover:bg-blue-500 hover:text-white transition font-bold"><i class="fa-solid fa-link"></i></a><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
             } else {
                 entryDocHtml = `<div class="hand-card p-0 overflow-hidden bg-blue-50/30 border border-blue-100 group hover:shadow-lg transition"><div class="p-4 bg-gradient-to-r from-blue-500/10 to-transparent flex justify-between items-center cursor-pointer" onclick="toggleVJW()"><h3 class="font-bold text-blue-800 handwritten text-lg flex items-center gap-2"><i class="fa-solid fa-passport"></i>通用入境/電子簽證網站</h3><div class="flex gap-2 items-center"><i id="vjw-arrow" class="fa-solid fa-chevron-down text-blue-300 transition-transform"></i></div></div>${vjwContainerHtml}</div>`;
@@ -1246,14 +1241,21 @@
                         <details class="group hand-card overflow-hidden border border-gray-200">
                             <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none"><span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-solid fa-lock text-lg"></i> 隱私密碼鎖</span><span class="text-gray-400 group-open:rotate-180 transition text-xs"><i class="fa-solid fa-chevron-down"></i></span></summary>
                             <div class="p-4 bg-white space-y-3 border-t border-gray-100">
-                                <div class="text-[10px] text-gray-400 mb-2">設定後，記帳與清單分頁需要輸入密碼才能觀看（每次重新開啟網頁皆需重新解鎖）。</div>
-                                <div><input type="password" id="privacy-pin-input" placeholder="輸入密碼 (留空代表不上鎖)" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha" value="${localStorage.getItem('app_privacy_pin') || ''}"></div>
+                                <div class="text-[10px] text-gray-400 mb-2">設定後，此行程的記帳與清單分頁將被保護（自動同步至所有擁有連結的裝置）。</div>
+                                <div><input type="password" id="privacy-pin-input" placeholder="輸入 4 位數密碼 (留空代表解鎖)" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha" value="${privacyPin}"></div>
                                 <button onclick="savePrivacyPin()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存密碼設定</button>
                             </div>
                         </details>
 
                         <details class="group hand-card overflow-hidden border border-gray-200">
-                            <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none"><span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span>
+                            <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none"><span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span><span class="text-gray-400 group-open:rotate-180 transition text-xs"><i class="fa-solid fa-chevron-down"></i></span></summary>
+                            <div class="p-4 bg-white space-y-3 border-t border-gray-100">
+                                <div class="text-[10px] text-gray-400 mb-2">設定 Gist ID 後，資料變動將自動上傳。</div>
+                                <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Gist ID</label><input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
+                                <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="text" id="gist-token-input" placeholder="請貼上 ghp_ 開頭的 Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
+                                <button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
+                                <button onclick="forceUpload(true)" class="w-full bg-red-100 text-red-500 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> 強制上傳 (覆蓋雲端)</button>
+                            </div>
                         </details>
                     </div>
                 </div>
@@ -2290,13 +2292,12 @@
             });
         }
         
-        // --- 最底部的 window.onload 初始化 ---
-        // --- 最底部的 window.onload 初始化 ---
-        window.onload = async function() {
+       // --- 最底部的 window.onload 初始化 ---
+        window.onload = function() {
             fetchGlobalRates();
             reloadLocalData();
             
-            // ✨ 1. 無視網路狀態，瞬間把手機裡的快取資料畫出來！
+            // ✨ 1. 無視網路狀態，瞬間把手機裡的快取資料畫出來！(真·離線秒開)
             window.refreshUI();
             switchTab('plan');
             enableAutoSaveOnOutsideClick();
@@ -2311,21 +2312,22 @@
                 }
             });
 
-            // ✨ 2. 畫面載入完畢且使用者可以操作後，才在背景偷偷更新雲端資料
-            if (gistId && gistToken) {
-                const gId = document.getElementById('gist-id-input');
-                const gTok = document.getElementById('gist-token-input');
-                if(gId) gId.value = gistId;
-                if(gTok) gTok.value = gistToken;
-                
-                if (navigator.onLine) {
-                    updateCloudStatus("連線中...");
-                    // 拔掉 await，讓它變成背景非同步作業，絕對不卡畫面
-                    forceDownload(true); 
-                } else {
-                    updateCloudStatus("離線模式");
+            // ✨ 2. 將雲端同步放到「背景排程」執行，徹底釋放畫面效能，不再卡轉圈
+            setTimeout(() => {
+                if (gistId && gistToken) {
+                    const gId = document.getElementById('gist-id-input');
+                    const gTok = document.getElementById('gist-token-input');
+                    if(gId) gId.value = gistId;
+                    if(gTok) gTok.value = gistToken;
+                    
+                    if (navigator.onLine) {
+                        updateCloudStatus("連線中...");
+                        forceDownload(true); 
+                    } else {
+                        updateCloudStatus("離線模式");
+                    }
                 }
-            }
+            }, 50); // 延遲 50 毫秒，確保畫面先順暢渲染完畢才偷跑網路
         };
     </script>
 </body>
