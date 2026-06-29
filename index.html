@@ -956,21 +956,27 @@
 
         async function forceDownload(isAuto = false) {
             if(!gistId || !gistToken) return;
+            // ✨ 離線偵測：沒網路就不要轉圈圈
+            if(!navigator.onLine) { updateCloudStatus("離線模式"); return; }
             if(!isAuto) updateCloudStatus("檢查中...");
             
             try {
+                // ✨ 超時防護：最多等 8 秒，網路太差就直接切斷放棄，不讓畫面卡死
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 const r = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { 
-                    headers: { 'Authorization': `token ${gistToken}` } 
+                    headers: { 'Authorization': `token ${gistToken}` },
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+                
                 if (r.status === 401) throw new Error("Unauthorized");
                 const d = await r.json();
 
                 if (d.files["global_trip_list.json"]) {
                     const cloudTripList = JSON.parse(d.files["global_trip_list.json"].content);
                     cloudTripList.forEach(cloudTrip => {
-                        if (!tripList.some(localTrip => localTrip.id === cloudTrip.id)) {
-                            tripList.push(cloudTrip);
-                        }
+                        if (!tripList.some(localTrip => localTrip.id === cloudTrip.id)) { tripList.push(cloudTrip); }
                     });
                     tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
                     localStorage.setItem('app_trip_list', JSON.stringify(tripList));
@@ -989,33 +995,34 @@
                 updateCloudStatus("已同步");
             } catch(e) {
                 console.error("同步失敗:", e);
-                updateCloudStatus("連線失敗");
+                updateCloudStatus(e.name === 'AbortError' ? "連線逾時" : "離線模式");
             }
         }
 
         async function forceUpload(isManual = false) {
             if(!gistId || !gistToken) return;
+            if(!navigator.onLine) { updateCloudStatus("離線模式"); if(isManual) alert("❌ 目前離線，無法上傳"); return; }
             updateCloudStatus("上傳中...");
             const payload = { flights, itinerary, mustEatList, expenses, guides, shoppingList, payers, publicFundConfig, memo: memoText, vjwData, customStickers, transMaps, shopCategories, lastUpdate: new Date().toISOString() };
-            
             const uploadTripList = tripList.map(t => ({...t, gistToken: ""}));
 
             try { 
                 const cloudFileName = currentTripId + "_data.json";
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 await fetch(`https://api.github.com/gists/${gistId}`, { 
                     method: 'PATCH', 
                     headers: { 'Authorization': `token ${gistToken}`, 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
-                        files: { 
-                            [cloudFileName]: { content: JSON.stringify(payload) },
-                            "global_trip_list.json": { content: JSON.stringify(uploadTripList) }
-                        } 
-                    }) 
+                        files: { [cloudFileName]: { content: JSON.stringify(payload) }, "global_trip_list.json": { content: JSON.stringify(uploadTripList) } } 
+                    }),
+                    signal: controller.signal
                 }); 
+                clearTimeout(timeoutId);
                 updateCloudStatus("已同步"); 
                 if(isManual) alert("✅ 強制上傳成功！國家選單與行程已安全同步。"); 
             } catch(e){ 
-                updateCloudStatus("上傳失敗"); 
+                updateCloudStatus(e.name === 'AbortError' ? "連線逾時" : "上傳失敗"); 
                 if(isManual) alert("❌ 上傳失敗，請檢查網路。"); 
             }
         }
@@ -1025,8 +1032,7 @@
             const newTok = document.getElementById('gist-token-input').value.trim();
             if(!newId || !newTok) return alert("請完整填寫 ID 與 Token");
             gistId = newId; gistToken = newTok;
-            localStorage.setItem('app_global_gist_id', gistId);
-            localStorage.setItem('app_global_gist_token', gistToken);
+            localStorage.setItem('app_global_gist_id', gistId); localStorage.setItem('app_global_gist_token', gistToken);
             tripList.forEach(t => { t.gistId = gistId; t.gistToken = gistToken; });
             localStorage.setItem('app_trip_list', JSON.stringify(tripList)); 
             alert("✅ 雲端連線設定已成功儲存！"); forceDownload(true);
@@ -1037,45 +1043,49 @@
             if (el) el.innerHTML = `<i class="fa-solid fa-code-branch"></i> <span>${msg}</span>`; 
         }
 
+        // ✨ 新增：儲存密碼鎖設定
+        function savePrivacyPin() {
+            const pin = document.getElementById('privacy-pin-input').value.trim();
+            localStorage.setItem('app_privacy_pin', pin);
+            if(pin) {
+                window.sessionUnlocked = true; 
+                alert("✅ 密碼鎖已啟用！你的記帳與清單已被保護。");
+            } else {
+                window.sessionUnlocked = true;
+                alert("🔓 密碼鎖已解除！");
+            }
+        }
+
         // --- 4. 基礎 UI 工具箱 ---
-        function openModal(id){ 
-            try { history.pushState({modal: id}, null, ""); } catch(e) {} 
-            document.getElementById(id).classList.remove('hidden'); 
-            setTimeout(()=>document.getElementById(id).classList.add('visible'),10); 
-        }
+        function openModal(id){ try { history.pushState({modal: id}, null, ""); } catch(e) {} document.getElementById(id).classList.remove('hidden'); setTimeout(()=>document.getElementById(id).classList.add('visible'),10); }
+        function closeModal(id){ if(history.state && history.state.modal === id) { try { history.back(); } catch(e) { forceCloseModal(id); } } else { forceCloseModal(id); } }
+        function forceCloseModal(id) { const el=document.getElementById(id); if(el){ el.classList.remove('visible'); setTimeout(()=>el.classList.add('hidden'),200); } }
+        window.onpopstate = function(event) { const activeModalId = event.state ? event.state.modal : null; document.querySelectorAll('.modal.visible').forEach(el => { if (el.id !== activeModalId) { el.classList.remove('visible'); setTimeout(() => el.classList.add('hidden'), 200); } }); };
         
-        function closeModal(id){ 
-            if(history.state && history.state.modal === id) { try { history.back(); } catch(e) { forceCloseModal(id); } } else { forceCloseModal(id); } 
-        }
-        
-        function forceCloseModal(id) {
-            const el=document.getElementById(id); 
-            if(el){ el.classList.remove('visible'); setTimeout(()=>el.classList.add('hidden'),200); }
-        }
-        
-        window.onpopstate = function(event) { 
-            const activeModalId = event.state ? event.state.modal : null; 
-            document.querySelectorAll('.modal.visible').forEach(el => { 
-                if (el.id !== activeModalId) { el.classList.remove('visible'); setTimeout(() => el.classList.add('hidden'), 200); } 
-            }); 
-        };
-        
+        // ✨ 全域密碼解鎖狀態 (重新整理網頁就會重置為未解鎖)
+        window.sessionUnlocked = false;
+
         function switchTab(t){ 
+            // ✨ 密碼鎖攔截器：切換到記帳或清單時進行安檢
+            const pin = localStorage.getItem('app_privacy_pin');
+            if ((t === 'wallet' || t === 'lists') && pin && !window.sessionUnlocked) {
+                const input = prompt("🔒 這是私密分頁，請輸入 4 位數密碼解鎖：");
+                if (input === pin) {
+                    window.sessionUnlocked = true; 
+                } else {
+                    if (input !== null) alert("❌ 密碼錯誤！");
+                    return; // 密碼錯誤，立刻把人擋下來，不准切換分頁
+                }
+            }
+
             document.querySelectorAll('.view-section').forEach(e=>e.classList.add('hidden')); 
             document.getElementById('view-'+t).classList.remove('hidden'); 
             document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active')); 
             document.querySelector(`[data-target="${t}"]`).classList.add('active'); 
-            if (t !== 'guide') { 
-                const backBtn = document.getElementById('btn-back-to-plan'); 
-                if(backBtn && !backBtn.classList.contains('hidden')) { backBtn.classList.add('hidden'); } 
-            } 
-            if (t === 'plan') { 
-                const el = document.getElementById('quick-nav-container'); 
-                if (window.scrollY < 100 && el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } 
-            } else { window.scrollTo(0,0); } 
+            if (t !== 'guide') { const backBtn = document.getElementById('btn-back-to-plan'); if(backBtn && !backBtn.classList.contains('hidden')) { backBtn.classList.add('hidden'); } } 
+            if (t === 'plan') { const el = document.getElementById('quick-nav-container'); if (window.scrollY < 100 && el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } else { window.scrollTo(0,0); } 
             if(typeof renderStickers === 'function') renderStickers(); 
         }
-
         function goBackToPlan() { switchTab('plan'); document.getElementById('btn-back-to-plan').classList.add('hidden'); }
         
         function checkUrl(str) { 
@@ -1232,15 +1242,18 @@
                     
                     <div class="space-y-6">
                         ${entryDocHtml}
+                        
                         <details class="group hand-card overflow-hidden border border-gray-200">
-                            <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none"><span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span><span class="text-gray-400 group-open:rotate-180 transition text-xs"><i class="fa-solid fa-chevron-down"></i></span></summary>
+                            <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none"><span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-solid fa-lock text-lg"></i> 隱私密碼鎖</span><span class="text-gray-400 group-open:rotate-180 transition text-xs"><i class="fa-solid fa-chevron-down"></i></span></summary>
                             <div class="p-4 bg-white space-y-3 border-t border-gray-100">
-                                <div class="text-[10px] text-gray-400 mb-2">設定 Gist ID 後，資料變動將自動上傳。</div>
-                                <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Gist ID</label><input type="text" id="gist-id-input" placeholder="Gist ID" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
-                                <div><label class="text-[10px] font-bold text-gray-400 block mb-1">Token</label><input type="text" id="gist-token-input" placeholder="請貼上 ghp_ 開頭的 Token" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha"></div>
-                                <button onclick="saveGistConfig()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存設定</button>
-                                <button onclick="forceUpload(true)" class="w-full bg-red-100 text-red-500 border border-red-200 px-3 py-2 rounded text-xs font-bold hover:bg-red-500 hover:text-white transition flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> 強制上傳 (覆蓋雲端)</button>
+                                <div class="text-[10px] text-gray-400 mb-2">設定後，記帳與清單分頁需要輸入密碼才能觀看（每次重新開啟網頁皆需重新解鎖）。</div>
+                                <div><input type="password" id="privacy-pin-input" placeholder="輸入密碼 (留空代表不上鎖)" class="w-full border p-2 rounded text-xs font-mono bg-gray-50 outline-none focus:border-matcha" value="${localStorage.getItem('app_privacy_pin') || ''}"></div>
+                                <button onclick="savePrivacyPin()" class="w-full bg-ink text-white px-3 py-2 rounded text-xs font-bold hover:bg-gray-800 transition mb-2">儲存密碼設定</button>
                             </div>
+                        </details>
+
+                        <details class="group hand-card overflow-hidden border border-gray-200">
+                            <summary class="flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition list-none"><span class="text-xs font-bold text-gray-500 flex items-center gap-2"><i class="fa-brands fa-github text-lg"></i> 雲端同步設定</span>
                         </details>
                     </div>
                 </div>
@@ -2271,19 +2284,12 @@
         }
         
         // --- 最底部的 window.onload 初始化 ---
+        // --- 最底部的 window.onload 初始化 ---
         window.onload = async function() {
             fetchGlobalRates();
             reloadLocalData();
             
-            if (gistId && gistToken) {
-                const gId = document.getElementById('gist-id-input');
-                const gTok = document.getElementById('gist-token-input');
-                if(gId) gId.value = gistId;
-                if(gTok) gTok.value = gistToken;
-                updateCloudStatus("連線中...");
-                await forceDownload(true); 
-            }
-            
+            // ✨ 1. 無視網路狀態，瞬間把手機裡的快取資料畫出來！
             window.refreshUI();
             switchTab('plan');
             enableAutoSaveOnOutsideClick();
@@ -2297,6 +2303,22 @@
                     if(currentVal) select.value = currentVal;
                 }
             });
+
+            // ✨ 2. 畫面載入完畢且使用者可以操作後，才在背景偷偷更新雲端資料
+            if (gistId && gistToken) {
+                const gId = document.getElementById('gist-id-input');
+                const gTok = document.getElementById('gist-token-input');
+                if(gId) gId.value = gistId;
+                if(gTok) gTok.value = gistToken;
+                
+                if (navigator.onLine) {
+                    updateCloudStatus("連線中...");
+                    // 拔掉 await，讓它變成背景非同步作業，絕對不卡畫面
+                    forceDownload(true); 
+                } else {
+                    updateCloudStatus("離線模式");
+                }
+            }
         };
     </script>
 </body>
