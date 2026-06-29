@@ -2055,7 +2055,7 @@
             Object.keys(grouped).sort().forEach(cat => { 
                 const catItems = grouped[cat]; const doneCount = catItems.filter(i => i.done).length; 
                 const isExpanded = expandedCategories.has(cat); 
-                const styleClass = getCatStyle(cat, 'card'); // ✨ 自動為所有標籤配置顏色
+                const styleClass = getCatStyle(cat, 'card'); 
                 const itemsHtml = catItems.map(s => renderShopItem(s)).join(''); 
                 let html = `<div class="mb-3 transition-all duration-300 w-full max-w-full"><div class="relative pl-4 pr-3 py-3 rounded-r-xl border-l-4 shadow-sm cursor-pointer flex justify-between items-center hover:brightness-95 transition-all ${styleClass} bg-white border-opacity-80" onclick="toggleShopCat('${cat}')" style="background-color: white;"><div class="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-[#f9f7f2] rounded-full shadow-inner border border-gray-200"></div><div class="flex items-center gap-2"><i class="fa-solid fa-tag text-sm opacity-70"></i><h5 class="font-bold text-sm tracking-wide">${cat}</h5><span class="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full ml-1">${doneCount} / ${catItems.length}</span></div><i class="fa-solid fa-chevron-down text-gray-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}"></i></div><div class="${isExpanded ? 'block' : 'hidden'} pl-2 pr-1 py-2 space-y-2 animate-slide-in">${itemsHtml}</div></div>`; 
                 container.innerHTML += html; 
@@ -2066,7 +2066,7 @@
         function renderShopItem(s) { 
             const isDone = s.done; 
             const c = currentTrip.currency === 'JPY' ? '¥' : (currentTrip.currency === 'THB' ? '฿' : (currentTrip.currency === 'KRW' ? '₩' : '$')); 
-            // ✨ 修正點 1：加上單引號 '${s.id}' 保護 ID，避免點擊失效
+            // 🟢 修復點 1：為 s.id 加上單引號 '${s.id}' 避免觸發點擊時失效
             return `<div class="relative p-3 border border-gray-100 shadow-sm rounded-xl bg-white flex items-center justify-between gap-3 ${isDone ? 'opacity-60 grayscale bg-gray-50' : ''}" onclick="openShoppingModal('${s.id}')"><div class="flex items-center gap-3 flex-1 min-w-0"><div class="w-6 h-6 rounded-full border-2 flex-shrink-0 cursor-pointer flex items-center justify-center transition-colors ${isDone?'bg-red-400 border-red-400 text-white':'border-gray-300 text-transparent hover:border-red-300'}" onclick="event.stopPropagation();triggerShopAction('${s.id}', ${isDone})"><i class="fa-solid fa-check text-xs"></i></div><div class="min-w-0"><div class="font-bold truncate text-gray-700 text-sm leading-tight">${s.name}</div><div class="text-[11px] text-gray-400 mt-0.5 font-mono">${s.price ? `${c}${s.price} ` : ''}${s.qty && s.qty > 1 ? `<span class="text-gray-300">x</span> ${s.qty}` : ''}</div></div></div>${s.photo ? `<div class="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 cursor-zoom-in group relative shadow-sm" onclick="event.stopPropagation();viewPhoto('${s.photo}')"><img src="${s.photo}" class="w-full h-full object-cover"></div>` : ''}</div>`; 
         }
         
@@ -2078,7 +2078,7 @@
             isShopCatEditMode = false;
             renderShopCatButtons();
             if(id){ 
-                // ✨ 修正點 2：強制轉換為字串比對，解決新舊資料型別打架
+                // 🟢 修復點 2：用 String() 強制字串比對
                 const s = shoppingList.find(i => String(i.id) === String(id)); 
                 if(s) {
                     document.getElementById('shop-id').value=s.id; document.getElementById('shop-name').value=s.name; document.getElementById('shop-qty').value=s.qty; document.getElementById('shop-price').value=s.price; document.getElementById('shop-category').value=s.category||''; 
@@ -2145,7 +2145,7 @@
             if(confirm(`確定要刪除快捷標籤「${cat}」嗎？\n(原本清單內的商品不會被刪除)`)) { shopCategories = shopCategories.filter(c => c !== cat); saveData(); renderShopCatButtons(); } 
         }      
 
-        // ✨ 修正點 3：打勾按鈕的判斷也強制字串化
+        // 🟢 修復點 3：打勾與取消打勾的 ID 轉型
         function triggerShopAction(id, isDone) { 
             if(isDone) { 
                 const s = shoppingList.find(i => String(i.id) === String(id)); 
@@ -2156,7 +2156,7 @@
             } 
         }
 
-        // ✨ 修正點 4：確認視窗的判斷也強制字串化
+        // 🟢 修復點 4：確認視窗的 ID 轉型
         function confirmShopAction(action) { 
             const id = document.getElementById('confirm-shop-id').value; 
             const s = shoppingList.find(i => String(i.id) === String(id)); 
@@ -2183,6 +2183,13 @@
                 closeModal('shop-confirm-modal'); 
             } 
         }
+
+        function nextShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx+1)%shoppingOwners.length; renderShoppingList(); }
+        function prevShopList(){ currentShopOwnerIdx=(currentShopOwnerIdx-1+shoppingOwners.length)%shoppingOwners.length; renderShoppingList(); }
+        function setShopCat(val) { document.getElementById('shop-category').value = val; }
+        function openShopOwnerModal(){ document.getElementById('shop-lists-container').innerHTML = shoppingOwners.map((n, i) => `<div class="bg-gray-50 p-2 border rounded text-sm flex justify-between items-center mb-2"><span class="font-bold text-gray-700">${n}</span><button onclick="deleteShopList(${i})" class="text-red-400 hover:text-red-600 px-2 transition"><i class="fa-solid fa-trash-can"></i></button></div>` ).join(''); openModal('manage-shop-lists-modal'); }
+        function deleteShopList(index) { if(confirm("確定刪除這個清單嗎？")) { if (currentShopOwnerIdx === index) currentShopOwnerIdx = 0; else if (index < currentShopOwnerIdx) currentShopOwnerIdx--; shoppingOwners.splice(index, 1); if(shoppingOwners.length === 0) shoppingOwners.push("我的清單"); saveData(); openShopOwnerModal(); renderShoppingList(); } }
+        function addShopList(){ const n=document.getElementById('new-shop-list-name').value; if(n){ shoppingOwners.push(n); saveData(); openShopOwnerModal(); renderShoppingList(); document.getElementById('new-shop-list-name').value=''; } }
         // --- 10. 必吃清單 (Must Eat) ---
         function renderMustEatList() { 
             const c = document.getElementById('must-eat-list'); c.innerHTML = ''; 
