@@ -1565,39 +1565,59 @@
     }
 
     // 智慧轉換器：無論傳入的是妳舊版 tokyo.com 的單一行程 JSON，還是多國版本 JSON，都能無痛轉換合併進新版！
-    function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false) {
+function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false) {
       if (!rawJson) return false;
-      // Case A: 已經是新版或近期多趟 trips 結構
+      // 新增：自動認得 global_trip_list.json 內的旅伴名單
+      if (Array.isArray(rawJson.companions)) {
+        rawJson.companions.forEach(cp => {
+          if (cp.name && !state.companions.some(x => x.name === cp.name)) {
+            state.companions.push(cp);
+          }
+        });
+      }
+      if (Array.isArray(rawJson.countryList)) return true;
+
+      // 新增：自動認得剛剛整理的 japan_data.json / korea_data.json 新版單國格式
+      if (rawJson.countryId && Array.isArray(rawJson.flightSegments)) {
+        const cid = rawJson.countryId;
+        const tid = "trip_" + cid.toLowerCase() + "_1";
+        state.trips[tid] = {
+          id: tid,
+          countryId: cid,
+          title: rawJson.title || `${cid} 之旅`,
+          subRegions: rawJson.subRegions || [],
+          flightSegments: rawJson.flightSegments || [],
+          itinerary: rawJson.itinerary || [],
+          meals: rawJson.meals || [],
+          guides: rawJson.guides || [],
+          mustEat: rawJson.mustEat || [],
+          shopping: rawJson.shopping || [],
+          expenses: rawJson.expenses || [],
+          memos: rawJson.memos || [],
+          stickers: rawJson.stickers || [],
+          customLinks: [],
+          customVisas: rawJson.visas || [],
+          customTransits: rawJson.transits || [],
+          customPhrases: []
+        };
+        state.activeCountryId = cid;
+        state.activeTripId = tid;
+        return true;
+      }
+
+      // 原本的多趟 trips 結構相容
       if (rawJson.trips && typeof rawJson.trips === "object") {
         if (overwriteAll) {
           state = rawJson;
           if (!state.companions) state.companions = [];
-          // 過濾掉之前預設寫死的「我」
-          state.companions = state.companions.filter(c => c.name !== "我" && c.id !== "default_me");
           return true;
         }
-        // 合併模式：保留現有與舊版所有旅程
         if (rawJson.countries) state.countries = { ...state.countries, ...rawJson.countries };
-        Object.entries(rawJson.trips).forEach(([tid, tObj]) => {
-          state.trips[tid] = tObj;
-        });
-        if (Array.isArray(rawJson.companions)) {
-          rawJson.companions.forEach(cp => {
-            if (cp.name && cp.name !== "我" && !state.companions.some(x => x.name === cp.name)) {
-              state.companions.push(cp);
-            }
-          });
-        } else if (Array.isArray(rawJson.members)) {
-          const avatars = ["🐶", "🧸", "🐱", "🐰", "🦊"];
-          rawJson.members.forEach((m, idx) => {
-            if (m && m !== "我" && !state.companions.some(x => x.name === m)) {
-              state.companions.push({ id: "cp_leg_" + idx, name: m, avatar: avatars[idx % avatars.length] });
-            }
-          });
-        }
+        Object.entries(rawJson.trips).forEach(([tid, tObj]) => { state.trips[tid] = tObj; });
         return true;
       }
-
+      return false;
+    }
       // Case B: 舊版單一旅程結構（例如直接是 { itinerary: [...], expenses: [...], shopping: [...] } 或 days 陣列）
       const newTripId = "trip_legacy_" + Date.now();
       const legacyTitle = rawJson.tripName || rawJson.title || "匯入的舊版珍藏旅程";
@@ -2179,17 +2199,18 @@
         commitChange(`改名為：${val.trim()}`);
       }
     }
-
-    // 2. 航班登機證渲染（緊湊橫向單行版）
+// 2. 航班登機證渲染（緊湊橫向單行版）
     function renderFlights() {
-      const trip = getCurTrip();
+      const trip = getTrip();
       const box = document.getElementById('flightSegmentsContainer');
       const list = trip.flightSegments || [];
       if (!list.length) {
         box.innerHTML = `<div class="col-span-full text-center py-4 text-xs text-[#78807b]">尚未新增航班，點右上角「+ 航段」建立</div>`;
         return;
       }
-      box.innerHTML = list.map((f, idx) => `
+      box.innerHTML = list.map((f, idx) => {
+        const imgSrc = resolveImageSrc(f.img);
+        return `
         <div class="ticket-card p-3 flex flex-col justify-between gap-2">
           <div class="flex items-center justify-between gap-2 whitespace-nowrap">
             <div class="flex items-center gap-1.5 min-w-0">
@@ -2212,9 +2233,9 @@
               <div class="text-[10px] text-[#78807b] en-font">${f.time || ''}</div>
             </div>
 
-            <button type="button" onclick="${f.img ? `openImageLightbox('${f.img}', '${(f.flightNo || '機票憑證').replace(/'/g, '')}')` : `alert('尚未上傳機票照，點右上角 ✏️ 可補上！')`}" class="flex items-center gap-1 px-2.5 py-1 rounded-full ${f.img ? 'bg-[#fdf0ec] text-[#df765b]' : 'text-[#8c948f]'} transition">
+            <button type="button" onclick="${imgSrc ? `openImageLightbox('${(f.img || '').replace(/'/g, '')}', '${(f.flightNo || '機票憑證').replace(/'/g, '')}')` : `alert('尚未上傳機票照，點右上角 ✏️ 可補上！')`}" class="flex items-center gap-1 px-2.5 py-1 rounded-full ${imgSrc ? 'bg-[#fdf0ec] text-[#df765b]' : 'text-[#8c948f]'} transition">
               <i class="fa-solid fa-plane text-xs"></i>
-              <span class="text-[10px] font-bold">${f.img ? '機票照' : '無圖'}</span>
+              <span class="text-[10px] font-bold">${imgSrc ? '機票照' : '無圖'}</span>
             </button>
 
             <div class="text-right">
@@ -2223,12 +2244,95 @@
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
+    }
+
+    function openFlightModal(editId = null) {
+      const t = getTrip();
+      if (editId) {
+        const f = (t.flightSegments || []).find(x => x.id === editId);
+        if (!f) return;
+        document.getElementById("editingFlightId").value = f.id;
+        document.getElementById("segDateInp").value = f.date || "";
+        document.getElementById("segTimeInp").value = f.time || "10:00";
+        document.getElementById("segFlightNoInp").value = f.flightNo || "";
+        document.getElementById("segFromInp").value = f.from || "";
+        document.getElementById("segToInp").value = f.to || "";
+        document.getElementById("segLinkInp").value = f.link || "";
+        document.getElementById("segImgInp").value = f.img || "";
+        document.getElementById("segNoteInp").value = f.note || "";
+      } else {
+        document.getElementById("editingFlightId").value = "";
+        document.getElementById("segDateInp").value = "";
+        document.getElementById("segTimeInp").value = "10:00";
+        document.getElementById("segFlightNoInp").value = "";
+        document.getElementById("segFromInp").value = "";
+        document.getElementById("segToInp").value = "";
+        document.getElementById("segLinkInp").value = "";
+        document.getElementById("segImgInp").value = "";
+        document.getElementById("segNoteInp").value = "";
+      }
+      openModal("flightModal");
+    }
+
+    function saveFlightSegment() {
+      const t = getTrip();
+      const editId = document.getElementById("editingFlightId").value;
+      const flightNo = document.getElementById("segFlightNoInp").value.trim();
+      if (!flightNo) return alert("請填寫航班編號！");
+      const obj = {
+        id: editId || ("fl_" + Date.now()),
+        date: document.getElementById("segDateInp").value.trim(),
+        time: document.getElementById("segTimeInp").value.trim(),
+        flightNo,
+        from: document.getElementById("segFromInp").value.trim(),
+        to: document.getElementById("segToInp").value.trim(),
+        link: document.getElementById("segLinkInp").value.trim(),
+        img: document.getElementById("segImgInp").value.trim(),
+        note: document.getElementById("segNoteInp").value.trim()
+      };
+      if (editId) {
+        const idx = t.flightSegments.findIndex(x => x.id === editId);
+        if (idx > -1) t.flightSegments[idx] = obj;
+      } else t.flightSegments.push(obj);
+      closeModalDirect("flightModal");
+      commitChange(`儲存航班：${flightNo}`);
+    }
+
+    function deleteFlight(id) {
+      const t = getTrip();
+      if (confirm("確定刪除此航段嗎？")) {
+        t.flightSegments = (t.flightSegments || []).filter(f => f.id !== id);
+        commitChange("刪除航段");
+      }
     }
 
     // 3. 天數膠囊列與地區篩選（全部單行橫向滑動、不換行）
+    function getMaxDays(trip) {
+      let max = 1;
+      (trip.itinerary || []).forEach(i => { if (Number(i.day) > max) max = Number(i.day); });
+      (trip.meals || []).forEach(m => { if (Number(m.day) > max) max = Number(m.day); });
+      return max;
+    }
+
+    function addSubRegionTag() {
+      const t = getTrip();
+      const name = prompt("請輸入要新增的地區分類標籤（例如：聖水洞、明洞、輕井澤）：");
+      if (name && name.trim()) {
+        if (!t.subRegions) t.subRegions = [];
+        if (!t.subRegions.includes(name.trim())) t.subRegions.push(name.trim());
+        state.activeSubRegion = name.trim();
+        commitChange(`新增地區標籤：${name.trim()}`);
+      }
+    }
+
+    function toggleDayFabMenu(ev) {
+      if (ev) ev.stopPropagation();
+      document.getElementById("dayFabMenu")?.classList.toggle("hidden");
+    }
+
     function renderSubRegionsAndDays() {
-      const trip = getCurTrip();
+      const trip = getTrip();
       const regions = ['ALL', ...(trip.subRegions || [])];
       document.getElementById('activeSubRegionBadge').textContent = state.activeSubRegion === 'ALL' ? '全部地區' : state.activeSubRegion;
 
@@ -2242,7 +2346,7 @@
       let fabHtml = '';
       for (let d = 1; d <= maxDay; d++) {
         const active = state.activeDay === d && state.dayDisplayMode === 'single';
-        const sampleIti = (trip.itinerary || []).find(i => i.day === d);
+        const sampleIti = (trip.itinerary || []).find(i => Number(i.day) === d);
         const subHint = sampleIti && sampleIti.subRegion ? sampleIti.subRegion : '';
         pillsHtml += `
           <button onclick="selectDay(${d})" class="px-3 py-1.5 rounded-full text-xs font-bold shrink-0 whitespace-nowrap border transition ${active ? 'btn-gradient-rose text-white border-transparent shadow-xs' : 'bg-white border-[#dcd2c4] text-[#4a524d]'}">
@@ -2256,10 +2360,23 @@
           </button>
         `;
       }
-      pillsHtml += `<button onclick="openItineraryModal('', ${maxDay + 1})" class="px-2.5 py-1.5 rounded-full text-xs font-bold shrink-0 whitespace-nowrap bg-[#fef9ef] border border-[#f2cc8f] text-[#9c6644]">+ D${maxDay + 1}</button>`;
+      pillsHtml += `<button onclick="openItineraryModal(${maxDay + 1})" class="px-2.5 py-1.5 rounded-full text-xs font-bold shrink-0 whitespace-nowrap bg-[#fef9ef] border border-[#f2cc8f] text-[#9c6644]">+ D${maxDay + 1}</button>`;
       document.getElementById('dayPillsBar').innerHTML = pillsHtml;
       document.getElementById('dayFabList').innerHTML = fabHtml;
       document.getElementById('dayFabCurrentLabel').textContent = state.dayDisplayMode === 'all' ? 'ALL' : `D${state.activeDay}`;
+    }
+
+    function selectDay(d) {
+      state.activeDay = d;
+      state.dayDisplayMode = 'single';
+      saveAppState(false);
+      renderAll();
+    }
+
+    function jumpToDay(d) {
+      document.getElementById('dayFabMenu')?.classList.add('hidden');
+      selectDay(d);
+      window.scrollTo({ top: 180, behavior: 'smooth' });
     }
 
     function setDayDisplayMode(mode) {
@@ -2270,12 +2387,19 @@
       document.getElementById('btnDayAll').className = mode === 'all'
         ? 'text-xs font-bold px-2.5 py-1 rounded-full btn-gradient-sage transition'
         : 'text-xs font-bold px-2.5 py-1 rounded-full text-[#6e7772] transition';
-      saveState(false);
+      saveAppState(false);
+      renderAll();
+    }
+
+    function setSubRegion(r) {
+      state.activeSubRegion = r;
+      saveAppState(false);
+      renderAll();
     }
 
     // 4. 每日行程 ＋ 底部旅行社風格「早/午/晚三欄餐飲 ＆ 住宿橫條」
     function renderItineraryAndMeals() {
-      const trip = getCurTrip();
+      const trip = getTrip();
       const maxDay = getMaxDays(trip);
       const daysToShow = state.dayDisplayMode === 'all'
         ? Array.from({ length: maxDay }, (_, i) => i + 1)
@@ -2290,7 +2414,6 @@
         const dayMeals = (trip.meals || []).filter(m => Number(m.day) === dayNum);
         const hotelItem = dayItis.find(i => i.hotel);
 
-        // 整理旅行社風格三餐（早餐 / 午餐 / 晚餐 + 其他加餐）
         const findMeal = (typeKey) => dayMeals.find(m => (m.type || '').includes(typeKey));
         const bMeal = findMeal('早');
         const lMeal = findMeal('午');
@@ -2300,9 +2423,9 @@
         const renderAgencyMealSlot = (label, icon, mObj, defaultType) => {
           if (!mObj) {
             return `
-              <div onclick="openMealModal('', ${dayNum}, '${defaultType}')" class="p-2 rounded-xl bg-white/80 border border-dashed border-[#dcd2c4] flex items-center justify-between gap-1 cursor-pointer hover:border-[#df765b] whitespace-nowrap min-w-0">
+              <div onclick="openMealModal(${dayNum}, null, '${defaultType}')" class="p-2 rounded-xl bg-white/80 border border-dashed border-[#dcd2c4] flex items-center justify-between gap-1 cursor-pointer hover:border-[#df765b] whitespace-nowrap min-w-0">
                 <span class="text-[11px] font-bold text-[#78807b] shrink-0">${icon}${label}</span>
-                <span class="text-[11px] text-[#b0b7b3] truncate">自理 / 點擊+</span>
+                <span class="text-[11px] text-[#b0b7b3] truncate">自理+</span>
               </div>
             `;
           }
@@ -2312,7 +2435,7 @@
                 <span class="text-[10px] font-bold text-[#c85a32] shrink-0">${icon}${mObj.type || label}</span>
                 <div class="flex items-center gap-1 shrink-0">
                   ${mObj.link ? `<a href="${mObj.link}" target="_blank" class="text-[10px] font-bold text-[#4f7768]">📍</a>` : ''}
-                  <button onclick="openMealModal('${mObj.id}')" class="text-[10px] text-gray-400">✏️</button>
+                  <button onclick="openMealModal(${dayNum}, '${mObj.id}')" class="text-[10px] text-gray-400">✏️</button>
                   <button onclick="deleteMealItem('${mObj.id}')" class="text-[10px] text-red-300">✕</button>
                 </div>
               </div>
@@ -2331,14 +2454,16 @@
                 <h3 class="font-bold text-sm sm:text-base text-[#2b302c] truncate">${dayItis[0]?.subRegion || `第 ${dayNum} 天`}</h3>
               </div>
               <div class="flex items-center gap-1 shrink-0">
-                <button onclick="openItineraryModal('', ${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f1ed] text-[#3b5a4e] border border-[#c5dbd3]">+ 行程</button>
-                <button onclick="openMealModal('', ${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]">+ 餐飲</button>
+                <button onclick="openItineraryModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f1ed] text-[#3b5a4e] border border-[#c5dbd3]">+ 行程</button>
+                <button onclick="openMealModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]">+ 餐飲</button>
               </div>
             </div>
 
             <!-- 景點與交通列表（精簡橫向） -->
             <div class="space-y-2.5">
-              ${dayItis.length ? dayItis.map(item => `
+              ${dayItis.length ? dayItis.map(item => {
+                const itiImgSrc = resolveImageSrc(item.img);
+                return `
                 <div class="p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-1.5">
                   <div class="flex items-center justify-between gap-2 whitespace-nowrap">
                     <div class="flex items-center gap-1.5 min-w-0">
@@ -2348,7 +2473,7 @@
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                       ${item.link ? `<a href="${item.link}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[11px] font-bold text-[#4f7768]" title="導航">🗺️</a>` : ''}
-                      <button onclick="openItineraryModal('${item.id}')" class="text-xs text-[#78807b] px-0.5">✏️</button>
+                      <button onclick="openItineraryModal(${item.day}, '${item.id}')" class="text-xs text-[#78807b] px-0.5">✏️</button>
                       <button onclick="deleteItineraryItem('${item.id}')" class="text-xs text-red-400 px-0.5">✕</button>
                     </div>
                   </div>
@@ -2361,13 +2486,13 @@
 
                   ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1.5 rounded-xl border border-[#f2cc8f]/50">💡 ${item.note}</div>` : ''}
 
-                  ${item.img ? `
+                  ${itiImgSrc ? `
                     <div class="pt-0.5">
-                      <img src="${item.img}" onclick="openImageLightbox('${item.img}', '${(item.title || '').replace(/'/g, '')}')" class="polaroid-img h-28 sm:h-36 w-auto object-cover" alt="照片" />
+                      <img src="${itiImgSrc}" onclick="openImageLightbox('${(item.img || '').replace(/'/g, '')}', '${(item.title || '').replace(/'/g, '')}')" class="polaroid-img h-28 sm:h-36 w-auto object-cover" alt="照片" />
                     </div>
                   ` : ''}
                 </div>
-              `).join('') : `<div class="text-center py-3 text-xs text-[#78807b]">尚無行程，點右上角「+ 行程」新增</div>`}
+              `}).join('') : `<div class="text-center py-3 text-xs text-[#78807b]">尚無行程，點右上角「+ 行程」新增</div>`}
             </div>
 
             <!-- 🍽️ 旅行社風格底部總結欄：早 / 午 / 晚餐橫向三格 ＋ 🏨 當晚住宿橫條 -->
@@ -2384,7 +2509,7 @@
                     <div class="px-2.5 py-1 rounded-full bg-white border border-[#e6dcd0] text-[11px] flex items-center gap-1.5">
                       <span class="font-bold text-[#c85a32]">🍰 ${em.type}：${em.title}</span>
                       ${em.link ? `<a href="${em.link}" target="_blank" class="text-[#4f7768]">📍</a>` : ''}
-                      <button onclick="openMealModal('${em.id}')" class="text-gray-400">✏️</button>
+                      <button onclick="openMealModal(${dayNum}, '${em.id}')" class="text-gray-400">✏️</button>
                       <button onclick="deleteMealItem('${em.id}')" class="text-red-300">✕</button>
                     </div>
                   `).join('')}
@@ -2405,192 +2530,21 @@
         `;
       }).join('');
     }
-      const maxItiDay = (t.itinerary || []).reduce((m, x) => Math.max(m, x.day || 1), 1);
-      const maxMealDay = (t.meals || []).reduce((m, x) => Math.max(m, x.day || 1), 1);
-      const totalDays = Math.max(maxItiDay, maxMealDay, state.activeDay, 3);
 
-      let dayBarHtml = "";
-      let fabListHtml = "";
-      for (let d = 1; d <= totalDays; d++) {
-        const active = state.dayDisplayMode === "single" && state.activeDay === d;
-        const cnt = (t.itinerary || []).filter(i => i.day === d).length + (t.meals || []).filter(m => m.day === d).length;
-        dayBarHtml += `
-          <button onclick="state.activeDay=${d}; setDayDisplayMode('single');" class="shrink-0 px-4 py-2 rounded-full font-bold text-xs sm:text-sm border transition en-font ${
-            active ? "btn-gradient-sage border-transparent" : "bg-[#fbf8f3] text-[#4a524d] border-[#e2d8c9]"
-          }">
-            DAY ${d} <span class="text-[10px] opacity-80">(${cnt})</span>
-          </button>
-        `;
-        fabListHtml += `
-          <button onclick="quickJumpToDay(${d})" class="w-full text-left px-3 py-2 rounded-2xl text-xs font-bold flex items-center justify-between ${
-            state.activeDay === d ? "btn-gradient-rose" : "hover:bg-[#fbf8f3] text-[#2b302c]"
-          }">
-            <span class="en-font">📅 DAY ${d}</span>
-            <span class="text-[10px] opacity-80">${cnt} 項</span>
-          </button>
-        `;
+    function deleteItineraryItem(id) {
+      const t = getTrip();
+      if (confirm("確定刪除此行程嗎？")) {
+        t.itinerary = (t.itinerary || []).filter(i => i.id !== id);
+        commitChange("刪除行程");
       }
-      dayBarHtml += `
-        <button onclick="state.activeDay=${totalDays + 1}; openItineraryModal(${totalDays + 1});" class="shrink-0 px-3.5 py-2 rounded-full font-bold text-xs bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2] en-font">
-          + DAY ${totalDays + 1}
-        </button>
-      `;
-      document.getElementById("dayPillsBar").innerHTML = dayBarHtml;
-      document.getElementById("dayFabList").innerHTML = fabListHtml;
-      document.getElementById("dayFabCurrentLabel").textContent = state.dayDisplayMode === "all" ? "ALL DAYS" : `DAY ${state.activeDay}`;
-
-      const daysToRender = state.dayDisplayMode === "all"
-        ? Array.from({ length: totalDays }, (_, i) => i + 1)
-        : [state.activeDay];
-
-      const wrapper = document.getElementById("daysContentWrapper");
-      wrapper.innerHTML = "";
-
-      daysToRender.forEach(dayNum => {
-        const dayIti = (t.itinerary || []).filter(i => i.day === dayNum && (state.activeSubRegion === "ALL" || i.subRegion === state.activeSubRegion))
-          .sort((a, b) => (a.time || "99:99").localeCompare(b.time || "99:99"));
-        const dayMeals = (t.meals || []).filter(m => m.day === dayNum);
-        const dayHotel = [...dayIti].reverse().find(i => i.hotel && i.hotel.trim())?.hotel || "";
-        const routeUrl = buildDayGoogleRoute(dayIti, c.name);
-
-        const daySec = document.createElement("div");
-        daySec.id = "dayBlock-" + dayNum;
-        daySec.className = "journal-card p-4 sm:p-5 space-y-4";
-
-        daySec.innerHTML = `
-          <div class="washi-tape"></div>
-          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#efe7dc] pt-1">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="px-4 py-1 rounded-full btn-gradient-sage font-bold text-sm en-font">DAY ${dayNum}</span>
-              ${dayHotel ? `
-                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dayHotel + ' ' + c.name)}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2] hover:underline">
-                  🏨 住宿：${dayHotel} ↗
-                </a>
-              ` : ""}
-              <a href="${routeUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52] hover:underline">
-                🗺️ A➔B➔飯店順路導航 ↗
-              </a>
-            </div>
-            <div class="flex gap-1.5">
-              <button onclick="openMealModal(${dayNum})" class="text-xs font-bold px-3 py-1.5 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]">🍽️ + 餐飲</button>
-              <button onclick="openItineraryModal(${dayNum})" class="text-xs font-bold px-3.5 py-1.5 rounded-full btn-gradient-sage">📍 + 行程</button>
-            </div>
-          </div>
-
-          <div class="p-3.5 rounded-2xl bg-[#fffaf4] border border-[#f3dfc8]">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-[#c85a32]"><i class="fa-solid fa-utensils mr-1"></i>當日餐飲手札（點餐廳名開連結 / 點照片放大 / 點 💰 記帳）</span>
-              <button onclick="openMealModal(${dayNum})" class="text-[11px] font-bold text-[#c85a32] underline">+ 新增餐飲</button>
-            </div>
-            <div id="dayMealsBox-${dayNum}" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
-          </div>
-
-          <div id="dayItiBox-${dayNum}" class="space-y-3"></div>
-        `;
-        wrapper.appendChild(daySec);
-
-        const mealBox = daySec.querySelector(`#dayMealsBox-${dayNum}`);
-        if (dayMeals.length === 0) {
-          mealBox.innerHTML = `<div class="col-span-2 text-xs text-[#9ca3af]">點擊右上角「🍽️ + 餐飲」記錄早餐、午餐、下午茶或晚餐！</div>`;
-        } else {
-          dayMeals.forEach(ml => {
-            const mCard = document.createElement("div");
-            mCard.className = "long-press-box p-3 rounded-2xl bg-white border border-[#f0d8c0] flex flex-col justify-between gap-2 shadow-2xs";
-            const mealMapUrl = ml.link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ml.title + " " + c.name)}`;
-            const mealImgSrc = resolveImageSrc(ml.img);
-            mCard.innerHTML = `
-              <div>
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">${ml.type || "餐飲"}</span>
-                    <a href="${mealMapUrl}" target="_blank" class="font-bold text-sm text-[#2b302c] hover:text-[#c85a32] hover:underline ml-1">
-                      ${ml.title} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                    </a>
-                  </div>
-                  <button onclick="openMealModal(${dayNum}, '${ml.id}')" class="w-6 h-6 rounded-full bg-[#fbf8f3] border text-[#52796f] text-[11px] shrink-0"><i class="fa-solid fa-pen"></i></button>
-                </div>
-                ${ml.note ? `<div class="text-xs text-[#7a827d] mt-1">${ml.note}</div>` : ""}
-                ${mealImgSrc ? `<div class="polaroid-img mt-2"><img src="${mealImgSrc}" onclick="openImageLightbox('${ml.img.replace(/'/g, "")}', '${ml.title.replace(/'/g, "")}')" class="w-full h-28 object-cover rounded-lg" /></div>` : ""}
-              </div>
-              <div class="flex items-center justify-between pt-1.5 border-t border-[#f7ede2]">
-                <button onclick="jumpToExpenseWithPreset('${ml.title.replace(/'/g, "")}', '餐飲美食')" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#fef9ef] text-[#9c6644] border border-[#f2cc8f]">💰 點此記帳</button>
-                <span class="text-[10px] text-gray-400">長按刪除</span>
-              </div>
-            `;
-            bindLongPress(mCard, () => {
-              if (confirm(`確定刪除餐飲「${ml.title}」嗎？`)) {
-                t.meals = t.meals.filter(x => x.id !== ml.id);
-                commitChange(`刪除餐飲：${ml.title}`);
-              }
-            });
-            mealBox.appendChild(mCard);
-          });
-        }
-
-        const itiBox = daySec.querySelector(`#dayItiBox-${dayNum}`);
-        if (dayIti.length === 0) {
-          itiBox.innerHTML = `<div class="text-center py-4 text-xs text-[#7a827d]">尚無景點行程，點擊「📍 + 行程」開始新增！</div>`;
-        } else {
-          dayIti.forEach(item => {
-            const card = document.createElement("div");
-            card.className = "long-press-box p-4 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]";
-            const spotMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.title + " " + c.name)}`;
-            const itiImgSrc = resolveImageSrc(item.img);
-
-            card.innerHTML = `
-              <div class="flex items-start justify-between gap-2.5">
-                <div class="flex items-start gap-3 flex-1 min-w-0">
-                  ${item.time ? `
-                    <div class="px-3 py-1.5 rounded-2xl btn-gradient-sage font-bold text-xs text-center shrink-0 en-font">${item.time}</div>
-                  ` : `
-                    <div class="w-9 h-9 rounded-2xl bg-[#e8f0ed] text-[#3d5a52] font-bold text-sm flex items-center justify-center shrink-0">📍</div>
-                  `}
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <a href="${spotMapUrl}" target="_blank" class="font-bold text-sm sm:text-base text-[#2b302c] hover:text-[#52796f] hover:underline">
-                        ${item.title} <i class="fa-solid fa-location-dot text-xs text-[#e07a5f]"></i>
-                      </a>
-                      ${item.subRegion ? `<span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-white border text-[#7a827d]">${item.subRegion}</span>` : ""}
-                      <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">${item.cat || "景點"}</span>
-                    </div>
-                    ${item.transit ? `<div class="text-xs font-semibold text-[#52796f] mt-1">🚇 交通：${item.transit}</div>` : ""}
-                    ${item.note ? `<div class="text-xs text-[#7a827d] mt-1 leading-relaxed">${item.note}</div>` : ""}
-                    <div class="flex flex-wrap items-center gap-2 mt-2">
-                      ${item.link ? `<a href="${item.link}" target="_blank" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white border text-[#52796f] hover:underline">🔗 相關連結 ↗</a>` : ""}
-                      ${item.hotel ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.hotel + ' ' + c.name)}" target="_blank" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">🏨 ${item.hotel}</a>` : ""}
-                      <button onclick="jumpToExpenseWithPreset('${item.title.replace(/'/g, "")}', '門票娛樂')" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#fef9ef] text-[#9c6644] border border-[#f2cc8f]">💰 記帳</button>
-                    </div>
-                    ${itiImgSrc ? `<div class="polaroid-img mt-3 max-w-sm"><img src="${itiImgSrc}" onclick="openImageLightbox('${item.img.replace(/'/g, "")}', '${item.title.replace(/'/g, "")}')" class="max-h-48 w-full object-cover rounded-xl" /></div>` : ""}
-                  </div>
-                </div>
-                <div class="flex flex-col items-end gap-1 shrink-0">
-                  <button onclick="openItineraryModal(${item.day}, '${item.id}')" class="w-8 h-8 rounded-full bg-white border border-[#dcd2c4] text-[#52796f] flex items-center justify-center shadow-2xs"><i class="fa-solid fa-pen text-xs"></i></button>
-                  <span class="text-[10px] text-gray-400">長按刪除</span>
-                </div>
-              </div>
-            `;
-            bindLongPress(card, () => {
-              if (confirm(`確定刪除行程「${item.title}」嗎？`)) {
-                t.itinerary = t.itinerary.filter(x => x.id !== item.id);
-                commitChange(`刪除行程：${item.title}`);
-              }
-            });
-            itiBox.appendChild(card);
-          });
-        }
-      });
     }
 
-    function buildDayGoogleRoute(items, countryName) {
-      if (!items || items.length === 0) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(countryName)}`;
-      const stops = items.map(x => `${x.title} ${countryName}`);
-      const hotel = [...items].reverse().find(x => x.hotel && x.hotel.trim())?.hotel;
-      if (hotel) stops.push(`${hotel} ${countryName}`);
-      if (stops.length === 1) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stops[0])}`;
-      const origin = encodeURIComponent(stops[0]);
-      const dest = encodeURIComponent(stops[stops.length - 1]);
-      const wp = stops.slice(1, -1).map(s => encodeURIComponent(s)).join("|");
-      return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${wp ? `&waypoints=${wp}` : ""}&travelmode=transit`;
+    function deleteMealItem(id) {
+      const t = getTrip();
+      if (confirm("確定刪除此餐飲嗎？")) {
+        t.meals = (t.meals || []).filter(m => m.id !== id);
+        commitChange("刪除餐飲");
+      }
     }
 
     function extractMapPlaceName(url, alertUser = false) {
@@ -2679,14 +2633,14 @@
       commitChange(`儲存行程：${title}`);
     }
 
-    function openMealModal(dayNum = 1, editId = null) {
+    function openMealModal(dayNum = 1, editId = null, defaultType = "午餐") {
       const t = getTrip();
       if (editId) {
         const m = (t.meals || []).find(x => x.id === editId);
         if (!m) return;
         document.getElementById("editingMealId").value = m.id;
         document.getElementById("mealDayInp").value = m.day || 1;
-        document.getElementById("mealTypeSel").value = m.type || "午餐";
+        document.getElementById("mealTypeSel").value = m.type || defaultType;
         document.getElementById("mealTitleInp").value = m.title || "";
         document.getElementById("mealLinkInp").value = m.link || "";
         document.getElementById("mealImgInp").value = m.img || "";
@@ -2694,7 +2648,7 @@
       } else {
         document.getElementById("editingMealId").value = "";
         document.getElementById("mealDayInp").value = dayNum || state.activeDay || 1;
-        document.getElementById("mealTypeSel").value = "午餐";
+        document.getElementById("mealTypeSel").value = defaultType;
         document.getElementById("mealTitleInp").value = "";
         document.getElementById("mealLinkInp").value = "";
         document.getElementById("mealImgInp").value = "";
@@ -4039,8 +3993,9 @@
 
     function renderAll() {
       renderAnywhereDoor();
-      renderFlightsSection();
-      renderItinerarySection();
+      renderFlights();
+      renderSubRegionsAndDays();
+      renderItineraryAndMeals();
       renderGuidesSection();
       renderMemberSelectors();
       updateCalcPreview();
