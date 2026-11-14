@@ -315,71 +315,68 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 3: 分帳圖表（圖表置頂 ＋ 記帳與明細全面抽屜化！） ==================== -->
+    <!-- ==================== TAB 3: 分帳圖表（全體/個人圓餅圖二合一置頂 ＋ 自由選日期記帳） ==================== -->
     <section id="tabPanel-expense" class="tab-panel hidden space-y-3.5">
 
-      <!-- 👥 頂部旅伴橫向列 -->
-      <div class="journal-card px-3.5 py-2.5 flex items-center justify-between gap-2 whitespace-nowrap overflow-x-auto no-scrollbar">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span class="text-xs font-bold text-[#52796f] shrink-0">👥 旅伴：</span>
-          <div id="memberBadgesBox" class="flex items-center gap-1 overflow-x-auto no-scrollbar"></div>
-        </div>
-        <button onclick="openModal('memberModal')" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fef9ef] text-[#9c6644] border border-[#f2cc8f] shrink-0">+ 旅伴</button>
-      </div>
+      <!-- 📊 第一層（置頂唯一主卡）：全體統整 / 個人圓餅圖切換 ＋ 點擊展開個人明細 ＋ 代墊結算 -->
+      <div class="journal-card p-3.5 sm:p-4 space-y-3">
+        <div class="washi-tape green"></div>
 
-      <!-- 📊 第一層（置頂）：總圓餅圖 ＆ 個人花費與結算抽屜 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-        <!-- 左：總支出圓餅圖 -->
-        <div class="journal-card p-3.5 sm:p-4">
-          <div class="washi-tape green"></div>
-          <div class="flex items-center justify-between mb-2.5 whitespace-nowrap">
-            <h3 class="font-bold text-sm text-[#2b302c]">📊 總支出統計</h3>
-            <div class="flex items-center gap-1">
-              <span id="rateBadgeText" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">匯率</span>
-              <button onclick="refreshCountryRate(true)" class="w-6 h-6 rounded-full border bg-white text-[11px] text-[#52796f]"><i class="fa-solid fa-arrows-rotate"></i></button>
-            </div>
+        <!-- 標題與匯率/含受贈開關 -->
+        <div class="flex items-center justify-between gap-2 whitespace-nowrap pt-0.5">
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-bold text-sm sm:text-base text-[#2b302c]">📊 花費統計圖表</h3>
+            <span id="rateBadgeText" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">匯率</span>
+            <button onclick="refreshCountryRate(true)" class="w-6 h-6 rounded-full border bg-white text-[10px] text-[#52796f]" title="更新匯率"><i class="fa-solid fa-arrows-rotate"></i></button>
           </div>
-          <div class="flex items-center gap-3.5">
-            <div id="expenseDonutChart" class="w-24 h-24 rounded-full shrink-0 flex items-center justify-center shadow-inner" style="background: conic-gradient(#52796f 0% 100%);">
-              <div class="w-14 h-14 rounded-full bg-white flex flex-col items-center justify-center text-center shadow-xs">
-                <span class="text-[9px] text-[#7a827d]">總計</span>
-                <span id="donutTotalCenter" class="text-[11px] font-bold text-[#2b302c] en-font">NT$0</span>
-              </div>
-            </div>
-            <div id="expenseCatLegend" class="flex-1 space-y-1 text-xs"></div>
-          </div>
-        </div>
-
-        <!-- 右：個人花費抽屜 ＆ 代墊結算 -->
-        <div class="journal-card p-3.5 sm:p-4 space-y-2.5">
-          <div class="washi-tape pink"></div>
-          <div class="flex items-center justify-between whitespace-nowrap">
-            <h3 class="font-bold text-sm text-[#2b302c]">👤 個人花費 <span class="text-[11px] font-normal text-[#7a827d]">(點名字展開明細)</span></h3>
+          <div class="flex items-center gap-2">
             <label class="flex items-center gap-1 text-[11px] font-bold text-[#6b21a8] cursor-pointer">
               <input id="chkIncludeGiftTotal" type="checkbox" checked onchange="renderExpenseSection()" class="w-3.5 h-3.5 accent-[#6b21a8]" />
               <span>含受贈</span>
             </label>
+            <button onclick="openModal('memberModal')" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#fef9ef] text-[#9c6644] border border-[#f2cc8f]">🧸 旅伴</button>
           </div>
+        </div>
 
-          <div id="personalTotalsBox" class="space-y-2"></div>
+        <!-- 🔘 切換「📊 全體統整」或「各旅伴個人圓餅圖」的橫向膠囊列 -->
+        <div id="chartTargetPills" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
 
-          <!-- 🤝 代墊結算抽屜 -->
-          <div class="pt-2 border-t border-dashed border-[#e8dfd3]">
-            <div onclick="toggleDrawer('settleDrawerBox', event)" class="flex items-center justify-between cursor-pointer whitespace-nowrap">
-              <span class="font-bold text-xs text-[#2b302c]">🤝 代墊結算（誰該給誰）</span>
-              <span class="text-[11px] text-[#52796f] font-bold">展開 ▾</span>
+        <!-- 🍩 動態圓餅圖 ＋ 右側分類佔比（隨上方選擇切換全體或個人！） -->
+        <div class="flex items-center gap-4 p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
+          <div id="expenseDonutChart" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full shrink-0 flex items-center justify-center shadow-inner transition-all" style="background: conic-gradient(#52796f 0% 100%);">
+            <div class="w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-white flex flex-col items-center justify-center text-center shadow-xs px-1">
+              <span id="donutCenterLabel" class="text-[9px] text-[#7a827d] truncate max-w-[54px]">全體總計</span>
+              <span id="donutTotalCenter" class="text-[11px] font-bold text-[#2b302c] en-font">NT$0</span>
             </div>
-            <div id="settleDrawerBox" class="drawer-panel open pt-2">
-              <div id="settleTransfersBox" class="space-y-1.5 text-xs"></div>
-            </div>
+          </div>
+          <div id="expenseCatLegend" class="flex-1 space-y-1 text-xs min-w-0"></div>
+        </div>
+
+        <!-- 🧾 當選中特定旅伴（或點擊切換）時，可展開查看該旅伴的詳細記帳內容抽屜 -->
+        <div id="activePersonDetailWrap" class="hidden rounded-2xl border border-[#e6dcd0] bg-white overflow-hidden">
+          <div onclick="toggleDrawer('selectedPersonExpDrawer', event)" class="px-3.5 py-2 bg-[#fdf0ec]/60 flex items-center justify-between cursor-pointer whitespace-nowrap">
+            <span id="selectedPersonDrawerTitle" class="font-bold text-xs text-[#c85a32]">📋 點此展開個人詳細帳單明細</span>
+            <span class="text-xs font-bold text-[#c85a32]">展開 / 收合 ▾</span>
+          </div>
+          <div id="selectedPersonExpDrawer" class="drawer-panel open px-3 py-2 space-y-1.5 max-h-56 overflow-y-auto text-xs"></div>
+        </div>
+
+        <!-- 🤝 代墊結算抽屜 -->
+        <div class="pt-2 border-t border-dashed border-[#e8dfd3]">
+          <div onclick="toggleDrawer('settleDrawerBox', event)" class="flex items-center justify-between cursor-pointer whitespace-nowrap">
+            <span class="font-bold text-xs text-[#2b302c]">🤝 代墊結算（誰該給誰）</span>
+            <span class="text-[11px] text-[#52796f] font-bold">展開 / 收合 ▾</span>
+          </div>
+          <div id="settleDrawerBox" class="drawer-panel open pt-2">
+            <div id="settleTransfersBox" class="space-y-1.5 text-xs"></div>
           </div>
         </div>
       </div>
 
-      <!-- ➕ 第二層：新增記帳與匯率算盤（可收合抽屜） -->
+      <!-- ➕ 第二層：新增記帳與匯率算盤（含自由選擇日期欄位！） -->
       <div class="journal-card overflow-hidden">
         <div onclick="toggleDrawer('addExpenseDrawer', event)" class="px-4 py-3 bg-gradient-to-r from-[#f7f2e9] to-[#fbf8f3] flex items-center justify-between cursor-pointer border-b border-[#ece3d5] whitespace-nowrap">
-          <span class="font-bold text-sm text-[#2b302c]">➕ 新增記帳 & 匯率換算</span>
+          <span class="font-bold text-sm text-[#2b302c]">➕ 新增記帳 & 匯率算盤</span>
           <span class="text-xs font-bold text-[#52796f]">展開 / 收合 ▾</span>
         </div>
 
@@ -419,9 +416,11 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-2">
-            <input id="expTitleInput" type="text" placeholder="消費項目名稱 *" class="col-span-2 text-xs sm:text-sm px-3 py-2 rounded-xl border border-[#dcd2c4]" />
-            <select id="expCatSelect" class="text-xs px-2 py-2 rounded-xl border border-[#dcd2c4] bg-white">
+          <!-- 📅 新增：可自由選擇的日期 ＋ 項目名稱 ＋ 分類 -->
+          <div class="grid grid-cols-12 gap-2">
+            <input id="expDateInput" type="date" class="col-span-4 sm:col-span-3 text-xs font-bold px-2 py-2 rounded-xl border border-[#dcd2c4] bg-white text-[#52796f]" />
+            <input id="expTitleInput" type="text" placeholder="消費項目名稱 *" class="col-span-5 sm:col-span-6 text-xs sm:text-sm px-3 py-2 rounded-xl border border-[#dcd2c4]" />
+            <select id="expCatSelect" class="col-span-3 text-xs px-1.5 py-2 rounded-xl border border-[#dcd2c4] bg-white">
               <option value="餐飲美食">🍽️ 餐飲</option>
               <option value="購物伴手禮">🛍️ 購物</option>
               <option value="交通機票">✈️ 交通</option>
@@ -470,7 +469,7 @@
       <div class="journal-card overflow-hidden">
         <div onclick="toggleDrawer('allExpenseHistoryDrawer', event)" class="px-4 py-3 bg-white flex items-center justify-between cursor-pointer border-b border-[#ece3d5] whitespace-nowrap">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-sm text-[#2b302c]">🧾 歷史帳務明細</span>
+            <span class="font-bold text-sm text-[#2b302c]">🧾 全部帳務明細</span>
             <span id="expCountText" class="text-xs font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">0 筆</span>
           </div>
           <span class="text-xs text-[#7a827d]">展開 / 收合 ▾</span>
@@ -1587,42 +1586,46 @@
 
     function renderMemberSelectors() {
       const comps = state.companions || [];
-      const badgeBox = document.getElementById("memberBadgesBox");
       const payerSel = document.getElementById("expPayerSelect");
       const benBox = document.getElementById("expBenCheckboxes");
       const shopOwner = document.getElementById("shopItemOwner");
 
+      // 預設填入今日日期
+      const dateInp = document.getElementById("expDateInput");
+      if (dateInp && !dateInp.value) {
+        dateInp.value = new Date().toISOString().slice(0, 10);
+      }
+
       if (comps.length === 0) {
-        badgeBox.innerHTML = `<span onclick="openModal('memberModal')" class="text-xs text-[#c85a32] font-bold underline cursor-pointer">點右側「+ 旅伴」設定名單</span>`;
-        payerSel.innerHTML = `<option value="">先新增旅伴</option>`;
-        benBox.innerHTML = `<span class="text-xs text-[#7a827d]">請先新增旅伴</span>`;
-        shopOwner.innerHTML = `<option value="">🏷️ 共同</option>`;
+        if (payerSel) payerSel.innerHTML = `<option value="">先點右上🧸新增旅伴</option>`;
+        if (benBox) benBox.innerHTML = `<span onclick="openModal('memberModal')" class="text-xs text-[#c85a32] underline cursor-pointer">+ 點此新增旅伴</span>`;
+        if (shopOwner) shopOwner.innerHTML = `<option value="">🏷️ 共同</option>`;
         return;
       }
 
-      badgeBox.innerHTML = comps.map(c => `
-        <span onclick="openModal('memberModal')" class="inline-flex items-center gap-1 text-xs font-bold pl-1 pr-2.5 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] cursor-pointer shrink-0">
-          ${getCompanionAvatarHtml(c.name)}<span>${c.name}</span>
-        </span>
-      `).join("");
+      if (payerSel) {
+        payerSel.innerHTML = comps.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
+        if (comps.some(c => c.name === state.lastSelectedPayer)) payerSel.value = state.lastSelectedPayer;
+        payerSel.onchange = () => { state.lastSelectedPayer = payerSel.value; saveAppState(false); };
+      }
 
-      payerSel.innerHTML = comps.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
-      if (comps.some(c => c.name === state.lastSelectedPayer)) payerSel.value = state.lastSelectedPayer;
-      payerSel.onchange = () => { state.lastSelectedPayer = payerSel.value; saveAppState(false); };
+      if (benBox) {
+        benBox.innerHTML = comps.filter(c => c.name !== "公費").map(c => `
+          <label class="inline-flex items-center gap-1 pl-1 pr-2.5 py-0.5 rounded-full border border-[#dcd2c4] bg-[#fbf8f3] text-xs font-bold cursor-pointer">
+            <input type="checkbox" class="exp-ben-item accent-[#52796f]" value="${c.name}" checked />
+            ${getCompanionAvatarHtml(c.name)}<span>${c.name}</span>
+          </label>
+        `).join("");
+      }
 
-      benBox.innerHTML = comps.filter(c => c.name !== "公費").map(c => `
-        <label class="inline-flex items-center gap-1 pl-1 pr-2.5 py-0.5 rounded-full border border-[#dcd2c4] bg-[#fbf8f3] text-xs font-bold cursor-pointer">
-          <input type="checkbox" class="exp-ben-item accent-[#52796f]" value="${c.name}" checked />
-          ${getCompanionAvatarHtml(c.name)}<span>${c.name}</span>
-        </label>
-      `).join("");
-
-      shopOwner.innerHTML = [
-        `<option value="">🏷️ 共同</option>`,
-        ...comps.map(c => `<option value="${c.name}">${c.name}</option>`)
-      ].join("");
-      if (comps.some(c => c.name === state.lastSelectedOwner)) shopOwner.value = state.lastSelectedOwner;
-      shopOwner.onchange = () => { state.lastSelectedOwner = shopOwner.value; saveAppState(false); };
+      if (shopOwner) {
+        shopOwner.innerHTML = [
+          `<option value="">🏷️ 共同</option>`,
+          ...comps.map(c => `<option value="${c.name}">${c.name}</option>`)
+        ].join("");
+        if (comps.some(c => c.name === state.lastSelectedOwner)) shopOwner.value = state.lastSelectedOwner;
+        shopOwner.onchange = () => { state.lastSelectedOwner = shopOwner.value; saveAppState(false); };
+      }
     }
 
     // ==================== 9. 任意門與匯率 ====================
@@ -2365,7 +2368,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 12. 📊 分帳記帳系統 ====================
+  // ==================== 12. 📊 分帳記帳系統（全體/個人圓餅圖切換 ＋ 自由選日期） ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -2404,6 +2407,24 @@
       }
     }
 
+    function formatDisplayDate(rawDate) {
+      if (!rawDate) return "";
+      // 若為 YYYY-MM-DD 轉為 MM/DD 方便簡潔閱讀
+      const m = rawDate.match(/^\d{4}-(\d{2})-(\d{2})$/);
+      return m ? `${m[1]}/${m[2]}` : rawDate;
+    }
+
+    function toInputDateFormat(rawDate) {
+      if (!rawDate) return new Date().toISOString().slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) return rawDate;
+      const m = rawDate.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+      if (m) {
+        const yr = new Date().getFullYear();
+        return `${yr}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`;
+      }
+      return new Date().toISOString().slice(0, 10);
+    }
+
     function saveExpense() {
       const t = getTrip();
       const c = getCountry();
@@ -2416,6 +2437,7 @@
       const bens = Array.from(document.querySelectorAll(".exp-ben-item:checked")).map(x => x.value);
       const note = document.getElementById("expNoteInput").value.trim();
       const img = document.getElementById("expImgInput").value.trim();
+      const pickedDate = document.getElementById("expDateInput").value;
       const editId = document.getElementById("editingExpId").value;
 
       if (!title || amount <= 0) return alert("請填寫項目名稱與金額！");
@@ -2432,7 +2454,7 @@
         payer, mode,
         beneficiaries: mode === "self" ? [payer] : (bens.length > 0 ? bens : [payer]),
         note, img,
-        date: new Date().toLocaleDateString("zh-TW", { month: "2-digit", day: "2-digit" })
+        date: formatDisplayDate(pickedDate) || new Date().toLocaleDateString("zh-TW", { month: "2-digit", day: "2-digit" })
       };
 
       if (editId) {
@@ -2450,6 +2472,7 @@
       document.getElementById("expTitleInput").value = "";
       document.getElementById("expNoteInput").value = "";
       document.getElementById("expImgInput").value = "";
+      document.getElementById("expDateInput").value = new Date().toISOString().slice(0, 10);
       document.getElementById("expModeSelect").value = "split";
       document.getElementById("btnSubmitExp").textContent = "💾 儲存帳務";
       document.getElementById("btnCancelExp").classList.add("hidden");
@@ -2462,6 +2485,7 @@
       document.getElementById("addExpenseDrawer")?.classList.add("open");
       document.getElementById("editingExpId").value = ex.id;
       document.getElementById("calcInputBox").value = ex.amount;
+      document.getElementById("expDateInput").value = toInputDateFormat(ex.date);
       document.getElementById("expTitleInput").value = ex.title;
       document.getElementById("expCatSelect").value = normalizeCatName(ex.cat);
       document.getElementById("expCurrSelect").value = ex.currency === "TWD" ? "TWD" : "LOCAL";
@@ -2475,6 +2499,7 @@
       document.getElementById("btnSubmitExp").textContent = "💾 更新帳務";
       document.getElementById("btnCancelExp").classList.remove("hidden");
       updateCalcPreview();
+      document.getElementById("addExpenseDrawer")?.scrollIntoView({ behavior: "smooth" });
     }
 
     function buildConicGradient(catMap, total, colors) {
@@ -2489,6 +2514,11 @@
         acc = next;
       });
       return parts.length > 0 ? `conic-gradient(${parts.join(", ")})` : "conic-gradient(#ece4d8 0% 100%)";
+    }
+
+    function selectChartTarget(target) {
+      state.activeChartTarget = target;
+      renderExpenseSection();
     }
 
     function renderExpenseSection() {
@@ -2537,11 +2567,11 @@
             if (b !== e.payer) {
               pStats[b].giftRec += share;
               if (includeGift) pStats[b].cats[cKey] += share;
-              pStats[b].items.push({ title: e.title, cat: cKey, role: `🎁 ${e.payer}贈`, shareTWD: share, orig: `${e.amount} ${e.currency}`, isGiftRec: true });
+              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🎁 ${e.payer}贈`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, isGiftRec: true });
             } else {
               pStats[b].ownSpend += share;
               pStats[b].cats[cKey] += share;
-              pStats[b].items.push({ title: e.title, cat: cKey, role: `👤 自付`, shareTWD: share, orig: `${e.amount} ${e.currency}`, isGiftRec: false });
+              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `👤 自付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, isGiftRec: false });
             }
           });
         } else {
@@ -2551,62 +2581,82 @@
             pStats[b].ownSpend += share;
             if (e.payer !== "公費") pStats[b].net -= share;
             pStats[b].cats[cKey] += share;
-            pStats[b].items.push({ title: e.title, cat: cKey, role: `${e.payer}付`, shareTWD: share, orig: `${e.amount} ${e.currency}`, isGiftRec: false });
+            pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `${e.payer}付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, isGiftRec: false });
           });
         }
       });
 
-      document.getElementById("donutTotalCenter").textContent = `NT$${Math.round(grandTotalTWD).toLocaleString()}`;
-      document.getElementById("expenseDonutChart").style.background = buildConicGradient(groupCats, grandTotalTWD, catColors);
-      const legendHtml = Object.entries(groupCats).filter(([, v]) => v > 0).map(([k, v]) => {
-        const pct = grandTotalTWD > 0 ? Math.round((v / grandTotalTWD) * 100) : 0;
+      // 確認當前圓餅圖檢視對象（ALL = 全體統整，或指定旅伴名字）
+      const activeTarget = (state.activeChartTarget && pStats[state.activeChartTarget]) ? state.activeChartTarget : "ALL";
+
+      // 渲染上方切換膠囊列（點頭貼或名字直接看該旅伴圓餅圖與明細）
+      const pillsBox = document.getElementById("chartTargetPills");
+      let pillsHtml = `
+        <button onclick="selectChartTarget('ALL')" class="shrink-0 px-3 py-1 rounded-full text-xs font-bold border whitespace-nowrap transition ${
+          activeTarget === "ALL" ? "btn-gradient-sage text-white border-transparent shadow-2xs" : "bg-[#fbf8f3] text-[#4a524d] border-[#dcd2c4]"
+        }">📊 全體統整 (NT$${Math.round(grandTotalTWD).toLocaleString()})</button>
+      `;
+      Array.from(peopleSet).forEach(p => {
+        const s = pStats[p];
+        const pTotal = includeGift ? Math.round(s.ownSpend + s.giftRec) : Math.round(s.ownSpend);
+        const active = activeTarget === p;
+        pillsHtml += `
+          <button onclick="selectChartTarget('${p}')" class="shrink-0 pl-1.5 pr-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1 whitespace-nowrap transition ${
+            active ? "btn-gradient-rose text-white border-transparent shadow-2xs" : "bg-white text-[#2b302c] border-[#dcd2c4]"
+          }">
+            ${getCompanionAvatarHtml(p)}
+            <span>${p}</span>
+            <span class="text-[10px] opacity-85 en-font">NT$${pTotal.toLocaleString()}</span>
+          </button>
+        `;
+      });
+      pillsBox.innerHTML = pillsHtml;
+
+      // 根據 activeTarget 決定圓餅圖要畫「全體」還是「個人」
+      const targetCats = activeTarget === "ALL" ? groupCats : pStats[activeTarget].cats;
+      const targetTotal = activeTarget === "ALL"
+        ? grandTotalTWD
+        : (includeGift ? (pStats[activeTarget].ownSpend + pStats[activeTarget].giftRec) : pStats[activeTarget].ownSpend);
+
+      document.getElementById("donutCenterLabel").textContent = activeTarget === "ALL" ? "全體總計" : `${activeTarget}的花費`;
+      document.getElementById("donutTotalCenter").textContent = `NT$${Math.round(targetTotal).toLocaleString()}`;
+      document.getElementById("expenseDonutChart").style.background = buildConicGradient(targetCats, targetTotal, catColors);
+
+      const legendHtml = Object.entries(targetCats).filter(([, v]) => v > 0).map(([k, v]) => {
+        const pct = targetTotal > 0 ? Math.round((v / targetTotal) * 100) : 0;
         return `
           <div class="flex items-center justify-between whitespace-nowrap">
-            <span class="flex items-center gap-1 font-bold text-[#2b302c]">
-              <span class="w-2 h-2 rounded-full inline-block" style="background:${catColors[k]}"></span>
+            <span class="flex items-center gap-1.5 font-bold text-[#2b302c]">
+              <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${catColors[k]}"></span>
               ${k.slice(0, 2)} (${pct}%)
             </span>
-            <span class="font-bold text-[#7a827d] en-font">NT$${Math.round(v).toLocaleString()}</span>
+            <span class="font-bold text-[#52796f] en-font">NT$ ${Math.round(v).toLocaleString()}</span>
           </div>
         `;
       });
-      document.getElementById("expenseCatLegend").innerHTML = legendHtml.length > 0 ? legendHtml.join("") : `<div class="text-xs text-[#7a827d]">尚無消費</div>`;
+      document.getElementById("expenseCatLegend").innerHTML = legendHtml.length > 0 ? legendHtml.join("") : `<div class="text-xs text-[#7a827d]">尚無消費紀錄</div>`;
 
-      // 個人花費抽屜渲染（精簡橫向）
-      const personalBox = document.getElementById("personalTotalsBox");
-      personalBox.innerHTML = Array.from(peopleSet).map((p, idx) => {
-        const s = pStats[p];
-        const total = includeGift ? Math.round(s.ownSpend + s.giftRec) : Math.round(s.ownSpend);
-        const personalDrawerId = `personalDetailDrawer_${idx}`;
+      // 當選中某位旅伴時，顯示他的專屬帳單抽屜
+      const detailWrap = document.getElementById("activePersonDetailWrap");
+      const detailDrawer = document.getElementById("selectedPersonExpDrawer");
+      if (activeTarget === "ALL") {
+        detailWrap.classList.add("hidden");
+      } else {
+        detailWrap.classList.remove("hidden");
+        const s = pStats[activeTarget];
         const visibleItems = s.items.filter(it => includeGift || !it.isGiftRec);
-
-        return `
-          <div class="rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] overflow-hidden">
-            <div onclick="toggleDrawer('${personalDrawerId}', event)" class="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-white transition whitespace-nowrap">
-              <div class="flex items-center gap-1.5">
-                ${getCompanionAvatarHtml(p)}
-                <span class="font-bold text-xs sm:text-sm text-[#2b302c]">${p}</span>
-                <span class="text-[10px] text-[#7a827d]">(${visibleItems.length}筆▾)</span>
-              </div>
-              <span class="font-bold text-xs sm:text-sm text-[#52796f] en-font">NT$ ${total.toLocaleString()}</span>
+        document.getElementById("selectedPersonDrawerTitle").innerHTML = `${getCompanionAvatarHtml(activeTarget)} <span class="ml-1">${activeTarget} 的詳細記帳內容（共 ${visibleItems.length} 筆 · 代墊 NT$${Math.round(s.paid).toLocaleString()}）</span>`;
+        detailDrawer.innerHTML = visibleItems.length ? visibleItems.map(it => `
+          <div onclick="editExpense('${it.id}')" class="flex items-center justify-between py-1.5 px-2 rounded-xl hover:bg-[#fbf8f3] border-b border-dashed border-[#f0e8dc] cursor-pointer whitespace-nowrap">
+            <div class="truncate pr-2 flex items-center gap-1.5">
+              ${it.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font">${it.date}</span>` : ""}
+              <span class="font-bold text-[#2b302c]">${it.title}</span>
+              <span class="text-[10px] text-[#7a827d]">(${it.role} · 原幣 ${it.orig})</span>
             </div>
-
-            <div id="${personalDrawerId}" class="drawer-panel bg-white border-t border-[#e6dcd0] px-3" onclick="event.stopPropagation()">
-              <div class="py-2 space-y-1 max-h-48 overflow-y-auto text-xs">
-                ${visibleItems.map(it => `
-                  <div class="flex items-center justify-between py-1 border-b border-dashed border-[#f0e8dc]">
-                    <div class="truncate pr-2">
-                      <span class="font-bold text-[#2b302c]">${it.title}</span>
-                      <span class="text-[10px] text-[#7a827d] ml-1">(${it.role})</span>
-                    </div>
-                    <span class="font-bold en-font shrink-0 ${it.isGiftRec ? "text-[#6b21a8]" : "text-[#52796f]"}">NT$${Math.round(it.shareTWD).toLocaleString()}</span>
-                  </div>
-                `).join("")}
-              </div>
-            </div>
+            <span class="font-bold en-font shrink-0 ${it.isGiftRec ? "text-[#6b21a8]" : "text-[#52796f]"}">NT$ ${Math.round(it.shareTWD).toLocaleString()} ✏️</span>
           </div>
-        `;
-      }).join("");
+        `).join("") : `<div class="text-xs text-gray-400 py-2">尚無明細</div>`;
+      }
 
       // 代墊結算
       const debtors = [], creditors = [];
@@ -2621,7 +2671,7 @@
         const pay = Math.min(d.amt, cr.amt);
         transfers.push(`
           <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#fbf8f3] border whitespace-nowrap">
-            <span><strong>${d.p}</strong> ➔ 給 <strong>${cr.p}</strong></span>
+            <span class="flex items-center gap-1">${getCompanionAvatarHtml(d.p)}<strong>${d.p}</strong> ➔ 給 ${getCompanionAvatarHtml(cr.p)}<strong>${cr.p}</strong></span>
             <span class="font-bold text-[#c85a32] en-font">NT$ ${Math.round(pay).toLocaleString()}</span>
           </div>
         `);
@@ -2632,7 +2682,7 @@
       document.getElementById("settleTransfersBox").innerHTML =
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
 
-      // 歷史明細抽屜列表
+      // 全部帳務明細抽屜列表（加上日期顯示）
       const accBox = document.getElementById("expenseAccordionList");
       accBox.innerHTML = "";
       list.forEach(e => {
@@ -2645,6 +2695,7 @@
         itemDiv.innerHTML = `
           <div onclick="toggleDrawer('${drawerId}', event)" class="px-3 py-2 flex items-center justify-between gap-2 cursor-pointer hover:bg-white transition whitespace-nowrap">
             <div class="flex items-center gap-1.5 min-w-0">
+              ${e.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${e.date}</span>` : ""}
               <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border text-[#3d5a52] shrink-0">${(e.cat || "消費").slice(0, 2)}</span>
               <span class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">${e.title}</span>
               <span class="text-[10px] text-[#7a827d] shrink-0">(${e.payer})</span>
@@ -2657,7 +2708,7 @@
           </div>
           <div id="${drawerId}" class="drawer-panel bg-white px-3 border-t border-[#efe7dc]">
             <div class="py-2 text-xs text-[#4a524d] flex items-center justify-between">
-              <span>原幣：${Number(e.amount).toLocaleString()} ${e.currency} ｜ 分攤：${(e.beneficiaries || []).join("、")}</span>
+              <span>📅 ${e.date || "無日期"} ｜ 原幣：${Number(e.amount).toLocaleString()} ${e.currency} ｜ 分攤：${(e.beneficiaries || []).join("、")}</span>
               ${expImgSrc ? `<button onclick="openImageLightbox('${e.img.replace(/'/g, "")}', '${e.title.replace(/'/g, "")}')" class="text-[#c85a32] font-bold">📸 單據</button>` : ""}
             </div>
           </div>
