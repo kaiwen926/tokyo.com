@@ -23,7 +23,7 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-    input, textarea, select { user-select: text; }
+    input, textarea, select { user-select: text; -webkit-user-select: text; touch-action: pan-y; }
 
     body {
       font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
@@ -94,9 +94,9 @@
       opacity: 0;
       transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
     }
-    .drawer-panel.open { max-height: 5000px; opacity: 1; }
+    .drawer-panel.open { max-height: 6000px; opacity: 1; }
 
-    /* 手勢回饋：長按展開編輯、左右滑動刪除 */
+    /* 手勢回饋：長按展開編輯、只限往右滑動刪除 */
     .gesture-box {
       transition: transform 0.18s ease, background-color 0.2s ease, box-shadow 0.2s ease;
       touch-action: pan-y;
@@ -109,6 +109,44 @@
     .gesture-box.swiping-del {
       background-color: #fee2e2 !important;
       border-color: #f87171 !important;
+    }
+
+    /* 內嵌全欄位編輯器：支援多行內容自由上下拖曳捲動 */
+    .inline-full-editor {
+      max-height: 310px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      padding-right: 4px;
+    }
+    .inline-full-editor textarea {
+      min-height: 68px;
+      max-height: 180px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    /* 任意門左右滑動拖曳容器 */
+    .drag-scroll-x {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+      cursor: grab;
+      scroll-behavior: smooth;
+    }
+    .drag-scroll-x:active { cursor: grabbing; }
+
+    /* 導覽卡片跳轉高光閃爍動畫 */
+    @keyframes guidePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0); }
+      35% { box-shadow: 0 0 0 6px rgba(224, 122, 95, 0.45); background-color: #fff7f3; }
+    }
+    .guide-highlight-flash {
+      animation: guidePulse 1.8s ease-in-out 2;
+      border-color: #e07a5f !important;
     }
 
     .avatar-badge {
@@ -231,26 +269,26 @@
       </div>
     </div>
 
-    <!-- 🚪 任意門抽屜 -->
+    <!-- 🚪 任意門抽屜（支援左右滑動拖曳挑選國家與旅程） -->
     <div id="anywhereDoorDrawer" class="drawer-panel w-full max-w-6xl mx-auto" onclick="event.stopPropagation()">
       <div class="mt-2 p-3 bg-white rounded-3xl border-2 border-[#e6dcd0] shadow-xl space-y-2.5">
         <div>
           <div class="flex items-center justify-between mb-1.5 whitespace-nowrap">
-            <span class="text-xs font-bold text-[#52796f]">🌍 國家任意門 <span class="text-[10px] font-normal text-[#7a827d]">(支援全球萬國 · 長按刪除)</span></span>
+            <span class="text-xs font-bold text-[#52796f]">🌍 國家任意門 <span class="text-[10px] font-normal text-[#7a827d]">(可左右滑動拖曳 · 長按刪除)</span></span>
             <button onclick="autoAddCountryByName()" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">+ 國家</button>
           </div>
-          <div id="flagBarContainer" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+          <div id="flagBarContainer" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar pb-1"></div>
         </div>
 
         <div class="pt-2 border-t border-dashed border-[#efe7dc]">
           <div class="flex items-center justify-between mb-1.5 whitespace-nowrap">
-            <span class="text-xs font-bold text-[#e07a5f]">🧳 選擇旅程 <span class="text-[10px] font-normal text-[#7a827d]">(長按刪除)</span></span>
+            <span class="text-xs font-bold text-[#e07a5f]">🧳 選擇旅程 <span class="text-[10px] font-normal text-[#7a827d]">(可左右滑動 · 長按刪除)</span></span>
             <div class="flex gap-1">
               <button onclick="addTripUnderCountry()" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">+ 新旅程</button>
               <button onclick="renameActiveTrip()" class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">改名</button>
             </div>
           </div>
-          <div id="tripPillsContainer" class="flex flex-wrap gap-1.5"></div>
+          <div id="tripPillsContainer" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar pb-1"></div>
         </div>
       </div>
     </div>
@@ -285,7 +323,7 @@
     <!-- ==================== TAB 1: 航程與每日行程 ==================== -->
     <section id="tabPanel-itinerary" class="tab-panel space-y-3">
 
-      <!-- ✈️ 航班登機證（長按文內展開完整編輯 / 左右滑動刪除） -->
+      <!-- ✈️ 航班登機證（長按展開編輯 / 往右滑動刪除） -->
       <div class="journal-card overflow-hidden">
         <div class="washi-tape"></div>
         <div onclick="toggleDrawer('flightsDrawer', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#f7f2e9] to-[#f3ece0] flex items-center justify-between cursor-pointer border-b border-[#ece3d5] whitespace-nowrap">
@@ -305,11 +343,11 @@
         </div>
       </div>
 
-      <!-- 🗂️ 每日行程頂部控制卡（極簡單行！） -->
+      <!-- 🗂️ 每日行程頂部控制卡 -->
       <div class="journal-card p-2.5 sm:p-3.5">
         <div class="washi-tape pink"></div>
         <div class="flex items-center justify-between gap-1.5 mb-2 whitespace-nowrap">
-          <span class="font-bold text-sm text-[#2b302c] shrink-0">📅 每日行程</span>
+          <span class="font-bold text-sm text-[#2b302c] shrink-0">📅 每日行程 <span class="text-[10px] font-normal text-[#7a827d]">(點景點跳導覽 · 長按修改 · 右滑刪除)</span></span>
           <div class="flex items-center gap-1 shrink-0">
             <button onclick="toggleDrawer('subRegionDrawer', event)" id="btnRegionFilter" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fef9ef] text-[#9c6644] border border-[#f2cc8f]">📍地區</button>
             <div class="inline-flex rounded-full bg-[#f5efe6] p-0.5 border border-[#e2d8c9]">
@@ -325,11 +363,11 @@
               <span class="text-[11px] font-bold text-[#6e7772]">📍 篩選地區</span>
               <button onclick="addSubRegionTag()" class="text-[11px] font-bold text-[#4f7768]">+ 新增地區</button>
             </div>
-            <div id="subRegionButtons" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"></div>
+            <div id="subRegionButtons" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar"></div>
           </div>
         </div>
 
-        <div id="dayPillsBar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"></div>
+        <div id="dayPillsBar" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar"></div>
       </div>
 
       <!-- 📋 每日行程容器 -->
@@ -341,7 +379,7 @@
       <div class="journal-card p-3 sm:p-4">
         <div class="washi-tape green"></div>
         <div class="flex items-center justify-between gap-2 mb-3 whitespace-nowrap">
-          <h2 class="font-bold text-sm text-[#2b302c]">🧭 深度導覽</h2>
+          <h2 class="font-bold text-sm text-[#2b302c]">🧭 深度導覽 <span class="text-[10px] font-normal text-[#7a827d]">(長按修改 · 右滑刪除)</span></h2>
           <div class="flex gap-1.5">
             <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🪄 同步行程</button>
             <button onclick="openGuideModal()" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-sage">+ 新增</button>
@@ -370,7 +408,7 @@
           </label>
         </div>
 
-        <div id="chartTargetPills" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+        <div id="chartTargetPills" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar pb-0.5"></div>
 
         <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
           <div id="expenseDonutChart" onclick="toggleChartDetailList()" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full shrink-0 flex items-center justify-center shadow-inner cursor-pointer hover:scale-105 transition" style="background: conic-gradient(#52796f 0% 100%);">
@@ -383,11 +421,11 @@
           <div id="expenseCatLegend" class="flex-1 space-y-1 text-xs min-w-0"></div>
         </div>
 
-        <!-- 🧾 圓餅圖內嵌明細抽屜（長按展開全欄位修改 · 左右滑動刪除） -->
+        <!-- 🧾 圓餅圖內嵌明細抽屜（長按展開全欄位修改 · 往右滑動刪除） -->
         <div id="chartEmbeddedDetailDrawer" class="drawer-panel bg-white rounded-2xl border border-[#ece3d5]">
           <div class="px-3 py-1.5 bg-[#fdf0ec]/50 border-b border-[#ece3d5] flex items-center justify-between text-[11px] font-bold text-[#c85a32] whitespace-nowrap">
             <span id="embeddedListTitle">📋 帳務明細</span>
-            <span class="text-[10px] text-[#7a827d] font-normal">長按展開修改 · 左右滑刪除</span>
+            <span class="text-[10px] text-[#7a827d] font-normal">長按展開修改 · 往右滑刪除</span>
           </div>
           <div id="chartEmbeddedListBox" class="p-2 space-y-1.5 max-h-72 overflow-y-auto"></div>
         </div>
@@ -413,7 +451,7 @@
 
         <div id="addExpenseDrawer" class="drawer-panel open p-3 space-y-2">
           <div class="p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
-           <div class="flex gap-1.5 mb-1.5">
+            <div class="flex gap-1.5 mb-1.5">
               <input id="calcInputBox" type="text" placeholder="輸入金額或算式 (如 500+200)" oninput="updateCalcPreview()" class="flex-1 text-sm font-bold px-2.5 py-1 rounded-xl border border-[#dcd2c4] bg-white en-font min-w-0" />
               <select id="expCurrSelect" onchange="updateCalcPreview()" class="w-20 text-xs font-bold px-1.5 py-1 rounded-xl border border-[#dcd2c4] bg-white shrink-0">
                 <option value="LOCAL" id="optLocalCurr">外幣</option>
@@ -508,7 +546,7 @@
       <!-- 🛍️ 1. 必買購物清單 -->
       <div id="listBox-shopping" class="journal-card p-3 sm:p-4 space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
-          <h3 class="font-bold text-sm text-[#2b302c]">🛍️ 必買抽屜 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 左右滑刪除)</span></h3>
+          <h3 class="font-bold text-sm text-[#2b302c]">🛍️ 必買抽屜 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 往右滑刪除)</span></h3>
           <button onclick="toggleDrawer('addShopFormDrawer', event)" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-rose">+ 新增 ▾</button>
         </div>
 
@@ -532,14 +570,14 @@
           </div>
         </div>
 
-        <div id="shopOwnerFilterPills" class="flex gap-1.5 overflow-x-auto no-scrollbar"></div>
+        <div id="shopOwnerFilterPills" class="drag-scroll-x flex gap-1.5 no-scrollbar"></div>
         <div id="shopCategoryDrawersContainer" class="space-y-2"></div>
       </div>
 
       <!-- 🍜 2. 必吃美食清單 -->
       <div id="listBox-food" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
-          <h3 class="font-bold text-sm text-[#2b302c]">🍜 必吃抽屜 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 左右滑刪除)</span></h3>
+          <h3 class="font-bold text-sm text-[#2b302c]">🍜 必吃抽屜 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 往右滑刪除)</span></h3>
           <button onclick="toggleDrawer('addFoodFormDrawer', event)" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-sage">+ 新增 ▾</button>
         </div>
 
@@ -568,7 +606,7 @@
       <!-- 🧳 3. 單機版行李清單 -->
       <div id="listBox-packing" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
-          <h3 class="font-bold text-sm text-[#2b302c]">🧳 行李表 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 左右滑刪除)</span></h3>
+          <h3 class="font-bold text-sm text-[#2b302c]">🧳 行李表 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 往右滑刪除)</span></h3>
           <div class="flex gap-1">
             <button onclick="toggleDrawer('addPackFormDrawer', event)" class="text-xs font-bold px-2.5 py-1 rounded-full btn-gradient-sage">+ 物品</button>
             <button onclick="resetLocalPackingToDefault()" class="text-xs font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">重置</button>
@@ -591,14 +629,14 @@
           </div>
         </div>
 
-        <div id="packingCategoryPills" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+        <div id="packingCategoryPills" class="drag-scroll-x flex gap-1.5 no-scrollbar pb-1"></div>
         <div id="localPackingListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
       </div>
 
-      <!-- 📝 4. 備忘手札（支援上傳照片＆點擊拍立得放大） -->
+      <!-- 📝 4. 備忘手札 -->
       <div id="listBox-memo" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
-          <h3 class="font-bold text-sm text-[#2b302c]">📝 備忘手札 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 左右滑刪除)</span></h3>
+          <h3 class="font-bold text-sm text-[#2b302c]">📝 備忘手札 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 往右滑刪除)</span></h3>
           <button onclick="toggleDrawer('addMemoFormDrawer', event)" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-sage">+ 新增 ▾</button>
         </div>
 
@@ -622,6 +660,7 @@
 
     <!-- ==================== TAB 5: 資訊與免金鑰 AI 即時翻譯 ==================== -->
     <section id="tabPanel-info" class="tab-panel hidden space-y-3">
+
       <!-- 🌐 免金鑰 AI 即時雙向翻譯器 ＆ 情境手指字卡 -->
       <div class="journal-card overflow-hidden">
         <div class="washi-tape green"></div>
@@ -647,7 +686,7 @@
             </div>
           </div>
 
-          <div id="phraseCategoryBar" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
+          <div id="phraseCategoryBar" class="drag-scroll-x flex gap-1.5 no-scrollbar pb-0.5"></div>
           <div id="phraseCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
         </div>
       </div>
@@ -720,7 +759,6 @@
         <button onclick="closeModalDirect('aiParserModal')" class="text-gray-400 text-base">✕</button>
       </div>
 
-      <!-- 模式 1：一鍵對當日現有行程自動順路排序＋估算交通時間 -->
       <div class="p-3 rounded-2xl bg-[#e8f0ed] border border-[#c5dbd3] space-y-2">
         <div class="flex items-center justify-between whitespace-nowrap">
           <span class="font-bold text-xs text-[#3d5a52]">🧭 1. 當日行程一鍵順路排序 (依地理座標+車程)</span>
@@ -731,13 +769,11 @@
         </button>
       </div>
 
-      <!-- 模式 2：一鍵帶入當地著名經典順路行程 -->
       <div class="p-3 rounded-2xl bg-[#fef9ef] border border-[#f2cc8f] space-y-2">
         <div class="font-bold text-xs text-[#9c6644]">🌟 2. 一鍵載入當地著名經典順路一日遊（兼顧交通動線）</div>
         <div id="aiFamousTemplatesBox" class="grid grid-cols-2 gap-1.5"></div>
       </div>
 
-      <!-- 模式 3：自由輸入多個想去的地點，AI 自動算出最順走法與車程並排入 -->
       <div class="p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-2">
         <div class="font-bold text-xs text-[#2b302c]">✍️ 3. 輸入想去的景點，AI 自動排最順路線＋估算車程</div>
         <textarea id="aiRawTextInp" rows="4" placeholder="輸入想去的地點（一行一個，也可加上時間）：&#10;淺草寺雷門&#10;晴空塔&#10;上野阿美橫町&#10;銀座和光百貨" class="w-full text-xs p-2.5 rounded-xl border bg-white"></textarea>
@@ -816,7 +852,7 @@
       <input id="itiTransitInp" type="text" placeholder="🚇 交通方式與轉乘路線..." class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
       <div class="grid grid-cols-2 gap-2">
         <input id="itiHotelInp" type="text" placeholder="🏨 當晚住宿飯店" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
-        <input id="itiLinkInp" type="text" placeholder="🔗 專屬導航連結 (選填，留空自動配當地地圖)" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
+        <input id="itiLinkInp" type="text" placeholder="🔗 專屬導航連結 (留空自動配當地地圖)" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
       </div>
       <div class="flex gap-1.5">
         <input id="itiImgInp" type="text" placeholder="📸 圖片網址或上傳..." class="flex-1 text-xs px-3 py-1.5 rounded-xl border bg-[#fbf8f3]" />
@@ -824,7 +860,7 @@
           選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'itiImgInp')" />
         </label>
       </div>
-      <textarea id="itiNoteInp" rows="2" placeholder="📝 備註..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
+      <textarea id="itiNoteInp" rows="3" placeholder="📝 備註..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
       <input type="hidden" id="editingItiId" value="" />
       <div class="flex gap-2">
         <button onclick="saveItineraryItem()" class="flex-1 py-2 rounded-full btn-gradient-sage font-bold text-xs">💾 儲存</button>
@@ -867,16 +903,17 @@
     </div>
   </div>
 
-  <!-- 3. 航班視窗 -->
+  <!-- 3. 航班視窗（含起飛時間＋抵達時間） -->
   <div id="flightModal" onclick="autoSaveAndCloseModal('flightModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
         <h3 class="font-bold text-sm text-[#2b302c]">✈️ 航段設定</h3>
         <button onclick="autoSaveAndCloseModal('flightModal')" class="text-gray-400 text-base">✕</button>
       </div>
-      <div class="grid grid-cols-2 gap-2">
-        <input id="segDateInp" type="text" placeholder="日期 (如 6/23)" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
-        <input id="segTimeInp" type="text" placeholder="時間 (如 14:00)" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
+      <div class="grid grid-cols-3 gap-2">
+        <input id="segDateInp" type="text" placeholder="日期 (如 6/23)" class="text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+        <input id="segTimeInp" type="text" placeholder="起飛 (14:00)" class="text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+        <input id="segArrTimeInp" type="text" placeholder="抵達 (17:30)" class="text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
       </div>
       <input id="segFlightNoInp" type="text" placeholder="航班編號 (例：TR874 / ZE888) *" class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
       <div class="grid grid-cols-2 gap-2">
@@ -921,7 +958,7 @@
           選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'gdImgInp')" />
         </label>
       </div>
-      <textarea id="gdDescInp" rows="3" placeholder="📖 深度介紹（可點上方『🪄 AI寫簡介』自動生成）..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
+      <textarea id="gdDescInp" rows="4" placeholder="📖 深度介紹（可點上方『🪄 AI寫簡介』自動生成）..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
       <input id="gdLinkInp" type="text" placeholder="🔗 官網或地圖連結 (留空自動配當地地圖)" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
       <input type="hidden" id="editingGdId" value="" />
       <div class="flex gap-2">
@@ -992,17 +1029,17 @@
   </div>
 <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
   <script>
-    const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V78_DATA";
-    const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V78_IMAGES";
-    const LOCAL_PACKING_KEY = "WANDERNOTE_LOCAL_PACKING_V78";
-    const SNAPSHOTS_KEY = "WANDERNOTE_SNAPSHOTS_V78";
+    const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V80_DATA";
+    const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V80_IMAGES";
+    const LOCAL_PACKING_KEY = "WANDERNOTE_LOCAL_PACKING_V80";
+    const SNAPSHOTS_KEY = "WANDERNOTE_SNAPSHOTS_V80";
 
     // ==================== 1. 獨立雲端圖庫引擎 ====================
     let imageVault = {};
 
     function loadImageVault() {
       try {
-        const raw = localStorage.getItem(IMAGE_VAULT_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V75_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V70_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_IMAGES");
+        const raw = localStorage.getItem(IMAGE_VAULT_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V78_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V75_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V70_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_IMAGES");
         if (raw) imageVault = JSON.parse(raw) || {};
       } catch (e) { imageVault = {}; }
     }
@@ -1049,7 +1086,6 @@
     }
 
     // ==================== 2. 各國智慧適配地圖導航引擎 ====================
-    // 優先使用使用者填寫的連結；若無，中國大陸自動用高德地圖、韓國自動用 Naver Map、全球其他國家自動用 Google Maps！
     function buildSmartMapUrl(placeName, customLink = "") {
       if (customLink && /^https?:\/\//i.test(customLink.trim())) {
         return customLink.trim();
@@ -1062,15 +1098,12 @@
         .split(/[➔*（(]/)[0]
         .trim() || c.name;
 
-      // 中國大陸：Google Maps 不適用，自動採用高德地圖 (Amap)
       if (baseCode === "CN" || c.lang === "zh-CN" || ["中國", "中國大陸", "大陸", "雲南", "上海", "北京", "成都", "重慶", "哈爾濱"].some(k => (c.name || "").includes(k))) {
         return `https://uri.amap.com/search?keyword=${encodeURIComponent(cleanName)}&src=wandernote`;
       }
-      // 韓國：Google Maps 步行與地鐵受限，自動採用 Naver Map
       if (baseCode === "KR" || c.lang === "ko" || ["韓國", "首爾", "釜山", "濟州"].some(k => (c.name || "").includes(k))) {
         return `https://map.naver.com/p/search/${encodeURIComponent(cleanName)}`;
       }
-      // 全球其他國家（日本、泰國、越南、歐美紐澳等）：使用 Google Maps
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + " " + (c.name || ""))}`;
     }
 
@@ -1082,7 +1115,58 @@
       return "🗺️導航";
     }
 
-    // ==================== 3. 單機版預設行李清單 ====================
+    // ==================== 3. 點擊行程景點 ➔ 自動跳轉至「深度導覽」並高光定位 ====================
+    function jumpToGuideBySpotTitle(spotTitle, fallbackIti = null) {
+      const t = getTrip();
+      if (!t.guides) t.guides = [];
+      const cleanSpot = (spotTitle || "")
+        .replace(/^Day\s*\d+[:：]?\s*/i, "")
+        .replace(/^\d{1,2}\/\d{1,2}[:：]?\s*/, "")
+        .split("➔")[0]
+        .trim();
+
+      let targetGuide = t.guides.find(g =>
+        g.title === spotTitle ||
+        g.title === cleanSpot ||
+        (cleanSpot && g.title.includes(cleanSpot)) ||
+        (g.title && spotTitle.includes(g.title))
+      );
+
+      // 若該景點尚未建立導覽，自動生成一張並立刻跳轉過去！
+      if (!targetGuide && fallbackIti) {
+        const newGd = {
+          id: "gd_" + Date.now(),
+          title: cleanSpot || fallbackIti.title,
+          region: fallbackIti.subRegion || "",
+          hours: fallbackIti.time ? `預計 ${fallbackIti.time}` : "依店家公告",
+          price: "",
+          img: fallbackIti.img || "",
+          desc: fallbackIti.note || `${fallbackIti.transit ? "🚇 " + fallbackIti.transit : "點擊長按可補充深度導覽介紹，或點 AI 寫簡介自動生成！"}`,
+          link: fallbackIti.link || ""
+        };
+        t.guides.unshift(newGd);
+        saveAppState(false);
+        renderGuidesSection();
+        targetGuide = newGd;
+      }
+
+      const guideNavBtn = document.querySelectorAll(".nav-bottom-btn")[1];
+      switchTab("guide", guideNavBtn);
+
+      if (targetGuide) {
+        setTimeout(() => {
+          const el = document.getElementById("guideCard_" + targetGuide.id);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            el.classList.remove("guide-highlight-flash");
+            void el.offsetWidth;
+            el.classList.add("guide-highlight-flash");
+          }
+        }, 120);
+      }
+    }
+
+    // ==================== 4. 單機版預設行李清單 ====================
     const HARDCODED_PACKING_DEFAULTS = [
       { id: "def_1", cat: "重要證件與財務", title: "護照正本 (效期6個月以上) & 影本", note: "隨身包必備", done: false },
       { id: "def_2", cat: "重要證件與財務", title: "入境卡截圖 (VJW / 入境憑證)", note: "存手機相簿", done: false },
@@ -1101,7 +1185,7 @@
       { id: "def_22", cat: "隨身雜物與其他", title: "行李電子秤 & 壓縮收納袋", note: "防超重神器", done: false }
     ];
 
-    // ==================== 4. 全球 250 國萬用智慧偵測字典與深度在地化工具庫 ====================
+    // ==================== 5. 全球 250 國萬用智慧偵測字典與深度在地化工具庫 ====================
     const GLOBAL_COUNTRY_LOOKUP = {
       "日本": { code: "JP", flag: "🇯🇵", currency: "JPY", lang: "ja", speech: "ja-JP", defaultRate: 0.218 },
       "東京": { code: "JP", flag: "🇯🇵", currency: "JPY", lang: "ja", speech: "ja-JP", defaultRate: 0.218 },
@@ -1455,7 +1539,7 @@
       return { code: "W_" + Date.now().toString().slice(-2), flag: "🌍", currency: "USD", lang: "en", speech: "en-US", defaultRate: 32.4, region: "World" };
     }
 
-    // ==================== 5. 各國深度客製情境字卡庫 ====================
+    // ==================== 6. 各國深度客製情境字卡庫 ====================
     const PHRASE_CATEGORIES = [
       { key: "all", label: "🌟 全部" },
       { key: "veg", label: "🌱 素食叮嚀" },
@@ -1530,19 +1614,8 @@
           { cat: "hotel", zh: "請問退房後行李可以先寄存在前台到傍晚嗎？", local: "您好，請問退房後行李可以先寄存在前台，我們傍晚回來拿可以嗎？", romaji: "" }
         ];
       }
-      if (lang === "vi") {
-        return [
-          { cat: "veg", zh: "我吃素（Ăn chay），請不要加肉、海鮮、魚露與蝦醬", local: "Tôi ăn chay. Xin đừng cho thịt, hải sản, nước mắm và mắm tôm.", romaji: "Toi an chay, khong nuoc mam" },
-          { cat: "veg", zh: "請問這個高湯是用蔬菜熬的還是大骨熬的？", local: "Nước dùng này nấu từ rau củ hay xương thịt vậy ạ?", romaji: "" },
-          { cat: "dining", zh: "請不要加香菜與生辣椒 / 請幫我們結帳", local: "Xin đừng bỏ rau mùi và ớt ／ Cho tôi tính tiền.", romaji: "Cho toi tinh tien" },
-          { cat: "shopping", zh: "這個多少錢？可以算便宜一點嗎？", local: "Cái này bao nhiêu tiền? Bớt chút đỉnh được không ạ?", romaji: "Bao nhieu tien?" },
-          { cat: "transit", zh: "請載我們到這個地址，謝謝", local: "Cho tôi đến địa chỉ này, cảm ơn.", romaji: "" },
-          { cat: "hotel", zh: "請問可以先寄放行李嗎？洗手間在哪裡？", local: "Tôi có thể gửi hành lý ở đây không? ／ Nhà vệ sinh ở đâu ạ?", romaji: "" }
-        ];
-      }
       return [
         { cat: "veg", zh: "我是素食者，不吃肉、魚、海鮮與動物高湯", local: "I am vegetarian/vegan. No meat, fish, seafood, or animal broth, please.", romaji: "" },
-        { cat: "veg", zh: "請用植物油烹調，不要加培根碎或動物脂肪", local: "Please cook with vegetable oil only. No bacon bits or animal fat.", romaji: "" },
         { cat: "dining", zh: "我們有訂位 / 請給我們帳單，可以刷卡嗎？", local: "We have a reservation. / Could we have the bill please? Do you take credit cards?", romaji: "" },
         { cat: "shopping", zh: "請問可以開立退稅單 (Tax Free Form) 嗎？", local: "Could I get a Tax-Free refund form for this purchase, please?", romaji: "" },
         { cat: "transit", zh: "請問開往這個目的地的月台在哪裡？", local: "Excuse me, which platform is for the train to this destination?", romaji: "" },
@@ -1551,7 +1624,7 @@
     }
 
     async function autoTranslatePhrasesForCountry(cid, langCode) {
-      if (["ja", "ko", "th", "vi", "zh-TW", "zh-CN"].includes(langCode)) return;
+      if (["ja", "ko", "th", "zh-TW", "zh-CN"].includes(langCode)) return;
       try {
         const results = [];
         for (const item of BASE_ZH_PHRASES) {
@@ -1596,7 +1669,28 @@
       }
     }
 
-    // ==================== 6. 全站手勢引擎 ====================
+    // ==================== 7. 全站手勢引擎（防誤觸：只限「往右滑動 > 95px」才刪除，且支援橫向拖曳捲軸） ====================
+    function enableDragScrollOnContainers() {
+      document.querySelectorAll(".drag-scroll-x").forEach(slider => {
+        if (slider._dragBound) return;
+        slider._dragBound = true;
+        let isDown = false, startX = 0, scrollLeft = 0;
+        slider.addEventListener("mousedown", e => {
+          isDown = true;
+          startX = e.pageX - slider.offsetLeft;
+          scrollLeft = slider.scrollLeft;
+        });
+        slider.addEventListener("mouseleave", () => { isDown = false; });
+        slider.addEventListener("mouseup", () => { isDown = false; });
+        slider.addEventListener("mousemove", e => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - slider.offsetLeft;
+          slider.scrollLeft = scrollLeft - (x - startX) * 1.4;
+        });
+      });
+    }
+
     function attachLongPress(el, onLongPress) {
       let timer = null;
       let startX = 0, startY = 0;
@@ -1609,12 +1703,12 @@
           el.classList.remove("pressing");
           if (navigator.vibrate) navigator.vibrate(45);
           onLongPress();
-        }, 550);
+        }, 580);
       };
       const move = (e) => {
         if (!timer) return;
         const pt = e.touches ? e.touches[0] : e;
-        if (Math.abs(pt.clientX - startX) > 12 || Math.abs(pt.clientY - startY) > 12) {
+        if (Math.abs(pt.clientX - startX) > 10 || Math.abs(pt.clientY - startY) > 10) {
           clearTimeout(timer); timer = null;
           el.classList.remove("pressing");
         }
@@ -1632,48 +1726,54 @@
       el.addEventListener("mouseleave", cancel);
     }
 
+    // 防誤觸手勢：長按展開編輯 ＋ 只限「明確往右滑動超過 95px」才觸發刪除！
     function attachRowGestures(el, { onLongPressEdit, onSwipeDelete }) {
       let timer = null;
       let startX = 0, startY = 0, currentX = 0;
-      let swiping = false;
+      let swipingRight = false;
 
       const onStart = (cx, cy, target) => {
-        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor")) return;
-        startX = cx; startY = cy; currentX = cx; swiping = false;
+        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link")) return;
+        startX = cx; startY = cy; currentX = cx; swipingRight = false;
         el.classList.add("pressing");
         timer = setTimeout(() => {
           el.classList.remove("pressing");
           timer = null;
           if (navigator.vibrate) navigator.vibrate(40);
           if (onLongPressEdit) onLongPressEdit();
-        }, 520);
+        }, 550);
       };
 
       const onMove = (cx, cy) => {
         const dx = cx - startX;
         const dy = cy - startY;
-        if (Math.abs(dx) > 12 || Math.abs(dy) > 12) {
+        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
           if (timer) { clearTimeout(timer); timer = null; }
           el.classList.remove("pressing");
         }
-        if (Math.abs(dx) > 22 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-          swiping = true;
+        // 只允許往右滑 (dx > 35)，且水平移動必須大於垂直移動的 2.2 倍，避免上下滑動頁面時誤觸！
+        if (dx > 35 && dx > Math.abs(dy) * 2.2) {
+          swipingRight = true;
           currentX = cx;
-          const clamped = Math.max(-105, Math.min(105, dx));
+          const clamped = Math.min(115, dx);
           el.style.transform = `translateX(${clamped}px)`;
-          el.classList.toggle("swiping-del", Math.abs(dx) > 65);
+          el.classList.toggle("swiping-del", dx > 95);
+        } else if (swipingRight && dx <= 20) {
+          el.style.transform = "";
+          el.classList.remove("swiping-del");
         }
       };
 
       const onEnd = () => {
         if (timer) { clearTimeout(timer); timer = null; }
         el.classList.remove("pressing");
-        if (swiping) {
+        if (swipingRight) {
           const dx = currentX - startX;
           el.style.transform = "";
           el.classList.remove("swiping-del");
-          swiping = false;
-          if (Math.abs(dx) > 70 && onSwipeDelete) {
+          swipingRight = false;
+          // 必須往右滑超過 95px 才彈出確認刪除
+          if (dx > 95 && onSwipeDelete) {
             if (navigator.vibrate) navigator.vibrate(35);
             onSwipeDelete();
           }
@@ -1689,10 +1789,55 @@
       el.addEventListener("mouseleave", onEnd);
     }
 
-    // ==================== 7. 初始資料與舊版東京/首爾 Gist 完整相容轉換器 ====================
+    // ==================== 8. 預設首爾 6/23-6/26 與東京行程保底結構 & Gist 精準分國轉換器 ====================
+    function buildDefaultKoreaTrip() {
+      return {
+        id: "trip_kr_1",
+        countryId: "KR",
+        title: "6/23-6/26 首爾明洞＆聖水洞潮旅",
+        subRegions: ["明洞", "麻浦/汝矣島", "江南/聖水洞", "仁川/金浦"],
+        flightSegments: [
+          { id: "kr_fl_1", date: "2026-06-23", time: "07:05", arrTime: "10:35", flightNo: "去程班機", from: "TPE 台北", to: "ICN/GMP 首爾", link: "", img: "", note: "抵達首爾放行李" },
+          { id: "kr_fl_2", date: "2026-06-26", time: "16:20", arrTime: "17:55", flightNo: "回程班機", from: "ICN/GMP 首爾", to: "TPE 台北", link: "", img: "", note: "滿載戰利品回程" }
+        ],
+        itinerary: [
+          { id: "kr_iti_1", day: 1, time: "12:00", subRegion: "麻浦/汝矣島", title: "真味食堂 (米其林必比登醬油螃蟹)", cat: "景點", transit: "地鐵5號線「兒嶺站 (Aeogae)」4號出口步行約5分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "需提前預約，必點爆膏醬蟹套餐" },
+          { id: "kr_iti_2", day: 1, time: "16:30", subRegion: "明洞", title: "明洞商圈逛街 & 換錢所換匯", cat: "購物", transit: "地鐵4號線「明洞站」5、6號出口步行即達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "入住 HOMES Red Myeongdong，晚上逛明洞夜市與 Olive Young" },
+          { id: "kr_iti_3", day: 2, time: "10:30", subRegion: "江南/聖水洞", title: "COEX 星空圖書館 (Starfield Library)", cat: "景點", transit: "地鐵2號線「三成站」6號出口經地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "13公尺高巨型書牆必拍機位" },
+          { id: "kr_iti_4", day: 2, time: "14:00", subRegion: "江南/聖水洞", title: "聖水洞潮流街區 (Dior概念店 / Tamburins)", cat: "購物", transit: "三成站搭地鐵2號線直達「聖水站」3號出口（約10分鐘）", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "首爾最潮文創選物、鹽麵包與咖啡廳巡禮" },
+          { id: "kr_iti_5", day: 3, time: "11:00", subRegion: "麻浦/汝矣島", title: "鷺梁津水產市場 (現挑帝王蟹/長腳蟹/生章魚)", cat: "景點", transit: "地鐵1號或9號線「鷺梁津站」7號出口步行3分", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "1樓買海鮮、2樓代客料理，必吃蟹膏炒飯" },
+          { id: "kr_iti_6", day: 3, time: "15:30", subRegion: "麻浦/汝矣島", title: "汝矣島現代百貨 (The Hyundai Seoul)", cat: "購物", transit: "9號線鷺梁津站搭2站至「汝矣島站」地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "B2 韓國潮牌匯集，頂樓空中花園" },
+          { id: "kr_iti_7", day: 4, time: "10:00", subRegion: "明洞", title: "明洞/樂天超市最後採買 ➔ 前往機場", cat: "購物", transit: "忠武路/明洞搭乘機場巴士或 AREX 前往機場", hotel: "", link: "", img: "", note: "預留退稅時間" }
+        ],
+        meals: [
+          { id: "kr_ml_1", day: 1, type: "午餐", title: "真味食堂 醬油螃蟹", link: "", img: "", note: "米其林推薦" },
+          { id: "kr_ml_2", day: 2, type: "下午茶", title: "聖水洞 自然島鹽麵包 / 咖啡廳", link: "", img: "", note: "現烤出爐超香" },
+          { id: "kr_ml_3", day: 3, type: "午餐", title: "鷺梁津水產市場 帝王蟹海鮮大餐", link: "", img: "", note: "配蟹膏炒飯" }
+        ],
+        guides: [
+          { id: "kr_gd_1", title: "真味食堂 (Jinmi Sikdang)", region: "麻浦區", hours: "12:00 - 20:00 (15:30-17:00休息，週日公休)", price: "₩45,000 / 人", img: "", desc: "首爾三大醬油螃蟹名店之一，嚴選西海岸延坪島爆膏母蟹，搭配海苔、鍋巴湯與十多道韓式小菜。", link: "" },
+          { id: "kr_gd_2", title: "鷺梁津水產市場 (Noryangjin Market)", region: "銅雀區", hours: "24小時營業 (餐廳約10:00-22:00)", price: "依時價計", img: "", desc: "首爾最大海產批發市場，一樓挑選活體松葉蟹、帝王蟹、鮑魚與生章魚後，直接帶上二樓合作餐廳清蒸並製作蟹膏炒飯。", link: "" },
+          { id: "kr_gd_3", title: "星空圖書館 (Starfield Library)", region: "江南區", hours: "10:30 - 22:00", price: "免費參觀", img: "", desc: "位於江南 COEX Mall 中心廣場，擁有三座高達 13 公尺的巨型書架與自然採光天窗，搭乘手扶梯往上拍最具視覺震撼。", link: "" }
+        ],
+        mustEat: [
+          { id: "kr_me_1", cat: "麻浦/鷺梁津", name: "真味食堂 醬蟹", link: "", note: "米其林必比登推薦", img: "", done: false },
+          { id: "kr_me_2", cat: "麻浦/鷺梁津", name: "鷺梁津水產 活章魚＋松葉蟹膏炒飯", link: "", note: "二樓代客料理", img: "", done: false }
+        ],
+        shopping: [
+          { id: "kr_sh_1", cat: "Olive Young", title: "Torriden 保濕精華 & 面膜", price: 28000, owner: "", note: "現場退稅", img: "", done: false },
+          { id: "kr_sh_2", cat: "聖水洞", title: "Tamburins 貝殼護手霜", price: 32000, owner: "", note: "JENNIE同款香氣", img: "", done: false }
+        ],
+        expenses: [],
+        memos: [
+          { id: "kr_mm_1", title: "住宿飯店：HOMES Red Myeongdong", body: "近地鐵忠武路站/明洞站，步行可逛明洞商圈。", img: "" }
+        ],
+        stickers: [], customLinks: [], customVisas: [], customTransits: [], customPhrases: []
+      };
+    }
+
     function createInitialState() {
       return {
-        version: "78.0",
+        version: "80.0",
         activeCountryId: "KR",
         activeTripId: "trip_kr_1",
         activeDay: 1,
@@ -1718,15 +1863,10 @@
           }
         },
         trips: {
-          "trip_kr_1": {
-            id: "trip_kr_1", countryId: "KR", title: "點右上角「同步」下載雲端行程",
-            subRegions: [], flightSegments: [], itinerary: [], meals: [], guides: [],
-            expenses: [], shopping: [], mustEat: [], memos: [], stickers: [],
-            customLinks: [], customVisas: [], customTransits: [], customPhrases: []
-          },
+          "trip_kr_1": buildDefaultKoreaTrip(),
           "trip_jp_1": {
-            id: "trip_jp_1", countryId: "JP", title: "東京＆輕井澤之旅",
-            subRegions: [], flightSegments: [], itinerary: [], meals: [], guides: [],
+            id: "trip_jp_1", countryId: "JP", title: "1/10-1/16 東京＆輕井澤冬日之旅",
+            subRegions: ["東京", "輕井澤"], flightSegments: [], itinerary: [], meals: [], guides: [],
             expenses: [], shopping: [], mustEat: [], memos: [], stickers: [],
             customLinks: [], customVisas: [], customTransits: [], customPhrases: []
           }
@@ -1761,9 +1901,10 @@
       return CAT_NORM_MAP[rawCat] || "其他雜支";
     }
 
-    // 新舊格式通吃：完整支援妳的 global_trip_list.json、japan_data.json 與 korea_data.json
+    // 精準識別日本與韓國雲端檔案，絕不互相覆蓋！
     function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false, filename = "") {
       if (!rawJson || typeof rawJson !== "object") return false;
+      const fnLower = (filename || "").toLowerCase();
 
       if (Array.isArray(rawJson.companions)) {
         rawJson.companions.forEach(cp => {
@@ -1782,11 +1923,16 @@
         state.activeCountryId = rawJson.activeCountryId;
       }
 
-      // 認得新版單國格式 (含有 flightSegments)
-      if (rawJson.countryId && Array.isArray(rawJson.flightSegments)) {
-        const cid = rawJson.countryId;
+      // 認得新版單國格式 (含有 flightSegments 或 countryId)
+      if (rawJson.countryId && (Array.isArray(rawJson.flightSegments) || Array.isArray(rawJson.itinerary))) {
+        const cid = rawJson.countryId.toUpperCase();
         const tid = "trip_" + cid.toLowerCase() + "_1";
         const normExpenses = (rawJson.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
+        // 若此格完全是空的，不覆蓋已有的保底行程
+        const incomingCount = (rawJson.itinerary?.length || 0) + (rawJson.flightSegments?.length || 0) + (rawJson.expenses?.length || 0);
+        if (incomingCount === 0 && state.trips[tid] && (state.trips[tid].itinerary?.length || 0) > 0) {
+          return true;
+        }
         state.trips[tid] = {
           id: tid, countryId: cid, title: rawJson.title || `${cid} 之旅`,
           subRegions: rawJson.subRegions || [], flightSegments: rawJson.flightSegments || [],
@@ -1797,8 +1943,6 @@
         };
         if (Array.isArray(rawJson.visas) && state.countries[cid]) state.countries[cid].visas = rawJson.visas;
         if (Array.isArray(rawJson.transits) && state.countries[cid]) state.countries[cid].transits = rawJson.transits;
-        state.activeCountryId = cid;
-        state.activeTripId = tid;
         return true;
       }
 
@@ -1811,31 +1955,47 @@
         }
         Object.entries(rawJson.trips).forEach(([tid, tObj]) => {
           tObj.expenses = (tObj.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
-          const normTid = "trip_" + (tObj.countryId || "kr").toLowerCase() + "_1";
-          state.trips[normTid] = { ...tObj, id: normTid };
+          const cKey = (tObj.countryId || "KR").toUpperCase();
+          const normTid = "trip_" + cKey.toLowerCase() + "_1";
+          const incomingCount = (tObj.itinerary?.length || 0) + (tObj.flightSegments?.length || 0) + (tObj.expenses?.length || 0);
+          if (incomingCount > 0 || !state.trips[normTid]) {
+            state.trips[normTid] = { ...tObj, id: normTid, countryId: cKey };
+          }
         });
         return true;
       }
 
-      // 認得舊版 Gist 結構 (flights, itinerary, shoppingList, mustEatList, vjwData)
+      // 認得舊版 Gist 結構 (flights, itinerary, shoppingList) — 嚴格優先依照檔名區分 korea 與 japan！
       if (Array.isArray(rawJson.flights) || Array.isArray(rawJson.itinerary) || Array.isArray(rawJson.shoppingList)) {
-        const fnLower = (filename || "").toLowerCase();
         const str = JSON.stringify(rawJson);
-        const isJP = fnLower.includes("japan") || fnLower.includes("jp") || str.includes("成田") || str.includes("輕井澤") || str.includes("JPY");
-        const cid = isJP ? "JP" : "KR";
+        let cid = "KR";
+        if (fnLower.includes("korea") || fnLower.includes("kr") || fnLower.includes("seoul")) {
+          cid = "KR";
+        } else if (fnLower.includes("japan") || fnLower.includes("jp") || fnLower.includes("tokyo")) {
+          cid = "JP";
+        } else if (str.includes("明洞") || str.includes("聖水") || str.includes("真味食堂") || str.includes("鷺梁津") || str.includes("KRW")) {
+          cid = "KR";
+        } else if (str.includes("成田") || str.includes("輕井澤") || str.includes("淺草")) {
+          cid = "JP";
+        }
         const tid = "trip_" + cid.toLowerCase() + "_1";
+        const isJP = cid === "JP";
 
-        const flights = (rawJson.flights || []).map(f => ({
-          id: "fl_" + (f.id || Math.random()),
-          date: f.date || "",
-          time: (f.time || "").split("-")[0].trim(),
-          flightNo: `${f.code || ""} (${f.time || ""})`.trim(),
-          from: f.dep || "",
-          to: f.arr || "",
-          link: f.url || "",
-          img: f.photo || "",
-          note: f.date || ""
-        }));
+        const flights = (rawJson.flights || []).map(f => {
+          const tParts = (f.time || "").split("-");
+          return {
+            id: "fl_" + (f.id || Math.random()),
+            date: f.date || "",
+            time: (tParts[0] || "").trim(),
+            arrTime: (tParts[1] || "").trim(),
+            flightNo: (f.code || "").trim(),
+            from: f.dep || "",
+            to: f.arr || "",
+            link: f.url || "",
+            img: f.photo || "",
+            note: ""
+          };
+        });
 
         const itinerary = [];
         const meals = [];
@@ -1927,7 +2087,7 @@
             title: e.note || e.cat || "消費",
             cat: normalizeCatName(e.cat),
             amount: Number(e.amt) || 0,
-            currency: e.curr || (cid === "JP" ? "JPY" : "KRW"),
+            currency: e.curr || (isJP ? "JPY" : "KRW"),
             payer: pName,
             mode: (e.note || "").includes("謝謝") ? "gift" : "split",
             beneficiaries: Array.isArray(e.splitBy) && e.splitBy.length ? e.splitBy : [pName],
@@ -1957,25 +2117,28 @@
           if (transits.length) state.countries[cid].transits = transits;
         }
 
-        state.trips[tid] = {
-          id: tid,
-          countryId: cid,
-          title: isJP ? "1/10-1/16 東京＆輕井澤冬日之旅" : "6/23-6/26 首爾明洞＆聖水洞潮旅",
-          subRegions: [...new Set(itinerary.map(i => i.subRegion).filter(Boolean))],
-          flightSegments: flights,
-          itinerary,
-          meals,
-          guides,
-          mustEat,
-          shopping,
-          expenses,
-          memos: [],
-          stickers: [],
-          customLinks: [],
-          customVisas: visas,
-          customTransits: transits,
-          customPhrases: []
-        };
+        const totalParsed = itinerary.length + flights.length + expenses.length + shopping.length;
+        if (totalParsed > 0) {
+          state.trips[tid] = {
+            id: tid,
+            countryId: cid,
+            title: isJP ? "1/10-1/16 東京＆輕井澤冬日之旅" : "6/23-6/26 首爾明洞＆聖水洞潮旅",
+            subRegions: [...new Set(itinerary.map(i => i.subRegion).filter(Boolean))],
+            flightSegments: flights,
+            itinerary,
+            meals,
+            guides,
+            mustEat,
+            shopping,
+            expenses,
+            memos: [],
+            stickers: [],
+            customLinks: [],
+            customVisas: visas,
+            customTransits: transits,
+            customPhrases: []
+          };
+        }
         return true;
       }
 
@@ -1983,10 +2146,17 @@
       return false;
     }
 
+    function ensureKoreaTripNotEmpty() {
+      const krTrip = Object.values(state.trips || {}).find(t => t.countryId === "KR");
+      if (!krTrip || ((krTrip.itinerary?.length || 0) === 0 && (krTrip.flightSegments?.length || 0) === 0)) {
+        state.trips["trip_kr_1"] = buildDefaultKoreaTrip();
+      }
+    }
+
     function initApp() {
       loadImageVault();
       try {
-        const raw = localStorage.getItem(APP_STORAGE_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V75_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V70_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_DATA");
+        const raw = localStorage.getItem(APP_STORAGE_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V78_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V75_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V70_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_DATA");
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed && parsed.trips && Object.keys(parsed.trips).length > 0) {
@@ -1998,8 +2168,9 @@
 
       if (!state) {
         state = createInitialState();
-        saveAppState(false);
       }
+      ensureKoreaTripNotEmpty();
+      saveAppState(false);
       loadLocalPackingList();
     }
 
@@ -2016,7 +2187,7 @@
 
     function loadLocalPackingList() {
       try {
-        const raw = localStorage.getItem(LOCAL_PACKING_KEY) || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V75") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V70") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V65");
+        const raw = localStorage.getItem(LOCAL_PACKING_KEY) || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V78") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V75");
         if (raw) {
           const saved = JSON.parse(raw);
           if (Array.isArray(saved) && saved.length > 0) {
@@ -2116,7 +2287,7 @@
       return t;
     }
 
-    // ==================== 8. Lightbox & 彈窗控制 ====================
+    // ==================== 9. Lightbox & 彈窗控制 ====================
     function openImageLightbox(rawRef, caption = "📸 照片預覽") {
       const src = resolveImageSrc(rawRef);
       if (!src) return;
@@ -2165,7 +2336,7 @@
       if (el) el.classList.toggle("open");
     }
 
-    // ==================== 9. 👥 旅伴系統 ====================
+    // ==================== 10. 👥 旅伴系統 ====================
     function selectAvatarPreset(emoji) {
       document.getElementById("newMemberAvatarInp").value = emoji;
       document.getElementById("selectedAvatarPreview").innerHTML = emoji;
@@ -2270,7 +2441,7 @@
       }
     }
 
-    // ==================== 10. 任意門：全球萬國智慧偵測與匯率 ====================
+    // ==================== 11. 任意門：全球萬國智慧偵測與左右滑動選單 ====================
     async function autoAddCountryByName() {
       const rawName = prompt("🌍 請輸入任何國家或城市名稱（如：泰國、越南、冰島、瑞士、法國、紐西蘭、秘魯）：\n✨ 系統會自動抓出國旗、外幣、即時匯率、當地專屬工具與雙語字卡！");
       if (!rawName || !rawName.trim()) return;
@@ -2335,7 +2506,7 @@
       Object.entries(state.countries).forEach(([cid, cObj]) => {
         const btn = document.createElement("div");
         const active = cid === state.activeCountryId;
-        btn.className = `gesture-box shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border cursor-pointer whitespace-nowrap transition ${
+        btn.className = `gesture-box shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border cursor-pointer whitespace-nowrap transition ${
           active ? "btn-gradient-sage border-transparent font-bold" : "bg-[#fbf8f3] text-[#2b302c] border-[#e2d8c9]"
         }`;
         btn.innerHTML = `<span class="text-base">${cObj.flag}</span><span class="text-xs">${cObj.name}</span>`;
@@ -2367,7 +2538,7 @@
       tripsInC.forEach(tr => {
         const pill = document.createElement("div");
         const active = tr.id === t.id;
-        pill.className = `gesture-box flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold cursor-pointer ${
+        pill.className = `gesture-box shrink-0 flex items-center gap-1 px-3.5 py-1.5 rounded-full border text-xs font-bold cursor-pointer whitespace-nowrap ${
           active ? "btn-gradient-rose border-transparent" : "bg-white text-[#4a524d] border-[#dcd2c4]"
         }`;
         pill.innerHTML = `<span>📒 ${tr.title}</span>`;
@@ -2416,7 +2587,7 @@
       }
     }
 
-    // ==================== 11. 航班、天數與每日行程（全面內建各國智慧地圖導航按鈕！） ====================
+    // ==================== 12. 航班（含起飛與抵達時間對稱顯示）、天數與每日行程 ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2430,6 +2601,10 @@
         const imgSrc = resolveImageSrc(f.img);
         const card = document.createElement("div");
         card.className = "ticket-card gesture-box p-3 flex flex-col justify-between gap-2 cursor-pointer";
+
+        const autoArrMatch = (f.to || "").match(/[（(](\d{1,2}:\d{2})[)）]/) || (f.flightNo || "").match(/-\s*(\d{1,2}:\d{2})/);
+        const displayArrTime = f.arrTime || (autoArrMatch ? autoArrMatch[1] : "");
+        const cleanToName = f.arrTime ? (f.to || "抵達") : (f.to || "抵達").replace(/\s*[（(]\d{1,2}:\d{2}[)）]/, "");
 
         const renderFlightNormal = () => {
           card.innerHTML = `
@@ -2447,7 +2622,7 @@
             <div class="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#fbf8f3] border border-[#ece3d5] whitespace-nowrap">
               <div class="text-left">
                 <div class="text-sm font-bold text-[#2b302c] en-font">${f.from || "出發"}</div>
-                <div class="text-[10px] text-[#78807b] en-font">${f.time || ""}</div>
+                <div class="text-[10px] font-bold text-[#52796f] en-font">${f.time || "--:--"} 起飛</div>
               </div>
 
               <button type="button" onclick="event.stopPropagation(); ${imgSrc ? `openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${(f.flightNo || "機票").replace(/'/g, "")}')` : `alert('長按此航班卡片即可編輯並上傳機票圖片！')`}" class="flex items-center gap-1 px-2.5 py-1 rounded-full ${imgSrc ? "bg-[#fdf0ec] text-[#df765b]" : "text-[#8c948f]"}">
@@ -2456,10 +2631,11 @@
               </button>
 
               <div class="text-right">
-                <div class="text-sm font-bold text-[#2b302c] en-font">${f.to || "抵達"}</div>
-                <div class="text-[10px] text-[#78807b] truncate max-w-[85px]">${f.note || ""}</div>
+                <div class="text-sm font-bold text-[#2b302c] en-font">${cleanToName}</div>
+                <div class="text-[10px] font-bold text-[#e07a5f] en-font">${displayArrTime ? `${displayArrTime} 抵達` : (f.note || "--:--")}</div>
               </div>
             </div>
+            ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] truncate px-1">📝 ${f.note}</div>` : ""}
           `;
         };
 
@@ -2468,14 +2644,15 @@
           card.innerHTML = `
             <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
               <div class="font-bold text-[#52796f]">✈️ 修改航段內容</div>
-              <div class="grid grid-cols-2 gap-1.5">
-                <input type="text" class="fl-ed-date px-2 py-1 rounded-lg border bg-white" value="${f.date || ""}" placeholder="日期 (如 6/23)" />
-                <input type="text" class="fl-ed-time px-2 py-1 rounded-lg border bg-white" value="${f.time || ""}" placeholder="起飛時間" />
+              <div class="grid grid-cols-3 gap-1.5">
+                <input type="text" class="fl-ed-date px-2 py-1 rounded-lg border bg-white" value="${f.date || ""}" placeholder="日期 (6/23)" />
+                <input type="text" class="fl-ed-time px-2 py-1 rounded-lg border bg-white" value="${f.time || ""}" placeholder="起飛 (14:00)" />
+                <input type="text" class="fl-ed-arrtime px-2 py-1 rounded-lg border bg-white" value="${displayArrTime}" placeholder="抵達 (18:00)" />
               </div>
               <input type="text" class="fl-ed-no w-full px-2 py-1 rounded-lg border bg-white font-bold" value="${f.flightNo || ""}" placeholder="航班編號 *" />
               <div class="grid grid-cols-2 gap-1.5">
                 <input type="text" class="fl-ed-from px-2 py-1 rounded-lg border bg-white" value="${f.from || ""}" placeholder="出發機場" />
-                <input type="text" class="fl-ed-to px-2 py-1 rounded-lg border bg-white" value="${f.to || ""}" placeholder="抵達機場" />
+                <input type="text" class="fl-ed-to px-2 py-1 rounded-lg border bg-white" value="${cleanToName}" placeholder="抵達機場" />
               </div>
               <input type="text" class="fl-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 訂位連結" />
               <div class="flex gap-1">
@@ -2492,6 +2669,7 @@
           card.querySelector(".btn-save-fl").onclick = () => {
             f.date = card.querySelector(".fl-ed-date").value.trim();
             f.time = card.querySelector(".fl-ed-time").value.trim();
+            f.arrTime = card.querySelector(".fl-ed-arrtime").value.trim();
             f.flightNo = card.querySelector(".fl-ed-no").value.trim() || f.flightNo;
             f.from = card.querySelector(".fl-ed-from").value.trim();
             f.to = card.querySelector(".fl-ed-to").value.trim();
@@ -2521,6 +2699,7 @@
       document.getElementById("editingFlightId").value = "";
       document.getElementById("segDateInp").value = "";
       document.getElementById("segTimeInp").value = "";
+      if (document.getElementById("segArrTimeInp")) document.getElementById("segArrTimeInp").value = "";
       document.getElementById("segFlightNoInp").value = "";
       document.getElementById("segFromInp").value = "";
       document.getElementById("segToInp").value = "";
@@ -2538,6 +2717,7 @@
         id: "fl_" + Date.now(),
         date: document.getElementById("segDateInp").value.trim(),
         time: document.getElementById("segTimeInp").value.trim(),
+        arrTime: document.getElementById("segArrTimeInp")?.value.trim() || "",
         flightNo,
         from: document.getElementById("segFromInp").value.trim(),
         to: document.getElementById("segToInp").value.trim(),
@@ -2647,6 +2827,7 @@
       renderAll();
     }
 
+    // 每日行程渲染：點擊景點名稱跳轉至「深度導覽」；長按展開可上下拖曳捲動的編輯框；只限往右滑動刪除！
     function renderItineraryAndMeals() {
       const trip = getTrip();
       const maxDay = getMaxDays(trip);
@@ -2713,28 +2894,37 @@
                   <div class="flex items-center gap-1.5 min-w-0">
                     ${item.time ? `<span class="px-1.5 py-0.5 rounded-md bg-[#4f7768] text-white text-[10px] font-bold en-font shrink-0">${item.time}</span>` : ""}
                     <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
-                    <span class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">${item.title}</span>
+                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點擊跳轉至深度導覽">${item.title} 🧭</button>
                   </div>
                   <a href="${itemNavUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[10px] font-bold text-[#4f7768] shrink-0 hover:bg-[#e8f0ed]">${mapBadge}</a>
                 </div>
-                ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] leading-snug">🚇 ${item.transit}</div>` : ""}
-                ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50">💡 ${item.note}</div>` : ""}
+                ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] leading-snug whitespace-pre-line">🚇 ${item.transit}</div>` : ""}
+                ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50 whitespace-pre-line">💡 ${item.note}</div>` : ""}
                 ${itiImgSrc ? `<img src="${itiImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(item.img || "").replace(/'/g, "")}', '${(item.title || "").replace(/'/g, "")}')" class="polaroid-img h-24 sm:h-32 w-auto object-cover" />` : ""}
               `;
+              const jumpBtn = itemEl.querySelector(".spot-jump-link");
+              if (jumpBtn) {
+                jumpBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  jumpToGuideBySpotTitle(item.title, item);
+                };
+              }
             };
 
             const openItiInlineEditor = () => {
               const tmpImgId = "inline_iti_img_" + item.id;
               itemEl.innerHTML = `
                 <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
-                  <div class="font-bold text-[#52796f]">📌 修改行程完整內容</div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-[#52796f]">📌 修改行程 (可上下拖曳捲動)</span>
+                  </div>
                   <div class="grid grid-cols-3 gap-1.5">
                     <input type="number" class="iti-ed-day px-2 py-1 rounded-lg border bg-white" value="${item.day || 1}" placeholder="Day" />
                     <input type="time" class="iti-ed-time px-2 py-1 rounded-lg border bg-white" value="${item.time || ""}" />
                     <input type="text" class="iti-ed-region px-2 py-1 rounded-lg border bg-white" value="${item.subRegion || ""}" placeholder="地區分類" />
                   </div>
                   <div class="grid grid-cols-3 gap-1.5">
-                    <input type="text" class="iti-ed-title col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" value="${item.title || ""}" placeholder="景點名稱 *" />
+                    <textarea rows="2" class="iti-ed-title col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" placeholder="景點名稱 (可多行上下捲動) *">${item.title || ""}</textarea>
                     <select class="iti-ed-cat px-2 py-1 rounded-lg border bg-white">
                       <option value="景點" ${item.cat === "景點" ? "selected" : ""}>📸景點</option>
                       <option value="購物" ${item.cat === "購物" ? "selected" : ""}>🛍️購物</option>
@@ -2742,7 +2932,7 @@
                       <option value="體驗" ${item.cat === "體驗" ? "selected" : ""}>🎡體驗</option>
                     </select>
                   </div>
-                  <input type="text" class="iti-ed-transit w-full px-2 py-1 rounded-lg border bg-white" value="${item.transit || ""}" placeholder="🚇 交通與轉乘路線..." />
+                  <textarea rows="2" class="iti-ed-transit w-full px-2 py-1 rounded-lg border bg-white" placeholder="🚇 交通與轉乘路線 (可多行上下捲動)...">${item.transit || ""}</textarea>
                   <div class="grid grid-cols-2 gap-1.5">
                     <input type="text" class="iti-ed-hotel px-2 py-1 rounded-lg border bg-white" value="${item.hotel || ""}" placeholder="🏨 住宿飯店" />
                     <input type="text" class="iti-ed-link px-2 py-1 rounded-lg border bg-white" value="${item.link || ""}" placeholder="🔗 專屬導航連結 (可留空)" />
@@ -2751,8 +2941,8 @@
                     <input id="${tmpImgId}" type="text" class="iti-ed-img flex-1 px-2 py-1 rounded-lg border bg-white" value="${item.img || ""}" placeholder="📸 照片" />
                     <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
                   </div>
-                  <textarea rows="2" class="iti-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註...">${item.note || ""}</textarea>
-                  <div class="flex gap-1.5 pt-1">
+                  <textarea rows="3" class="iti-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註 (可上下拖曳捲動修改)...">${item.note || ""}</textarea>
+                  <div class="flex gap-1.5 pt-1 sticky bottom-0 bg-[#fbf8f3] py-1">
                     <button type="button" class="btn-save-iti flex-1 py-1.5 rounded-lg btn-gradient-sage font-bold">✓ 儲存修改</button>
                     <button type="button" class="btn-cancel-iti px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
                   </div>
@@ -2824,7 +3014,7 @@
                 <span class="text-[10px] font-bold text-[#c85a32] shrink-0">${slot.icon}${mObj.type || slot.label}</span>
                 <a href="${mealNavUrl}" target="_blank" class="text-[10px] font-bold text-[#4f7768]" title="開啟當地地圖">📍</a>
               </div>
-              <div class="font-bold text-xs text-[#2b302c] truncate">${mObj.title}</div>
+              <div class="font-bold text-xs text-[#2b302c] truncate" onclick="jumpToGuideBySpotTitle('${mObj.title.replace(/'/g, "")}')">${mObj.title}</div>
               ${mObj.note ? `<div class="text-[10px] text-[#78807b] truncate">${mObj.note}</div>` : ""}
             `;
           }
@@ -2981,7 +3171,7 @@
       commitChange(`儲存餐飲：${title}`);
     }
 
-    // ==================== 12. 🤖 左下角免金鑰 AI 智慧順路排程 ＆ 經典路線引擎 ====================
+    // ==================== 13. 🤖 左下角免金鑰 AI 智慧順路排程 ＆ 經典路線引擎 ====================
     const FAMOUS_TEMPLATES = {
       JP: [
         {
@@ -3016,12 +3206,12 @@
           ]
         },
         {
-          name: "🏮 首爾百年韓屋＆傳統市場文化順路遊",
-          region: "廣藏市場/益善洞",
+          name: "🦀 真味食堂醬蟹＆鷺梁津水產＆汝矣島順路遊",
+          region: "麻浦/汝矣島",
           items: [
-            { time: "09:30", title: "廣藏市場在地美食巡禮", cat: "景點", transit: "地鐵1號線「鍾路5街站」8號出口步行2分", note: "綠豆煎餅、麻藥飯捲" },
-            { time: "11:30", title: "益善洞韓屋村咖啡街", cat: "景點", transit: "鍾路5街搭1號線1站至「鍾路3街站」4號出口（約5分鐘）", note: "復古韓屋改建文創選物店" },
-            { time: "15:00", title: "明洞潮流商圈 & 樂天免稅店", cat: "購物", transit: "鍾路3街轉乘至「明洞站」6號出口（約10分鐘）", note: "Olive Young旗艦店掃貨" }
+            { time: "12:00", title: "真味食堂 (米其林必比登醬油螃蟹)", cat: "景點", transit: "地鐵5號線「兒嶺站」4號出口步行5分", note: "爆膏西海延坪島母蟹" },
+            { time: "15:00", title: "汝矣島現代百貨 (The Hyundai Seoul)", cat: "購物", transit: "兒嶺站搭5號線直達「汝矣渡口站/汝矣島站」（約12分鐘）", note: "韓國最美室內空中花園百貨" },
+            { time: "18:30", title: "鷺梁津水產市場 (帝王蟹與活章魚)", cat: "景點", transit: "汝矣島搭9號線2站至「鷺梁津站」7號出口（約6分鐘）", note: "現挑活海鮮代客料理" }
           ]
         }
       ],
@@ -3291,6 +3481,7 @@
       }
       list.forEach(g => {
         const card = document.createElement("div");
+        card.id = "guideCard_" + g.id;
         card.className = "journal-card gesture-box overflow-hidden flex flex-col justify-between p-3.5 cursor-pointer";
         const gdSrc = resolveImageSrc(g.img);
         const gdNavUrl = buildSmartMapUrl(g.title, g.link);
@@ -3315,11 +3506,11 @@
               ${g.hours ? `<span class="px-2 py-0.5 rounded-full bg-[#fbf8f3] border text-[#7a827d]">🕒 ${g.hours}</span>` : ""}
               ${g.price ? `<span class="px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">🎫 ${g.price}</span>` : ""}
             </div>
-            <p class="text-xs text-[#4a524d] leading-relaxed">${g.desc || ""}</p>
+            <p class="text-xs text-[#4a524d] leading-relaxed whitespace-pre-line">${g.desc || ""}</p>
           </div>
           <div class="mt-2.5 pt-2 border-t border-[#efe7dc] flex items-center justify-between text-xs">
             <a href="${gdNavUrl}" target="_blank" class="font-bold text-[#52796f] hover:underline">${mapBadge} ↗</a>
-            <span class="text-[10px] text-gray-400">長按修改 · 左右滑刪除</span>
+            <span class="text-[10px] text-gray-400">長按修改 · 往右滑刪除</span>
           </div>
         `;
         box.appendChild(card);
@@ -3376,7 +3567,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 13. 📊 分帳記帳系統 ====================
+    // ==================== 14. 📊 分帳記帳系統 ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -3741,7 +3932,7 @@
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
 
-    // ==================== 14. 🛍️ 清單中心（必吃清單自動帶入當地地圖導航！） ====================
+    // ==================== 15. 🛍️ 清單中心 ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
         document.getElementById("listBox-" + k).classList.toggle("hidden", k !== tabKey);
@@ -3904,7 +4095,7 @@
                     <input type="text" class="fd-ed-name col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" value="${f.name || ""}" placeholder="餐廳名稱 *" />
                   </div>
                   <input type="text" class="fd-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 專屬地圖連結 (可留空)" />
-                  <input type="text" class="fd-ed-note w-full px-2 py-1 rounded-lg border bg-white" value="${f.note || ""}" placeholder="📝 備註 (營業時間/必點)" />
+                  <textarea rows="2" class="fd-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註 (營業時間/必點)">${f.note || ""}</textarea>
                   <div class="flex gap-1.5 pt-1">
                     <button type="button" class="btn-save-fd flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
                     <button type="button" class="btn-cancel-fd px-3 py-1 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
@@ -4017,9 +4208,9 @@
           const tmpImgId = "inline_mm_img_" + m.id;
           div.innerHTML = `
             <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
-              <div class="font-bold text-[#52796f]">📝 修改備忘與圖片</div>
+              <div class="font-bold text-[#52796f]">📝 修改備忘與圖片 (可上下捲動)</div>
               <input type="text" class="mm-ed-title w-full px-2 py-1 rounded-lg border bg-white font-bold" value="${m.title || ""}" placeholder="備忘標題 *" />
-              <textarea rows="2" class="mm-ed-body w-full px-2 py-1 rounded-lg border bg-white" placeholder="備忘內容或網址...">${m.body || ""}</textarea>
+              <textarea rows="3" class="mm-ed-body w-full px-2 py-1 rounded-lg border bg-white" placeholder="備忘內容或網址...">${m.body || ""}</textarea>
               <div class="flex gap-1">
                 <input id="${tmpImgId}" type="text" class="mm-ed-img flex-1 px-2 py-1 rounded-lg border bg-white" value="${m.img || ""}" placeholder="📸 備忘圖片" />
                 <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
@@ -4054,7 +4245,7 @@
             }
           }
         });
-memoBox.appendChild(div);
+        memoBox.appendChild(div);
       });
     }
 
@@ -4127,14 +4318,16 @@ memoBox.appendChild(div);
       const t = getTrip();
       const title = document.getElementById("memoTitleInp").value.trim();
       const body = document.getElementById("memoBodyInp").value.trim();
-      if (!title) return;
-      t.memos.unshift({ id: "mm_" + Date.now(), title, body });
+      const img = document.getElementById("memoImgInp")?.value.trim() || "";
+      if (!title && !img) return alert("請填寫備忘標題或選擇一張照片！");
+      t.memos.unshift({ id: "mm_" + Date.now(), title: title || "📸 圖片備忘", body, img });
       document.getElementById("memoTitleInp").value = "";
       document.getElementById("memoBodyInp").value = "";
-      commitChange(`新增備忘：${title}`);
+      if (document.getElementById("memoImgInp")) document.getElementById("memoImgInp").value = "";
+      commitChange(`新增備忘：${title || "圖片備忘"}`);
     }
 
-    // ==================== 15. 資訊與翻譯頁 ====================
+    // ==================== 16. 資訊與翻譯頁 ====================
     function renderInfoSection() {
       const c = getCountry();
       const t = getTrip();
@@ -4296,7 +4489,7 @@ memoBox.appendChild(div);
       commitChange(`新增圖卡：${name}`);
     }
 
-    // ==================== 16. 🎀 照片貼紙上傳 & 跨裝置百分比座標定位 ====================
+    // ==================== 17. 🎀 照片貼紙上傳 & 跨裝置百分比座標定位 ====================
     function renderStickersLayer() {
       const t = getTrip();
       const layer = document.getElementById("stickerCanvasLayer");
@@ -4390,7 +4583,7 @@ memoBox.appendChild(div);
       }
     }
 
-    // ==================== 17. Gist 分格同步 ====================
+    // ==================== 18. Gist 分格同步 ====================
     async function pushToGist() {
       const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
       const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
@@ -4418,7 +4611,7 @@ memoBox.appendChild(div);
           if (trip) {
             filesPayload[fName] = {
               content: JSON.stringify({
-                version: "78.0",
+                version: "80.0",
                 countryId: c.id,
                 title: trip.title,
                 subRegions: trip.subRegions || [],
@@ -4440,7 +4633,7 @@ memoBox.appendChild(div);
 
         filesPayload["global_trip_list.json"] = {
           content: JSON.stringify({
-            version: "78.0",
+            version: "80.0",
             activeCountryId: state.activeCountryId,
             companions: state.companions || [],
             countryList
@@ -4467,7 +4660,7 @@ memoBox.appendChild(div);
       localStorage.setItem("GIST_ID", gistId);
       if (token) localStorage.setItem("GIST_TOKEN", token);
 
-      status.textContent = "⏳ 正在讀取各國格子...";
+      status.textContent = "⏳ 正在讀取日本與韓國等所有格子...";
       try {
         const headers = token ? { Authorization: `token ${token}` } : {};
         const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
@@ -4514,6 +4707,8 @@ memoBox.appendChild(div);
           } catch (err) {}
         }
 
+        ensureKoreaTripNotEmpty();
+
         if (data.files["global_trip_list.json"]?.content) {
           try {
             const g = JSON.parse(data.files["global_trip_list.json"].content);
@@ -4525,7 +4720,7 @@ memoBox.appendChild(div);
         saveAppState(false);
         updateUndoRedoUI();
         renderAll();
-        status.textContent = `✅ 已同步載入 ${loadedCount} 個檔案格子！`;
+        status.textContent = `✅ 已同步載入 ${loadedCount} 個檔案格子 (含日本＆韓國)！`;
         setTimeout(() => closeModalDirect("cloudSyncModal"), 800);
       } catch (e) {
         status.textContent = "❌ 下載失敗，請確認 Gist ID。";
@@ -4616,6 +4811,7 @@ memoBox.appendChild(div);
       renderListsSection();
       renderInfoSection();
       renderStickersLayer();
+      enableDragScrollOnContainers();
     }
 
     window.addEventListener("DOMContentLoaded", () => {
