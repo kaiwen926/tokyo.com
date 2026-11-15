@@ -413,9 +413,9 @@
 
         <div id="addExpenseDrawer" class="drawer-panel open p-3 space-y-2">
           <div class="p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
-            <div class="flex gap-1.5 mb-1.5">
-              <input id="calcInputBox" type="text" placeholder="輸入金額或算式 (如 500+200)" oninput="updateCalcPreview()" class="flex-1 text-base font-bold px-3 py-1.5 rounded-xl border border-[#dcd2c4] bg-white en-font min-w-0" />
-              <select id="expCurrSelect" onchange="updateCalcPreview()" class="w-20 text-xs font-bold px-1.5 py-1.5 rounded-xl border border-[#dcd2c4] bg-white shrink-0">
+           <div class="flex gap-1.5 mb-1.5">
+              <input id="calcInputBox" type="text" placeholder="輸入金額或算式 (如 500+200)" oninput="updateCalcPreview()" class="flex-1 text-sm font-bold px-2.5 py-1 rounded-xl border border-[#dcd2c4] bg-white en-font min-w-0" />
+              <select id="expCurrSelect" onchange="updateCalcPreview()" class="w-20 text-xs font-bold px-1.5 py-1 rounded-xl border border-[#dcd2c4] bg-white shrink-0">
                 <option value="LOCAL" id="optLocalCurr">外幣</option>
                 <option value="TWD">台幣</option>
               </select>
@@ -595,20 +595,33 @@
         <div id="localPackingListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
       </div>
 
-      <!-- 📝 4. 備忘手札 -->
+      <!-- 📝 4. 備忘手札（支援上傳照片＆點擊拍立得放大） -->
       <div id="listBox-memo" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
-          <input id="memoTitleInp" type="text" placeholder="備忘標題..." class="sm:col-span-4 text-xs px-2.5 py-1.5 rounded-xl border border-[#dcd2c4]" />
-          <input id="memoBodyInp" type="text" placeholder="內容或網址..." class="sm:col-span-6 text-xs px-2.5 py-1.5 rounded-xl border border-[#dcd2c4]" />
-          <button onclick="addMemoNote()" class="sm:col-span-2 py-1.5 rounded-xl btn-gradient-sage font-bold text-xs">+ 備忘</button>
+        <div class="flex items-center justify-between gap-2 whitespace-nowrap">
+          <h3 class="font-bold text-sm text-[#2b302c]">📝 備忘手札 <span class="text-[10px] font-normal text-[#7a827d]">(長按展開修改 · 左右滑刪除)</span></h3>
+          <button onclick="toggleDrawer('addMemoFormDrawer', event)" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-sage">+ 新增 ▾</button>
         </div>
+
+        <div id="addMemoFormDrawer" class="drawer-panel open" onclick="event.stopPropagation()">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5 p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
+            <input id="memoTitleInp" type="text" placeholder="備忘標題 *" class="sm:col-span-4 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+            <input id="memoBodyInp" type="text" placeholder="備註內容或網址..." class="sm:col-span-8 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+            <div class="sm:col-span-9 flex gap-1">
+              <input id="memoImgInp" type="text" placeholder="📸 貼上圖片網址或點右側選圖..." class="flex-1 text-xs px-2.5 py-1.5 rounded-xl border bg-white min-w-0" />
+              <label class="px-2.5 py-1.5 rounded-xl bg-[#fdf0ec] border border-[#f4c2b2] text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
+                📸 選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'memoImgInp')" />
+              </label>
+            </div>
+            <button onclick="addMemoNote()" class="sm:col-span-3 py-1.5 rounded-xl btn-gradient-sage font-bold text-xs">+ 加入備忘</button>
+          </div>
+        </div>
+
         <div id="memoListBox" class="space-y-2"></div>
       </div>
     </section>
 
     <!-- ==================== TAB 5: 資訊與免金鑰 AI 即時翻譯 ==================== -->
     <section id="tabPanel-info" class="tab-panel hidden space-y-3">
-
       <!-- 🌐 免金鑰 AI 即時雙向翻譯器 ＆ 情境手指字卡 -->
       <div class="journal-card overflow-hidden">
         <div class="washi-tape green"></div>
@@ -3996,15 +4009,23 @@
       memoBox.innerHTML = "";
       (t.memos || []).forEach(m => {
         const div = document.createElement("div");
-        div.className = "gesture-box p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]";
+        div.className = "gesture-box p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-1.5";
         const bodyHtml = (m.body || "").replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" class="text-[#52796f] underline font-bold">開啟連結 ↗</a>`);
+        const mImgSrc = resolveImageSrc(m.img);
 
         const openMemoInlineEditor = () => {
+          const tmpImgId = "inline_mm_img_" + m.id;
           div.innerHTML = `
             <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
+              <div class="font-bold text-[#52796f]">📝 修改備忘與圖片</div>
               <input type="text" class="mm-ed-title w-full px-2 py-1 rounded-lg border bg-white font-bold" value="${m.title || ""}" placeholder="備忘標題 *" />
               <textarea rows="2" class="mm-ed-body w-full px-2 py-1 rounded-lg border bg-white" placeholder="備忘內容或網址...">${m.body || ""}</textarea>
-              <div class="flex gap-1.5">
+              <div class="flex gap-1">
+                <input id="${tmpImgId}" type="text" class="mm-ed-img flex-1 px-2 py-1 rounded-lg border bg-white" value="${m.img || ""}" placeholder="📸 備忘圖片" />
+                <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
+                <button type="button" onclick="document.getElementById('${tmpImgId}').value=''" class="px-2 py-1 rounded-lg bg-gray-100 text-gray-500">清圖</button>
+              </div>
+              <div class="flex gap-1.5 pt-1">
                 <button type="button" class="btn-save-mm flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
                 <button type="button" class="btn-cancel-mm px-3 py-1 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
               </div>
@@ -4013,6 +4034,7 @@
           div.querySelector(".btn-save-mm").onclick = () => {
             m.title = div.querySelector(".mm-ed-title").value.trim() || m.title;
             m.body = div.querySelector(".mm-ed-body").value.trim();
+            m.img = div.querySelector(".mm-ed-img").value.trim();
             commitChange("修改備忘");
           };
           div.querySelector(".btn-cancel-mm").onclick = () => renderListsSection();
@@ -4020,7 +4042,8 @@
 
         div.innerHTML = `
           <div class="font-bold text-xs sm:text-sm text-[#2b302c]">📌 ${m.title}</div>
-          <div class="text-xs text-[#7a827d] mt-0.5">${bodyHtml}</div>
+          ${bodyHtml ? `<div class="text-xs text-[#7a827d] whitespace-pre-line">${bodyHtml}</div>` : ""}
+          ${mImgSrc ? `<img src="${mImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(m.img || "").replace(/'/g, "")}', '${(m.title || "").replace(/'/g, "")}')" class="polaroid-img h-28 sm:h-36 w-auto object-cover mt-1" />` : ""}
         `;
         attachRowGestures(div, {
           onLongPressEdit: openMemoInlineEditor,
@@ -4031,7 +4054,7 @@
             }
           }
         });
-        memoBox.appendChild(div);
+memoBox.appendChild(div);
       });
     }
 
