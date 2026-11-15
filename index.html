@@ -305,7 +305,7 @@
         </div>
       </div>
 
-      <!-- 🗂️ 每日行程頂部控制卡（已移除「全部地區」字樣，單行極簡！） -->
+      <!-- 🗂️ 每日行程頂部控制卡（極簡單行！） -->
       <div class="journal-card p-2.5 sm:p-3.5">
         <div class="washi-tape pink"></div>
         <div class="flex items-center justify-between gap-1.5 mb-2 whitespace-nowrap">
@@ -332,7 +332,7 @@
         <div id="dayPillsBar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"></div>
       </div>
 
-      <!-- 📋 每日行程容器（長按任何行程直接在該卡片內展開全欄位編輯，左右滑動刪除） -->
+      <!-- 📋 每日行程容器 -->
       <div id="daysContentWrapper" class="space-y-3"></div>
     </section>
 
@@ -496,7 +496,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: 清單中心 (長按展開全欄位文內編輯 · 左右滑刪除) ==================== -->
+    <!-- ==================== TAB 4: 清單中心 ==================== -->
     <section id="tabPanel-lists" class="tab-panel hidden space-y-3">
       <div class="grid grid-cols-4 gap-1.5 whitespace-nowrap">
         <button onclick="switchListTab('shopping')" id="listBtn-shopping" class="py-2 rounded-full font-bold text-xs btn-gradient-sage">🛍️ 必買</button>
@@ -776,7 +776,7 @@
         <h3 class="font-bold text-sm text-[#2b302c]">📌 新增行程點</h3>
         <button onclick="autoSaveAndCloseModal('itineraryModal')" class="text-gray-400 text-base">✕</button>
       </div>
-      <input id="itiMapUrlInp" type="text" placeholder="📍 貼上 Google Maps 網址自動抓名..." oninput="extractMapPlaceName(this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-xl border bg-[#e8f0ed]/50" />
+      <input id="itiMapUrlInp" type="text" placeholder="📍 貼上地圖網址自動抓名..." oninput="extractMapPlaceName(this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-xl border bg-[#e8f0ed]/50" />
       <div class="grid grid-cols-3 gap-2">
         <div>
           <label class="text-[11px] font-bold text-[#7a827d]">Day</label>
@@ -803,7 +803,7 @@
       <input id="itiTransitInp" type="text" placeholder="🚇 交通方式與轉乘路線..." class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
       <div class="grid grid-cols-2 gap-2">
         <input id="itiHotelInp" type="text" placeholder="🏨 當晚住宿飯店" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
-        <input id="itiLinkInp" type="text" placeholder="🔗 導航或官網連結" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
+        <input id="itiLinkInp" type="text" placeholder="🔗 專屬導航連結 (選填，留空自動配當地地圖)" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
       </div>
       <div class="flex gap-1.5">
         <input id="itiImgInp" type="text" placeholder="📸 圖片網址或上傳..." class="flex-1 text-xs px-3 py-1.5 rounded-xl border bg-[#fbf8f3]" />
@@ -838,7 +838,7 @@
         </select>
       </div>
       <input id="mealTitleInp" type="text" placeholder="餐廳 / 美食名稱 *" class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
-      <input id="mealLinkInp" type="text" placeholder="🔗 地圖或食記連結" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
+      <input id="mealLinkInp" type="text" placeholder="🔗 地圖連結 (留空則自動配當地地圖)" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
       <div class="flex gap-1.5">
         <input id="mealImgInp" type="text" placeholder="📸 照片..." class="flex-1 text-xs px-3 py-1.5 rounded-xl border bg-[#fbf8f3]" />
         <label class="px-3 py-1.5 rounded-xl bg-[#fdf0ec] text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
@@ -909,7 +909,7 @@
         </label>
       </div>
       <textarea id="gdDescInp" rows="3" placeholder="📖 深度介紹（可點上方『🪄 AI寫簡介』自動生成）..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
-      <input id="gdLinkInp" type="text" placeholder="🔗 官網或地圖連結" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
+      <input id="gdLinkInp" type="text" placeholder="🔗 官網或地圖連結 (留空自動配當地地圖)" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
       <input type="hidden" id="editingGdId" value="" />
       <div class="flex gap-2">
         <button onclick="saveGuide()" class="flex-1 py-2 rounded-full btn-gradient-sage font-bold text-xs">💾 儲存</button>
@@ -979,17 +979,17 @@
   </div>
 <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
   <script>
-    const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V75_DATA";
-    const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V75_IMAGES";
-    const LOCAL_PACKING_KEY = "WANDERNOTE_LOCAL_PACKING_V75";
-    const SNAPSHOTS_KEY = "WANDERNOTE_SNAPSHOTS_V75";
+    const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V78_DATA";
+    const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V78_IMAGES";
+    const LOCAL_PACKING_KEY = "WANDERNOTE_LOCAL_PACKING_V78";
+    const SNAPSHOTS_KEY = "WANDERNOTE_SNAPSHOTS_V78";
 
     // ==================== 1. 獨立雲端圖庫引擎 ====================
     let imageVault = {};
 
     function loadImageVault() {
       try {
-        const raw = localStorage.getItem(IMAGE_VAULT_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V70_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_IMAGES");
+        const raw = localStorage.getItem(IMAGE_VAULT_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V75_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V70_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_IMAGES");
         if (raw) imageVault = JSON.parse(raw) || {};
       } catch (e) { imageVault = {}; }
     }
@@ -1035,7 +1035,41 @@
       reader.readAsDataURL(file);
     }
 
-    // ==================== 2. 單機版預設行李清單 ====================
+    // ==================== 2. 各國智慧適配地圖導航引擎 ====================
+    // 優先使用使用者填寫的連結；若無，中國大陸自動用高德地圖、韓國自動用 Naver Map、全球其他國家自動用 Google Maps！
+    function buildSmartMapUrl(placeName, customLink = "") {
+      if (customLink && /^https?:\/\//i.test(customLink.trim())) {
+        return customLink.trim();
+      }
+      const c = getCountry();
+      const baseCode = (c.id || "JP").split("_")[0].toUpperCase();
+      const cleanName = (placeName || c.name || "")
+        .replace(/^\d{1,2}\/\d{1,2}\s*/, "")
+        .replace(/^Day\s*\d+[:：]?\s*/i, "")
+        .split(/[➔*（(]/)[0]
+        .trim() || c.name;
+
+      // 中國大陸：Google Maps 不適用，自動採用高德地圖 (Amap)
+      if (baseCode === "CN" || c.lang === "zh-CN" || ["中國", "中國大陸", "大陸", "雲南", "上海", "北京", "成都", "重慶", "哈爾濱"].some(k => (c.name || "").includes(k))) {
+        return `https://uri.amap.com/search?keyword=${encodeURIComponent(cleanName)}&src=wandernote`;
+      }
+      // 韓國：Google Maps 步行與地鐵受限，自動採用 Naver Map
+      if (baseCode === "KR" || c.lang === "ko" || ["韓國", "首爾", "釜山", "濟州"].some(k => (c.name || "").includes(k))) {
+        return `https://map.naver.com/p/search/${encodeURIComponent(cleanName)}`;
+      }
+      // 全球其他國家（日本、泰國、越南、歐美紐澳等）：使用 Google Maps
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + " " + (c.name || ""))}`;
+    }
+
+    function getMapProviderBadge() {
+      const c = getCountry();
+      const baseCode = (c.id || "JP").split("_")[0].toUpperCase();
+      if (baseCode === "CN" || c.lang === "zh-CN") return "🗺️高德";
+      if (baseCode === "KR" || c.lang === "ko") return "🗺️Naver";
+      return "🗺️導航";
+    }
+
+    // ==================== 3. 單機版預設行李清單 ====================
     const HARDCODED_PACKING_DEFAULTS = [
       { id: "def_1", cat: "重要證件與財務", title: "護照正本 (效期6個月以上) & 影本", note: "隨身包必備", done: false },
       { id: "def_2", cat: "重要證件與財務", title: "入境卡截圖 (VJW / 入境憑證)", note: "存手機相簿", done: false },
@@ -1054,7 +1088,7 @@
       { id: "def_22", cat: "隨身雜物與其他", title: "行李電子秤 & 壓縮收納袋", note: "防超重神器", done: false }
     ];
 
-    // ==================== 3. 全球 250 國萬用智慧偵測字典與深度在地化工具庫 ====================
+    // ==================== 4. 全球 250 國萬用智慧偵測字典與深度在地化工具庫 ====================
     const GLOBAL_COUNTRY_LOOKUP = {
       "日本": { code: "JP", flag: "🇯🇵", currency: "JPY", lang: "ja", speech: "ja-JP", defaultRate: 0.218 },
       "東京": { code: "JP", flag: "🇯🇵", currency: "JPY", lang: "ja", speech: "ja-JP", defaultRate: 0.218 },
@@ -1130,66 +1164,67 @@
     const COUNTRY_DEEP_PROFILES = {
       JP: {
         links: [
+          { title: "🗺️ Google Maps 日本", url: "https://www.google.com/maps", icon: "fa-map-location-dot" },
           { title: "🚕 GO 日本叫車", url: "https://go.goinc.jp/", icon: "fa-taxi" },
           { title: "🚄 乘換案內交通", url: "https://world.jorudan.co.jp/mln/zh-tw/", icon: "fa-train-subway" },
           { title: "🍜 Tabelog 美食", url: "https://tabelog.com/tw/", icon: "fa-utensils" },
           { title: "🌱 日本素食地圖", url: "https://www.happycow.net/asia/japan/", icon: "fa-leaf" },
           { title: "⛅ Tenki.jp 天氣", url: "https://tenki.jp/", icon: "fa-cloud-sun" },
           { title: "🛂 VJW 入境申報", url: "https://www.vjw.digital.go.jp/", icon: "fa-passport" },
-          { title: "🗾 Navitime 導航", url: "https://japantravel.navitime.com/zh-tw/", icon: "fa-map-location-dot" },
           { title: "🛍️ Payke 掃碼翻譯", url: "https://payke.co.jp/tw/", icon: "fa-barcode" }
         ]
       },
       KR: {
         links: [
           { title: "🗺️ Naver Map 導航", url: "https://map.naver.com/", icon: "fa-map" },
+          { title: "🧭 KakaoMap 導航", url: "https://map.kakao.com/", icon: "fa-location-dot" },
           { title: "🚕 Kakao T 叫車", url: "https://www.kakaocorp.com/page/service/service/KakaoT", icon: "fa-taxi" },
-          { title: "🚇 KakaoMetro 地鐵", url: "http://www.seoulmetro.co.kr/chn/", icon: "fa-train-subway" },
+          { title: "🚇 首爾地鐵路線", url: "http://www.seoulmetro.co.kr/chn/", icon: "fa-train-subway" },
           { title: "🍽️ CatchTable 訂位", url: "https://www.catchtable.net/", icon: "fa-utensils" },
           { title: "🌱 首爾素食地圖", url: "https://www.happycow.net/asia/south_korea/seoul/", icon: "fa-leaf" },
           { title: "⛅ 韓國氣象廳", url: "https://www.weather.go.kr/", icon: "fa-cloud-sun" },
-          { title: "💱 Creatrip 換錢匯率", url: "https://www.creatrip.com/zh-TW/exchange", icon: "fa-coins" },
-          { title: "🛂 K-ETA / Q-Code", url: "https://www.k-eta.go.kr/", icon: "fa-passport" }
+          { title: "💱 Creatrip 換錢匯率", url: "https://www.creatrip.com/zh-TW/exchange", icon: "fa-coins" }
         ]
       },
       TH: {
         links: [
+          { title: "🗺️ Google Maps 泰國", url: "https://www.google.com/maps", icon: "fa-map" },
           { title: "🚕 Grab 叫車外送", url: "https://www.grab.com/th/en/", icon: "fa-taxi" },
           { title: "🚗 Bolt 平價叫車", url: "https://bolt.eu/en-th/", icon: "fa-car" },
           { title: "🍲 Wongnai 泰國美食", url: "https://www.wongnai.com/", icon: "fa-utensils" },
           { title: "🌱 泰國素食(齋)地圖", url: "https://www.happycow.net/asia/thailand/", icon: "fa-leaf" },
           { title: "🚇 曼谷 BTS/MRT 路線", url: "https://www.bts.co.th/eng/routemap.html", icon: "fa-train-subway" },
           { title: "⛴️ 昭披耶河觀光船", url: "https://chaophrayatouristboat.com/", icon: "fa-ship" },
-          { title: "💆‍♀️ GoWabi 按摩預訂", url: "https://www.gowabi.com/en", icon: "fa-spa" },
           { title: "⛅ 泰國氣象局", url: "https://www.tmd.go.th/en", icon: "fa-cloud-sun" }
         ]
       },
       CN: {
         links: [
-          { title: "🗺️ 高德地圖導航", url: "https://ditu.amap.com/", icon: "fa-map-location-dot" },
+          { title: "🗺️ 高德地圖 (Amap)", url: "https://ditu.amap.com/", icon: "fa-map-location-dot" },
+          { title: "🧭 百度地圖導航", url: "https://map.baidu.com/", icon: "fa-map" },
           { title: "🚄 12306 高鐵動車", url: "https://www.12306.cn/", icon: "fa-train-subway" },
           { title: "🚕 滴滴出行叫車", url: "https://www.didiglobal.com/", icon: "fa-taxi" },
           { title: "🍜 大眾點評美食", url: "https://www.dianping.com/", icon: "fa-utensils" },
           { title: "🧳 攜程旅行門票", url: "https://www.ctrip.com/", icon: "fa-ticket" },
-          { title: "🧭 百度地圖", url: "https://map.baidu.com/", icon: "fa-map" },
           { title: "⛅ 中國天氣網", url: "http://www.weather.com.cn/", icon: "fa-cloud-sun" },
           { title: "🌱 大陸素食餐廳查詢", url: "https://www.happycow.net/asia/china/", icon: "fa-leaf" }
         ]
       },
       VN: {
         links: [
+          { title: "🗺️ Google Maps 越南", url: "https://www.google.com/maps", icon: "fa-map" },
           { title: "🚕 Grab 越南叫車", url: "https://www.grab.com/vn/en/", icon: "fa-taxi" },
           { title: "🚙 Xanh SM 電動計程車", url: "https://www.xanhsm.com/", icon: "fa-car-side" },
           { title: "🍜 Foody.vn 越南美食", url: "https://www.foody.vn/", icon: "fa-utensils" },
           { title: "🌱 越南素食(Chay)地圖", url: "https://www.happycow.net/asia/vietnam/", icon: "fa-leaf" },
           { title: "🚌 BusMap 越南公車", url: "https://busmap.vn/", icon: "fa-bus" },
-          { title: "🚄 越南國鐵訂票", url: "https://dsvn.vn/", icon: "fa-train" },
           { title: "🛂 越南電子簽證官網", url: "https://evisa.xuatnhapcanh.gov.vn/", icon: "fa-passport" },
           { title: "⛅ 越南氣象預報", url: "https://nchmf.gov.vn/", icon: "fa-cloud-sun" }
         ]
       },
       SG: {
         links: [
+          { title: "🗺️ Google Maps 新加坡", url: "https://www.google.com/maps", icon: "fa-map" },
           { title: "🚕 Grab 新加坡", url: "https://www.grab.com/sg/", icon: "fa-taxi" },
           { title: "🚙 CDG Zig 計程車", url: "https://www.cdgtaxi.com.sg/", icon: "fa-car" },
           { title: "🚇 MyTransport 地鐵", url: "https://www.lta.gov.sg/", icon: "fa-train-subway" },
@@ -1200,8 +1235,8 @@
       },
       MY: {
         links: [
+          { title: "🗺️ Google Maps 大馬", url: "https://www.google.com/maps", icon: "fa-map" },
           { title: "🚕 Grab 馬來西亞", url: "https://www.grab.com/my/", icon: "fa-taxi" },
-          { title: "🚗 AirAsia Ride 叫車", url: "https://www.airasia.com/", icon: "fa-car" },
           { title: "🚇 RapidKL 吉隆坡捷運", url: "https://myrapid.com.my/", icon: "fa-train-subway" },
           { title: "🌱 大馬素食地圖", url: "https://www.happycow.net/asia/malaysia/", icon: "fa-leaf" },
           { title: "🛂 MDAC 數位入境卡", url: "https://imigresen-online.imi.gov.my/mdac/main", icon: "fa-passport" },
@@ -1286,16 +1321,17 @@
       },
       US: {
         links: [
+          { title: "🗺️ Google Maps 北美", url: "https://www.google.com/maps", icon: "fa-map" },
           { title: "🚕 Uber 北美叫車", url: "https://m.uber.com/", icon: "fa-taxi" },
           { title: "🚗 Lyft 叫車比價", url: "https://www.lyft.com/", icon: "fa-car" },
           { title: "🍔 Yelp 美國餐廳評價", url: "https://www.yelp.com/", icon: "fa-utensils" },
           { title: "🍽️ OpenTable 餐廳訂位", url: "https://www.opentable.com/", icon: "fa-calendar-check" },
-          { title: "🚇 Transit 北美大眾運輸", url: "https://transitapp.com/", icon: "fa-train-subway" },
           { title: "🛂 ESTA 電子旅行授權", url: "https://esta.cbp.dhs.gov/", icon: "fa-passport" }
         ]
       },
       AU: {
         links: [
+          { title: "🗺️ Google Maps 澳洲", url: "https://www.google.com/maps", icon: "fa-map" },
           { title: "🚕 Uber / DiDi 澳洲叫車", url: "https://m.uber.com/", icon: "fa-taxi" },
           { title: "🚇 Opal / PTV 大眾運輸", url: "https://transportnsw.info/", icon: "fa-train-subway" },
           { title: "🍽️ OpenTable 澳洲美食", url: "https://www.opentable.com.au/", icon: "fa-utensils" },
@@ -1323,31 +1359,31 @@
 
       if (reg.includes("europe")) {
         return [
+          { title: `🗺️ Google Maps ${name}`, url: `https://www.google.com/maps/search/${enc}`, icon: "fa-map" },
           { title: `🚄 Omio / Trainline 歐洲火車`, url: "https://www.omio.com/", icon: "fa-train" },
           { title: `🚕 Bolt / Uber ${name}叫車`, url: "https://bolt.eu/", icon: "fa-taxi" },
           { title: `🍽️ TheFork ${name}餐廳訂位`, url: "https://www.thefork.com/", icon: "fa-utensils" },
           { title: `🌱 ${name}素食餐廳地圖`, url: `https://www.happycow.net/searchmap?s=${enc}`, icon: "fa-leaf" },
-          { title: `🧭 Rome2Rio 點對點交通`, url: `https://www.rome2rio.com/s/${enc}`, icon: "fa-route" },
           { title: `⛅ ${name}即時天氣預報`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
         ];
       }
       if (reg.includes("asia")) {
         return [
+          { title: `🗺️ Google Maps ${name}`, url: `https://www.google.com/maps/search/${enc}`, icon: "fa-map" },
           { title: `🚕 Grab / 亞洲叫車`, url: "https://www.grab.com/", icon: "fa-taxi" },
           { title: `🧭 Rome2Rio ${name}交通路線`, url: `https://www.rome2rio.com/s/${enc}`, icon: "fa-train-subway" },
           { title: `🌱 ${name}素食餐廳地圖`, url: `https://www.happycow.net/searchmap?s=${enc}`, icon: "fa-leaf" },
           { title: `🎫 Klook ${name}交通與門票`, url: `https://www.klook.com/zh-TW/search/result/?query=${enc}`, icon: "fa-ticket" },
-          { title: `⛅ ${name}即時天氣預報`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" },
-          { title: `🛂 外交部${name}簽證規定`, url: "https://www.boca.gov.tw/", icon: "fa-passport" }
+          { title: `⛅ ${name}即時天氣預報`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
         ];
       }
       return [
+        { title: `🗺️ Google Maps ${name}`, url: `https://www.google.com/maps/search/${enc}`, icon: "fa-map" },
         { title: `🚕 Uber / Careem ${name}叫車`, url: "https://m.uber.com/", icon: "fa-taxi" },
         { title: `🧭 Rome2Rio ${name}交通規劃`, url: `https://www.rome2rio.com/s/${enc}`, icon: "fa-route" },
         { title: `🌱 ${name}素食餐廳地圖`, url: `https://www.happycow.net/searchmap?s=${enc}`, icon: "fa-leaf" },
         { title: `🍽️ TripAdvisor ${name}美食`, url: `https://www.tripadvisor.com.tw/Search?q=${enc}`, icon: "fa-utensils" },
-        { title: `⛅ ${name}即時天氣`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" },
-        { title: `🛂 外交部${name}簽證規定`, url: "https://www.boca.gov.tw/", icon: "fa-passport" }
+        { title: `⛅ ${name}即時天氣`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
       ];
     }
 
@@ -1406,7 +1442,7 @@
       return { code: "W_" + Date.now().toString().slice(-2), flag: "🌍", currency: "USD", lang: "en", speech: "en-US", defaultRate: 32.4, region: "World" };
     }
 
-    // ==================== 4. 各國深度客製情境字卡庫 ====================
+    // ==================== 5. 各國深度客製情境字卡庫 ====================
     const PHRASE_CATEGORIES = [
       { key: "all", label: "🌟 全部" },
       { key: "veg", label: "🌱 素食叮嚀" },
@@ -1547,7 +1583,7 @@
       }
     }
 
-    // ==================== 5. 全站手勢引擎（長按展開「全欄位文內編輯器」＋ 左右滑動刪除確認） ====================
+    // ==================== 6. 全站手勢引擎 ====================
     function attachLongPress(el, onLongPress) {
       let timer = null;
       let startX = 0, startY = 0;
@@ -1640,10 +1676,10 @@
       el.addEventListener("mouseleave", onEnd);
     }
 
-    // ==================== 6. 初始資料與舊檔相容 ====================
+    // ==================== 7. 初始資料與舊版東京/首爾 Gist 完整相容轉換器 ====================
     function createInitialState() {
       return {
-        version: "75.0",
+        version: "78.0",
         activeCountryId: "KR",
         activeTripId: "trip_kr_1",
         activeDay: 1,
@@ -1712,16 +1748,28 @@
       return CAT_NORM_MAP[rawCat] || "其他雜支";
     }
 
-    function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false) {
-      if (!rawJson) return false;
+    // 新舊格式通吃：完整支援妳的 global_trip_list.json、japan_data.json 與 korea_data.json
+    function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false, filename = "") {
+      if (!rawJson || typeof rawJson !== "object") return false;
+
       if (Array.isArray(rawJson.companions)) {
         rawJson.companions.forEach(cp => {
           if (cp.name && !state.companions.some(x => x.name === cp.name)) state.companions.push(cp);
         });
       }
-      if (rawJson.activeCountryId && state.countries[rawJson.activeCountryId]) state.activeCountryId = rawJson.activeCountryId;
-      if (Array.isArray(rawJson.countryList)) return true;
+      if (Array.isArray(rawJson.payers)) {
+        const avatars = ["🐶", "🧸", "🌸", "🐰", "💰"];
+        rawJson.payers.forEach((pName, idx) => {
+          if (pName && !state.companions.some(x => x.name === pName)) {
+            state.companions.push({ id: "cp_leg_" + idx, name: pName, avatar: avatars[idx % avatars.length] });
+          }
+        });
+      }
+      if (rawJson.activeCountryId && state.countries[rawJson.activeCountryId]) {
+        state.activeCountryId = rawJson.activeCountryId;
+      }
 
+      // 認得新版單國格式 (含有 flightSegments)
       if (rawJson.countryId && Array.isArray(rawJson.flightSegments)) {
         const cid = rawJson.countryId;
         const tid = "trip_" + cid.toLowerCase() + "_1";
@@ -1741,26 +1789,191 @@
         return true;
       }
 
+      // 認得多趟 trips 總表結構
       if (rawJson.trips && typeof rawJson.trips === "object") {
-        if (overwriteAll) {
-          state = rawJson;
-          if (!state.companions) state.companions = [];
-          return true;
+        if (rawJson.countries) {
+          Object.entries(rawJson.countries).forEach(([k, v]) => {
+            state.countries[k] = { ...state.countries[k], ...v, quickLinks: buildCountryQuickLinks(k, v.name || k, "") };
+          });
         }
-        if (rawJson.countries) state.countries = { ...state.countries, ...rawJson.countries };
         Object.entries(rawJson.trips).forEach(([tid, tObj]) => {
           tObj.expenses = (tObj.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
-          state.trips[tid] = tObj;
+          const normTid = "trip_" + (tObj.countryId || "kr").toLowerCase() + "_1";
+          state.trips[normTid] = { ...tObj, id: normTid };
         });
         return true;
       }
+
+      // 認得舊版 Gist 結構 (flights, itinerary, shoppingList, mustEatList, vjwData)
+      if (Array.isArray(rawJson.flights) || Array.isArray(rawJson.itinerary) || Array.isArray(rawJson.shoppingList)) {
+        const fnLower = (filename || "").toLowerCase();
+        const str = JSON.stringify(rawJson);
+        const isJP = fnLower.includes("japan") || fnLower.includes("jp") || str.includes("成田") || str.includes("輕井澤") || str.includes("JPY");
+        const cid = isJP ? "JP" : "KR";
+        const tid = "trip_" + cid.toLowerCase() + "_1";
+
+        const flights = (rawJson.flights || []).map(f => ({
+          id: "fl_" + (f.id || Math.random()),
+          date: f.date || "",
+          time: (f.time || "").split("-")[0].trim(),
+          flightNo: `${f.code || ""} (${f.time || ""})`.trim(),
+          from: f.dep || "",
+          to: f.arr || "",
+          link: f.url || "",
+          img: f.photo || "",
+          note: f.date || ""
+        }));
+
+        const itinerary = [];
+        const meals = [];
+        const transits = [];
+        (rawJson.itinerary || []).forEach((d, idx) => {
+          const dayNum = idx + 1;
+          const regionName = (d.date || `Day ${dayNum}`).replace(/^Day\s*\d+\s*/i, "").trim() || `Day ${dayNum}`;
+          const lines = (d.content || "").split("\n").map(s => s.trim()).filter(Boolean);
+          const transText = (d.transportation || []).map(t => {
+            if (Array.isArray(t.photos)) {
+              t.photos.forEach((pUrl, pIdx) => {
+                transits.push({ name: `${d.date || "Day" + dayNum} ${t.content || "票券"} (${pIdx + 1})`, url: pUrl, img: pUrl });
+              });
+            }
+            return `【${t.time ? t.time + " " : ""}${t.content || ""}】${t.note || ""}`;
+          }).join(" ｜ ");
+          const firstPhoto = (d.photos && d.photos[0]) || (d.accPhotos && d.accPhotos[0]) || "";
+
+          itinerary.push({
+            id: `iti_${cid}_${dayNum}`,
+            day: dayNum,
+            time: "",
+            subRegion: regionName,
+            title: `${d.date || "Day " + dayNum}：${lines.join(" ➔ ") || "自由探索"}`,
+            cat: "景點",
+            transit: transText,
+            hotel: d.accommodation ? `${d.accommodation}${d.accommodationNote ? " (" + d.accommodationNote + ")" : ""}` : "",
+            link: d.accommodationUrl || "",
+            img: firstPhoto,
+            note: d.dayNote || ""
+          });
+
+          if (d.meals) {
+            const mapType = { b: "早餐", l: "午餐", d: "晚餐" };
+            ["b", "l", "d"].forEach(k => {
+              if (d.meals[k] && (d.meals[k].name || d.meals[k].note)) {
+                meals.push({
+                  id: `ml_${cid}_${dayNum}_${k}`,
+                  day: dayNum,
+                  type: mapType[k],
+                  title: d.meals[k].name || d.meals[k].note,
+                  link: d.meals[k].link || "",
+                  img: "",
+                  note: d.meals[k].note || ""
+                });
+              }
+            });
+          }
+        });
+
+        const mustEat = [];
+        (rawJson.mustEatList || []).forEach(loc => {
+          (loc.themes || []).forEach(th => {
+            mustEat.push({
+              id: "me_" + (th.id || Math.random()),
+              cat: loc.location || "必吃",
+              name: th.name || "",
+              link: th.url || "",
+              note: `${th.isVeg ? "🌱素食｜" : ""}${th.note || ""}`.trim(),
+              img: "",
+              done: false
+            });
+          });
+        });
+
+        const shopping = (rawJson.shoppingList || []).map(s => ({
+          id: "sh_" + (s.id || Math.random()),
+          cat: s.category || "必買",
+          title: s.name || "",
+          price: s.price || "",
+          owner: s.owner || "凱",
+          note: s.qty ? `數量: ${s.qty}` : "",
+          img: s.photo || "",
+          done: !!s.done
+        }));
+
+        const expenses = (rawJson.expenses || []).map(e => {
+          const pName = e.paidBy || "凱";
+          if (pName && !state.companions.some(x => x.name === pName)) {
+            state.companions.push({ id: "cp_" + Math.random(), name: pName, avatar: "🧸" });
+          }
+          (e.splitBy || []).forEach(bName => {
+            if (bName && !state.companions.some(x => x.name === bName)) {
+              state.companions.push({ id: "cp_" + Math.random(), name: bName, avatar: "🐶" });
+            }
+          });
+          return {
+            id: "ex_" + (e.id || Math.random()),
+            title: e.note || e.cat || "消費",
+            cat: normalizeCatName(e.cat),
+            amount: Number(e.amt) || 0,
+            currency: e.curr || (cid === "JP" ? "JPY" : "KRW"),
+            payer: pName,
+            mode: (e.note || "").includes("謝謝") ? "gift" : "split",
+            beneficiaries: Array.isArray(e.splitBy) && e.splitBy.length ? e.splitBy : [pName],
+            note: "",
+            img: e.photo || "",
+            date: ""
+          };
+        });
+
+        const guides = (rawJson.guides || []).map(g => ({
+          id: "gd_" + (g.id || Math.random()),
+          title: g.title || "",
+          region: "",
+          hours: g.time || "",
+          price: g.price || "",
+          img: g.photo || "",
+          desc: g.desc || "",
+          link: ""
+        }));
+
+        const visas = (rawJson.vjwData && Array.isArray(rawJson.vjwData.items))
+          ? rawJson.vjwData.items.map(v => ({ name: `${v.name} - 入境憑證`, url: v.image, img: v.image }))
+          : [];
+
+        if (state.countries[cid]) {
+          if (visas.length) state.countries[cid].visas = visas;
+          if (transits.length) state.countries[cid].transits = transits;
+        }
+
+        state.trips[tid] = {
+          id: tid,
+          countryId: cid,
+          title: isJP ? "1/10-1/16 東京＆輕井澤冬日之旅" : "6/23-6/26 首爾明洞＆聖水洞潮旅",
+          subRegions: [...new Set(itinerary.map(i => i.subRegion).filter(Boolean))],
+          flightSegments: flights,
+          itinerary,
+          meals,
+          guides,
+          mustEat,
+          shopping,
+          expenses,
+          memos: [],
+          stickers: [],
+          customLinks: [],
+          customVisas: visas,
+          customTransits: transits,
+          customPhrases: []
+        };
+        return true;
+      }
+
+      if (Array.isArray(rawJson.countryList)) return true;
       return false;
     }
 
     function initApp() {
       loadImageVault();
       try {
-        const raw = localStorage.getItem(APP_STORAGE_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V70_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_DATA");
+        const raw = localStorage.getItem(APP_STORAGE_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V75_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V70_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V65_DATA") || localStorage.getItem("WANDERNOTE_JOURNAL_V60_DATA");
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed && parsed.trips && Object.keys(parsed.trips).length > 0) {
@@ -1790,7 +2003,7 @@
 
     function loadLocalPackingList() {
       try {
-        const raw = localStorage.getItem(LOCAL_PACKING_KEY) || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V70") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V65") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V60");
+        const raw = localStorage.getItem(LOCAL_PACKING_KEY) || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V75") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V70") || localStorage.getItem("WANDERNOTE_LOCAL_PACKING_V65");
         if (raw) {
           const saved = JSON.parse(raw);
           if (Array.isArray(saved) && saved.length > 0) {
@@ -1890,7 +2103,7 @@
       return t;
     }
 
-    // ==================== 7. Lightbox & 彈窗控制 ====================
+    // ==================== 8. Lightbox & 彈窗控制 ====================
     function openImageLightbox(rawRef, caption = "📸 照片預覽") {
       const src = resolveImageSrc(rawRef);
       if (!src) return;
@@ -1939,7 +2152,7 @@
       if (el) el.classList.toggle("open");
     }
 
-    // ==================== 8. 👥 旅伴系統 ====================
+    // ==================== 9. 👥 旅伴系統 ====================
     function selectAvatarPreset(emoji) {
       document.getElementById("newMemberAvatarInp").value = emoji;
       document.getElementById("selectedAvatarPreview").innerHTML = emoji;
@@ -2044,7 +2257,7 @@
       }
     }
 
-    // ==================== 9. 任意門：全球萬國智慧偵測與匯率 ====================
+    // ==================== 10. 任意門：全球萬國智慧偵測與匯率 ====================
     async function autoAddCountryByName() {
       const rawName = prompt("🌍 請輸入任何國家或城市名稱（如：泰國、越南、冰島、瑞士、法國、紐西蘭、秘魯）：\n✨ 系統會自動抓出國旗、外幣、即時匯率、當地專屬工具與雙語字卡！");
       if (!rawName || !rawName.trim()) return;
@@ -2190,7 +2403,7 @@
       }
     }
 
-    // ==================== 10. 航班、天數與每日行程（長按展開「全欄位文內編輯器」＋ 左右滑動刪除） ====================
+    // ==================== 11. 航班、天數與每日行程（全面內建各國智慧地圖導航按鈕！） ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2424,6 +2637,7 @@
     function renderItineraryAndMeals() {
       const trip = getTrip();
       const maxDay = getMaxDays(trip);
+      const mapBadge = getMapProviderBadge();
       const daysToShow = state.dayDisplayMode === "all"
         ? Array.from({ length: maxDay }, (_, i) => i + 1)
         : [state.activeDay];
@@ -2438,6 +2652,7 @@
         }
         const dayMeals = (trip.meals || []).filter(m => Number(m.day) === dayNum);
         const hotelItem = dayItis.find(i => i.hotel);
+        const hotelNavUrl = hotelItem ? buildSmartMapUrl(hotelItem.hotel, hotelItem.link) : "";
 
         const dayCard = document.createElement("div");
         dayCard.className = "journal-card p-3 sm:p-4 space-y-2.5";
@@ -2462,7 +2677,7 @@
                   <span class="text-[11px] font-bold text-[#4f7768] shrink-0">🏨 住宿</span>
                   <span class="text-xs font-bold text-[#2b302c] truncate">${hotelItem.hotel}</span>
                 </div>
-                ${hotelItem.link ? `<a href="${hotelItem.link}" target="_blank" class="text-[11px] font-bold text-[#e07a5f] shrink-0">📍地圖</a>` : ""}
+                <a href="${hotelNavUrl}" target="_blank" class="text-[11px] font-bold text-[#e07a5f] shrink-0 hover:underline">${mapBadge}</a>
               </div>
             ` : ""}
           </div>
@@ -2475,6 +2690,7 @@
         } else {
           dayItis.forEach(item => {
             const itiImgSrc = resolveImageSrc(item.img);
+            const itemNavUrl = buildSmartMapUrl(item.title, item.link);
             const itemEl = document.createElement("div");
             itemEl.className = "gesture-box p-2.5 sm:p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-1.5";
 
@@ -2486,7 +2702,7 @@
                     <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
                     <span class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">${item.title}</span>
                   </div>
-                  ${item.link ? `<a href="${item.link}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[11px] font-bold text-[#4f7768] shrink-0" title="導航">🗺️</a>` : ""}
+                  <a href="${itemNavUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[10px] font-bold text-[#4f7768] shrink-0 hover:bg-[#e8f0ed]">${mapBadge}</a>
                 </div>
                 ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] leading-snug">🚇 ${item.transit}</div>` : ""}
                 ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50">💡 ${item.note}</div>` : ""}
@@ -2516,7 +2732,7 @@
                   <input type="text" class="iti-ed-transit w-full px-2 py-1 rounded-lg border bg-white" value="${item.transit || ""}" placeholder="🚇 交通與轉乘路線..." />
                   <div class="grid grid-cols-2 gap-1.5">
                     <input type="text" class="iti-ed-hotel px-2 py-1 rounded-lg border bg-white" value="${item.hotel || ""}" placeholder="🏨 住宿飯店" />
-                    <input type="text" class="iti-ed-link px-2 py-1 rounded-lg border bg-white" value="${item.link || ""}" placeholder="🔗 地圖連結" />
+                    <input type="text" class="iti-ed-link px-2 py-1 rounded-lg border bg-white" value="${item.link || ""}" placeholder="🔗 專屬導航連結 (可留空)" />
                   </div>
                   <div class="flex gap-1">
                     <input id="${tmpImgId}" type="text" class="iti-ed-img flex-1 px-2 py-1 rounded-lg border bg-white" value="${item.img || ""}" placeholder="📸 照片" />
@@ -2579,6 +2795,7 @@
             slotEl.innerHTML = `<span class="text-[11px] font-bold text-[#78807b] shrink-0">${slot.icon}${slot.label}</span><span class="text-[10px] text-[#b0b7b3] truncate">自理+</span>`;
           } else {
             const mObj = slot.obj;
+            const mealNavUrl = buildSmartMapUrl(mObj.title, mObj.link);
             slotEl.className = "gesture-box p-2 rounded-xl bg-white border border-[#e6dcd0] flex flex-col justify-between gap-0.5 min-w-0 shadow-2xs cursor-pointer";
             attachRowGestures(slotEl, {
               onLongPressEdit: () => openMealModal(dayNum, mObj.id),
@@ -2592,7 +2809,7 @@
             slotEl.innerHTML = `
               <div class="flex items-center justify-between gap-1 whitespace-nowrap">
                 <span class="text-[10px] font-bold text-[#c85a32] shrink-0">${slot.icon}${mObj.type || slot.label}</span>
-                ${mObj.link ? `<a href="${mObj.link}" target="_blank" class="text-[10px] font-bold text-[#4f7768]">📍</a>` : ""}
+                <a href="${mealNavUrl}" target="_blank" class="text-[10px] font-bold text-[#4f7768]" title="開啟當地地圖">📍</a>
               </div>
               <div class="font-bold text-xs text-[#2b302c] truncate">${mObj.title}</div>
               ${mObj.note ? `<div class="text-[10px] text-[#78807b] truncate">${mObj.note}</div>` : ""}
@@ -2603,6 +2820,7 @@
 
         const extraBox = dayCard.querySelector(".day-extra-meals");
         extraMeals.forEach(em => {
+          const emNavUrl = buildSmartMapUrl(em.title, em.link);
           const pill = document.createElement("div");
           pill.className = "gesture-box px-2.5 py-0.5 rounded-full bg-white border text-[11px] flex items-center gap-1 cursor-pointer";
           attachRowGestures(pill, {
@@ -2614,7 +2832,7 @@
               }
             }
           });
-          pill.innerHTML = `<span class="font-bold text-[#c85a32]">🍰 ${em.title}</span>${em.link ? `<a href="${em.link}" target="_blank">📍</a>` : ""}`;
+          pill.innerHTML = `<span class="font-bold text-[#c85a32]">🍰 ${em.title}</span><a href="${emNavUrl}" target="_blank">📍</a>`;
           extraBox.appendChild(pill);
         });
       });
@@ -2626,7 +2844,7 @@
       let name = "";
       try {
         const m1 = v.match(/\/maps\/place\/([^/@?]+)/i);
-        const m2 = v.match(/[?&](?:q|query)=([^&]+)/i);
+        const m2 = v.match(/[?&](?:q|query|keyword)=([^&]+)/i);
         if (m1 && m1[1]) name = decodeURIComponent(m1[1].replace(/\+/g, " "));
         else if (m2 && m2[1]) name = decodeURIComponent(m2[1].replace(/\+/g, " "));
       } catch (e) {}
@@ -2750,7 +2968,7 @@
       commitChange(`儲存餐飲：${title}`);
     }
 
-    // ==================== 11. 🤖 左下角免金鑰 AI 智慧順路排程 ＆ 經典路線引擎 ====================
+    // ==================== 12. 🤖 左下角免金鑰 AI 智慧順路排程 ＆ 經典路線引擎 ====================
     const FAMOUS_TEMPLATES = {
       JP: [
         {
@@ -3050,6 +3268,7 @@
 
     function renderGuidesSection() {
       const t = getTrip();
+      const mapBadge = getMapProviderBadge();
       const box = document.getElementById("guideCardsContainer");
       box.innerHTML = "";
       const list = t.guides || [];
@@ -3061,6 +3280,7 @@
         const card = document.createElement("div");
         card.className = "journal-card gesture-box overflow-hidden flex flex-col justify-between p-3.5 cursor-pointer";
         const gdSrc = resolveImageSrc(g.img);
+        const gdNavUrl = buildSmartMapUrl(g.title, g.link);
         attachRowGestures(card, {
           onLongPressEdit: () => openGuideModal(g.id),
           onSwipeDelete: () => {
@@ -3085,7 +3305,7 @@
             <p class="text-xs text-[#4a524d] leading-relaxed">${g.desc || ""}</p>
           </div>
           <div class="mt-2.5 pt-2 border-t border-[#efe7dc] flex items-center justify-between text-xs">
-            <a href="${g.link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(g.title)}`}" target="_blank" class="font-bold text-[#52796f]">🗺️ 地圖 ↗</a>
+            <a href="${gdNavUrl}" target="_blank" class="font-bold text-[#52796f] hover:underline">${mapBadge} ↗</a>
             <span class="text-[10px] text-gray-400">長按修改 · 左右滑刪除</span>
           </div>
         `;
@@ -3143,7 +3363,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 12. 📊 分帳記帳系統（點擊圓餅圖中心金額展開明細 · 長按展開全欄位文內修改） ====================
+    // ==================== 13. 📊 分帳記帳系統 ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -3508,7 +3728,7 @@
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
 
-    // ==================== 13. 🛍️ 清單中心（長按展開「全欄位文內編輯器」 · 左右滑動刪除！） ====================
+    // ==================== 14. 🛍️ 清單中心（必吃清單自動帶入當地地圖導航！） ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
         document.getElementById("listBox-" + k).classList.toggle("hidden", k !== tabKey);
@@ -3521,6 +3741,7 @@
     function renderListsSection() {
       const t = getTrip();
       const c = getCountry();
+      const mapBadge = getMapProviderBadge();
 
       const usedShopCats = [...new Set((t.shopping || []).map(s => s.cat).filter(Boolean))];
       const usedFoodCats = [...new Set((t.mustEat || []).map(f => f.cat).filter(Boolean))];
@@ -3659,7 +3880,7 @@
           items.forEach(f => {
             const row = document.createElement("div");
             row.className = "gesture-box p-2.5 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0]";
-            const mapUrl = f.link || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.name + " " + c.name)}`;
+            const mapUrl = buildSmartMapUrl(f.name, f.link);
 
             const openFoodInlineEditor = () => {
               row.innerHTML = `
@@ -3669,7 +3890,7 @@
                     <input type="text" class="fd-ed-cat px-2 py-1 rounded-lg border bg-white" value="${f.cat || ""}" placeholder="地區分類" />
                     <input type="text" class="fd-ed-name col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" value="${f.name || ""}" placeholder="餐廳名稱 *" />
                   </div>
-                  <input type="text" class="fd-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 地圖連結" />
+                  <input type="text" class="fd-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 專屬地圖連結 (可留空)" />
                   <input type="text" class="fd-ed-note w-full px-2 py-1 rounded-lg border bg-white" value="${f.note || ""}" placeholder="📝 備註 (營業時間/必點)" />
                   <div class="flex gap-1.5 pt-1">
                     <button type="button" class="btn-save-fd flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
@@ -3693,7 +3914,7 @@
                   <div class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">${f.name}</div>
                   ${f.note ? `<div class="text-[11px] text-[#7a827d] truncate">${f.note}</div>` : ""}
                 </div>
-                <a href="${mapUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[11px] font-bold text-[#52796f] shrink-0">📍地圖</a>
+                <a href="${mapUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[11px] font-bold text-[#52796f] shrink-0">${mapBadge}</a>
               </div>
             `;
             attachRowGestures(row, {
@@ -3890,7 +4111,7 @@
       commitChange(`新增備忘：${title}`);
     }
 
-    // ==================== 14. 資訊與翻譯頁（自動升級補滿 6~8 個當地專屬工具！） ====================
+    // ==================== 15. 資訊與翻譯頁 ====================
     function renderInfoSection() {
       const c = getCountry();
       const t = getTrip();
@@ -4052,7 +4273,7 @@
       commitChange(`新增圖卡：${name}`);
     }
 
-    // ==================== 15. 🎀 照片貼紙上傳 & 跨裝置百分比座標定位 ====================
+    // ==================== 16. 🎀 照片貼紙上傳 & 跨裝置百分比座標定位 ====================
     function renderStickersLayer() {
       const t = getTrip();
       const layer = document.getElementById("stickerCanvasLayer");
@@ -4146,7 +4367,7 @@
       }
     }
 
-    // ==================== 16. Gist 分格同步 ====================
+    // ==================== 17. Gist 分格同步 ====================
     async function pushToGist() {
       const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
       const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
@@ -4174,7 +4395,7 @@
           if (trip) {
             filesPayload[fName] = {
               content: JSON.stringify({
-                version: "75.0",
+                version: "78.0",
                 countryId: c.id,
                 title: trip.title,
                 subRegions: trip.subRegions || [],
@@ -4196,7 +4417,7 @@
 
         filesPayload["global_trip_list.json"] = {
           content: JSON.stringify({
-            version: "75.0",
+            version: "78.0",
             activeCountryId: state.activeCountryId,
             companions: state.companions || [],
             countryList
@@ -4266,7 +4487,7 @@
               contentTxt = await r.text();
             }
             const parsed = JSON.parse(contentTxt);
-            if (convertAndMergeAnyLegacyData(parsed, false)) loadedCount++;
+            if (convertAndMergeAnyLegacyData(parsed, false, fileObj.filename)) loadedCount++;
           } catch (err) {}
         }
 
@@ -4335,7 +4556,7 @@
             state = parsed.state;
             if (parsed.imageVault) { imageVault = { ...imageVault, ...parsed.imageVault }; saveImageVault(); }
           } else {
-            convertAndMergeAnyLegacyData(parsed, false);
+            convertAndMergeAnyLegacyData(parsed, false, f.name);
           }
           commitChange("匯入備份");
           closeModalDirect("cloudSyncModal");
