@@ -2391,6 +2391,7 @@
       document.getElementById(modalId).classList.remove("hidden");
     }
 
+    // 點擊空白處：自動關閉頂部抽屜，且若有任何展開中的「文內編輯器」，自動幫妳按下儲存！
     document.addEventListener("click", (e) => {
       if (!e.target.closest("header")) {
         document.getElementById("anywhereDoorDrawer")?.classList.remove("open");
@@ -2399,15 +2400,27 @@
       if (!e.target.closest("#dayFabWrapper")) {
         document.getElementById("dayFabMenu")?.classList.add("hidden");
       }
+
+      // 檢查是否有正在展開編輯的卡片，若點擊在該卡片外部空白處，自動觸發儲存按鈕！
+      const activeEditors = document.querySelectorAll(".inline-full-editor");
+      activeEditors.forEach(editor => {
+        if (!editor.contains(e.target) && !e.target.closest("#imageLightbox")) {
+          const saveBtn = editor.querySelector("[class*='btn-save-']");
+          if (saveBtn) saveBtn.click();
+        }
+      });
     });
 
-    function toggleDrawer(id, ev) {
-      if (ev) ev.stopPropagation();
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle("open");
+  // ==================== 10. 👥 旅伴系統（每趟旅程獨立旅伴名單） ====================
+    function getActiveCompanions() {
+      const t = getTrip();
+      if (!Array.isArray(t.companions)) {
+        // 首次自動繼承全域旅伴作為初始值，之後各旅程完全獨立！
+        t.companions = JSON.parse(JSON.stringify(state.companions || []));
+      }
+      return t.companions;
     }
 
-    // ==================== 10. 👥 旅伴系統 ====================
     function selectAvatarPreset(emoji) {
       document.getElementById("newMemberAvatarInp").value = emoji;
       document.getElementById("selectedAvatarPreview").innerHTML = emoji;
@@ -2419,21 +2432,22 @@
       const name = nameInp.value.trim();
       const avatar = avInp.value.trim() || "🐶";
       if (!name) return alert("請輸入旅伴名字！");
-      if (!state.companions) state.companions = [];
+      const list = getActiveCompanions();
 
-      const existing = state.companions.find(c => c.name === name);
+      const existing = list.find(c => c.name === name);
       if (existing) existing.avatar = avatar;
-      else state.companions.push({ id: "cp_" + Date.now(), name, avatar });
+      else list.push({ id: "cp_" + Date.now(), name, avatar });
 
       state.lastSelectedPayer = name;
       state.lastSelectedOwner = name;
       nameInp.value = "";
       renderMemberModalList();
-      commitChange(`新增旅伴：${name}`);
+      commitChange(`新增本趟旅伴：${name}`);
     }
 
     function changeExistingCompanionAvatar(id) {
-      const cp = (state.companions || []).find(x => x.id === id);
+      const list = getActiveCompanions();
+      const cp = list.find(x => x.id === id);
       if (!cp) return;
       const newEmoji = prompt(`更換「${cp.name}」的貼圖 Emoji：`, cp.avatar.startsWith("[📸") ? "🐶" : cp.avatar);
       if (newEmoji && newEmoji.trim()) {
@@ -2444,45 +2458,80 @@
     }
 
     function removeCompanionById(id) {
-      const cp = (state.companions || []).find(x => x.id === id);
+      const t = getTrip();
+      const list = getActiveCompanions();
+      const cp = list.find(x => x.id === id);
       if (!cp) return;
-      if (confirm(`確定移除「${cp.name}」嗎？`)) {
-        state.companions = state.companions.filter(x => x.id !== id);
+      if (confirm(`確定從「${t.title}」移除旅伴「${cp.name}」嗎？`)) {
+        t.companions = list.filter(x => x.id !== id);
         renderMemberModalList();
-        commitChange(`移除旅伴：${cp.name}`);
+        commitChange(`移除本趟旅伴：${cp.name}`);
       }
     }
 
     function renderMemberModalList() {
+      const t = getTrip();
       const box = document.getElementById("memberModalList");
-      const list = state.companions || [];
+      const list = getActiveCompanions();
       if (list.length === 0) {
-        box.innerHTML = `<div class="text-xs text-[#7a827d] py-3 text-center">尚未新增旅伴，請於上方輸入名字加入</div>`;
+        box.innerHTML = `<div class="text-xs text-[#7a827d] py-3 text-center">「${t.title}」尚未設定專屬旅伴，請於上方新增</div>`;
         return;
       }
-      box.innerHTML = list.map(c => `
-        <div class="flex items-center justify-between p-2 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
-          <div class="flex items-center gap-2 cursor-pointer" onclick="changeExistingCompanionAvatar('${c.id}')">
-            ${getCompanionAvatarHtml(c.name)}
-            <span class="font-bold text-xs text-[#2b302c]">${c.name}</span>
+      box.innerHTML = `
+        <div class="text-[11px] font-bold text-[#52796f] px-1">📍 目前旅程專屬旅伴：${t.title}</div>
+        ${list.map(c => `
+          <div class="flex items-center justify-between p-2 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="changeExistingCompanionAvatar('${c.id}')">
+              ${getCompanionAvatarHtml(c.name)}
+              <span class="font-bold text-xs text-[#2b302c]">${c.name}</span>
+            </div>
+            <button onclick="removeCompanionById('${c.id}')" class="w-6 h-6 rounded-full bg-white border text-red-500 text-xs">✕</button>
           </div>
-          <button onclick="removeCompanionById('${c.id}')" class="w-6 h-6 rounded-full bg-white border text-red-500 text-xs">✕</button>
-        </div>
-      `).join("");
+        `).join("")}
+      `;
     }
 
     function renderMemberSelectors() {
-      const comps = state.companions || [];
+      const comps = getActiveCompanions();
       const payerSel = document.getElementById("expPayerSelect");
       const benBox = document.getElementById("expBenCheckboxes");
       const shopOwner = document.getElementById("shopItemOwner");
+      const modeSel = document.getElementById("expModeSelect");
+
+      // 確保記帳模式選單包含「🥂 代墊請客」與選單連動
+      if (modeSel && !modeSel.querySelector("option[value='treat']")) {
+        const opt = document.createElement("option");
+        opt.value = "treat";
+        opt.textContent = "🥂 代墊請客";
+        modeSel.appendChild(opt);
+        modeSel.onchange = () => {
+          let hostWrap = document.getElementById("expHostSelectWrap");
+          if (modeSel.value === "treat") {
+            if (!hostWrap) {
+              hostWrap = document.createElement("div");
+              hostWrap.id = "expHostSelectWrap";
+              hostWrap.className = "col-span-2 flex items-center gap-1.5 bg-[#fdf0ec] px-2.5 py-1.5 rounded-xl border border-[#f4c2b2]";
+              modeSel.parentElement.appendChild(hostWrap);
+            }
+            hostWrap.classList.remove("hidden");
+            hostWrap.innerHTML = `
+              <span class="text-[11px] font-bold text-[#c85a32] shrink-0">🥂 由誰請客：</span>
+              <select id="expHostSelect" class="w-full text-xs font-bold bg-transparent text-[#c85a32] outline-none">
+                ${comps.filter(c => c.name !== "公費").map(c => `<option value="${c.name}">${c.name} 請客</option>`).join("")}
+              </select>
+            `;
+          } else if (hostWrap) {
+            hostWrap.classList.add("hidden");
+          }
+        };
+      }
 
       const dateInp = document.getElementById("expDateInput");
       if (dateInp && !dateInp.value) dateInp.value = new Date().toISOString().slice(0, 10);
 
       if (comps.length === 0) {
         if (payerSel) payerSel.innerHTML = `<option value="">點頂部🧸新增旅伴</option>`;
-        if (benBox) benBox.innerHTML = `<span onclick="openModal('memberModal')" class="text-xs text-[#c85a32] underline cursor-pointer">+ 點此新增旅伴</span>`;
+        if (benBox) benBox.innerHTML = `<span onclick="openModal('memberModal')" class="text-xs text-[#c85a32] underline cursor-pointer">+ 點此新增本趟旅伴</span>`;
         if (shopOwner) shopOwner.innerHTML = `<option value="">🏷️ 共同</option>`;
         return;
       }
@@ -2541,13 +2590,42 @@
       commitChange(`新增國家：${info.flag} ${name}`);
     }
 
-    async function refreshCountryRate(showToast = false) {
+    function promptCustomRate() {
+      const c = getCountry();
+      if (c.currency === "TWD") return alert("台幣匯率固定為 1");
+      const input = prompt(`💱 手動設定「${c.name} (${c.currency})」兌換台幣匯率：\n・目前匯率：1 ${c.currency} = ${c.rate} TWD\n・若想恢復網路即時自動抓取，請輸入 0`, c.rate);
+      if (input === null) return;
+      const val = parseFloat(input.trim());
+      if (val === 0) {
+        c.customRateLocked = false;
+        refreshCountryRate(true, true);
+      } else if (!isNaN(val) && val > 0) {
+        c.rate = Number(val.toFixed(5));
+        c.customRateLocked = true;
+        commitChange(`自訂匯率：1 ${c.currency} = ${c.rate}`);
+      }
+    }
+
+    async function refreshCountryRate(showToast = false, forceLive = false) {
       const c = getCountry();
       const badge = document.getElementById("rateBadgeText");
+      if (badge && !badge._clickBound) {
+        badge._clickBound = true;
+        badge.classList.add("cursor-pointer", "hover:bg-[#fdf0ec]", "transition");
+        badge.title = "點擊可手動自訂匯率";
+        badge.onclick = () => promptCustomRate();
+      }
       if (c.currency === "TWD") {
         c.rate = 1;
         if (badge) badge.textContent = "1 TWD";
         updateCalcPreview();
+        return;
+      }
+      // 若使用者已手動自訂鎖定匯率，且不是強制點 🔄 刷新，則保留自訂匯率
+      if (c.customRateLocked && !forceLive) {
+        if (badge) badge.textContent = `✎ 1 ${c.currency}=${c.rate}`;
+        updateCalcPreview();
+        renderExpenseSection();
         return;
       }
       try {
@@ -2555,12 +2633,13 @@
         const data = await res.json();
         if (data?.rates?.TWD) {
           c.rate = Number(data.rates.TWD.toFixed(4));
+          c.customRateLocked = false;
           saveAppState(false);
-          if (badge) badge.textContent = `1 ${c.currency}=${c.rate}`;
-          if (showToast) alert(`✅ 已更新匯率：1 ${c.currency} = ${c.rate} TWD`);
+          if (badge) badge.textContent = `1 ${c.currency}=${c.rate} ✎`;
+          if (showToast) alert(`✅ 已抓取最新即時匯率：1 ${c.currency} = ${c.rate} TWD\n(點匯率標籤可手動自訂)`);
         }
       } catch (e) {
-        if (badge) badge.textContent = `1 ${c.currency}≈${c.rate}`;
+        if (badge) badge.textContent = `1 ${c.currency}≈${c.rate} ✎`;
       }
       updateCalcPreview();
       renderExpenseSection();
@@ -3682,6 +3761,7 @@
       const currMode = document.getElementById("expCurrSelect").value;
       const payer = document.getElementById("expPayerSelect").value;
       const mode = document.getElementById("expModeSelect").value;
+      const host = document.getElementById("expHostSelect")?.value || payer;
       const bens = Array.from(document.querySelectorAll(".exp-ben-item:checked")).map(x => x.value);
       const note = document.getElementById("expNoteInput").value.trim();
       const img = document.getElementById("expImgInput").value.trim();
@@ -3697,6 +3777,7 @@
         title, cat, amount,
         currency: currMode === "TWD" ? "TWD" : c.currency,
         payer, mode,
+        host: mode === "treat" ? host : "",
         beneficiaries: mode === "self" ? [payer] : (bens.length > 0 ? bens : [payer]),
         note, img,
         date: formatDisplayDate(pickedDate) || new Date().toLocaleDateString("zh-TW", { month: "2-digit", day: "2-digit" })
@@ -3781,9 +3862,10 @@
       const groupCats = { "餐飲美食": 0, "交通機票": 0, "購物伴手禮": 0, "住宿飯店": 0, "門票娛樂": 0, "其他雜支": 0 };
       let grandTotalTWD = 0;
 
-      const peopleSet = new Set((state.companions || []).map(x => x.name).filter(n => n !== "公費"));
+      const peopleSet = new Set(getActiveCompanions().map(x => x.name).filter(n => n !== "公費"));
       list.forEach(e => {
         if (e.payer && e.payer !== "公費") peopleSet.add(e.payer);
+        if (e.host && e.host !== "公費") peopleSet.add(e.host);
         (e.beneficiaries || []).forEach(b => { if (b && b !== "公費") peopleSet.add(b); });
       });
 
@@ -3806,7 +3888,23 @@
         const share = twd / bens.length;
         if (e.payer && pStats[e.payer]) pStats[e.payer].paid += twd;
 
-        if (e.mode === "gift") {
+        if (e.mode === "treat") {
+          // 🥂 代墊請客：payer 先刷卡/付現，但由 host 請客買單！
+          const hostName = e.host || e.payer;
+          if (e.payer !== "公費" && pStats[e.payer]) pStats[e.payer].net += twd;
+          if (hostName !== "公費" && pStats[hostName]) {
+            pStats[hostName].net -= twd;
+            pStats[hostName].ownSpend += twd;
+            pStats[hostName].cats[cKey] += twd;
+            pStats[hostName].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🥂 請客·${e.payer}代墊`, shareTWD: twd, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
+          }
+          bens.forEach(b => {
+            if (!pStats[b] || b === hostName) return;
+            pStats[b].giftRec += share;
+            if (includeGift) pStats[b].cats[cKey] += share;
+            pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🎁 ${hostName}請客`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true });
+          });
+        } else if (e.mode === "gift") {
           bens.forEach(b => {
             if (!pStats[b]) return;
             if (b !== e.payer) {
@@ -3830,7 +3928,6 @@
           });
         }
       });
-
       const activeTarget = (state.activeChartTarget && pStats[state.activeChartTarget]) ? state.activeChartTarget : "ALL";
 
       const pillsBox = document.getElementById("chartTargetPills");
@@ -4491,53 +4588,84 @@
       renderZoomableAssets("transitCardsBox", [...(c.transits || []), ...(t.customTransits || [])], "transit");
     }
 
+    // 將舊有寫死在 country 的簽證/交通圖自動移入當前 trip，讓使用者可 100% 自由換圖與刪除！
+      if (Array.isArray(c.visas) && c.visas.length > 0) {
+        if (!t.customVisas) t.customVisas = [];
+        c.visas.forEach(v => { if (!t.customVisas.some(x => x.name === v.name)) t.customVisas.push(v); });
+        c.visas = [];
+      }
+      if (Array.isArray(c.transits) && c.transits.length > 0) {
+        if (!t.customTransits) t.customTransits = [];
+        c.transits.forEach(tr => { if (!t.customTransits.some(x => x.name === tr.name)) t.customTransits.push(tr); });
+        c.transits = [];
+      }
+
+      renderZoomableAssets("visaCardsBox", t.customVisas || [], "visa");
+      renderZoomableAssets("transitCardsBox", t.customTransits || [], "transit");
+    }
+
     function renderZoomableAssets(boxId, items, type) {
+      const t = getTrip();
       const box = document.getElementById(boxId);
       box.innerHTML = "";
-      const seen = new Set();
-      const uniqueItems = items.filter(it => {
-        if (!it || seen.has(it.name + it.img)) return false;
-        seen.add(it.name + it.img);
-        return true;
-      });
-      if (!uniqueItems.length) {
-        box.innerHTML = `<div class="text-xs text-[#7a827d]">尚無圖卡</div>`;
+      if (!items || !items.length) {
+        box.innerHTML = `<div class="text-xs text-[#7a827d]">尚無圖卡，點右上角新增</div>`;
         return;
       }
-      uniqueItems.forEach((it, idx) => {
+      items.forEach((it, idx) => {
+        if (!it.id) it.id = `${type}_${idx}_${Date.now()}`;
         const div = document.createElement("div");
         div.className = "gesture-box rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] overflow-hidden";
         const assetSrc = resolveImageSrc(it.img);
         const dId = `${boxId}_drawer_${idx}`;
-        const cleanItName = cleanParenText(it.name);
-        div.innerHTML = `
-          <div onclick="toggleDrawer('${dId}', event)" class="px-3 py-2 flex items-center justify-between cursor-pointer whitespace-nowrap">
-            <span class="font-bold text-xs text-[#2b302c] truncate">${cleanItName}</span>
-            <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
-              ${assetSrc ? `<button onclick="openImageLightbox('${it.img.replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🔍放大</button>` : ""}
-              <span class="text-xs text-[#7a827d]" onclick="toggleDrawer('${dId}', event)">▾</span>
+        const cleanItName = cleanParenText(it.name || "圖卡");
+
+        const renderAssetNormal = () => {
+          div.innerHTML = `
+            <div onclick="toggleDrawer('${dId}', event)" class="px-3 py-2 flex items-center justify-between cursor-pointer whitespace-nowrap">
+              <span class="font-bold text-xs text-[#2b302c] truncate">${cleanItName}</span>
+              <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+                ${assetSrc ? `<button onclick="openImageLightbox('${(it.img || "").replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🔍放大</button>` : ""}
+                <span class="text-xs text-[#7a827d]" onclick="toggleDrawer('${dId}', event)">▾</span>
+              </div>
             </div>
-          </div>
-          <div id="${dId}" class="drawer-panel px-3 pb-2.5">
-            ${assetSrc ? `<img src="${assetSrc}" onclick="openImageLightbox('${it.img.replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="polaroid-img w-full h-32 object-cover mt-1" />` : ""}
-          </div>
-        `;
+            <div id="${dId}" class="drawer-panel px-3 pb-2.5">
+              ${assetSrc ? `<img src="${assetSrc}" onclick="openImageLightbox('${(it.img || "").replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="polaroid-img w-full h-32 object-cover mt-1" />` : `<div class="text-[11px] text-[#7a827d] py-2">長按此卡可上傳或更換圖片</div>`}
+            </div>
+          `;
+        };
+
+        const openAssetInlineEditor = () => {
+          const tmpImgId = "inline_as_img_" + it.id;
+          div.innerHTML = `
+            <div class="inline-full-editor p-2.5 space-y-1.5 text-xs bg-white" onclick="event.stopPropagation()">
+              <div class="font-bold text-[#52796f]">🖼️ 修改圖卡名稱與更換照片</div>
+              <input type="text" class="as-ed-name w-full px-2 py-1 rounded-lg border bg-[#fbf8f3] font-bold" value="${cleanItName}" placeholder="圖卡名稱 *" />
+              <div class="flex gap-1">
+                <input id="${tmpImgId}" type="text" class="as-ed-img flex-1 px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${it.img || ""}" placeholder="📸 圖片連結或點選圖上傳" />
+                <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">換圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}', 1200)" /></label>
+              </div>
+              <div class="flex gap-1.5 pt-1">
+                <button type="button" class="btn-save-as flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
+                <button type="button" class="btn-cancel-as px-3 py-1 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
+              </div>
+            </div>
+          `;
+          div.querySelector(".btn-save-as").onclick = () => {
+            it.name = div.querySelector(".as-ed-name").value.trim() || it.name;
+            it.img = div.querySelector(".as-ed-img").value.trim();
+            commitChange("更新圖卡");
+          };
+          div.querySelector(".btn-cancel-as").onclick = () => renderInfoSection();
+        };
+
+        renderAssetNormal();
         attachRowGestures(div, {
-          onLongPressEdit: () => {
-            const nn = prompt("修改圖卡名稱：", it.name);
-            if (nn && nn.trim()) { it.name = nn.trim(); commitChange("修改圖卡"); }
-          },
+          onLongPressEdit: openAssetInlineEditor,
           onSwipeDelete: () => {
             if (confirm(`確定刪除圖卡「${cleanItName}」嗎？`)) {
-              const c = getCountry();
-              const t = getTrip();
-              if (type === "visa") {
-                c.visas = (c.visas || []).filter(x => x.name !== it.name);
-                t.customVisas = (t.customVisas || []).filter(x => x.name !== it.name);
-              } else {
-                c.transits = (c.transits || []).filter(x => x.name !== it.name);
-                t.customTransits = (t.customTransits || []).filter(x => x.name !== it.name);
-              }
+              if (type === "visa") t.customVisas = (t.customVisas || []).filter(x => x !== it);
+              else t.customTransits = (t.customTransits || []).filter(x => x !== it);
               commitChange("刪除圖卡");
             }
           }
