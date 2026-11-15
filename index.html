@@ -1722,8 +1722,6 @@
         if (slider._dragBound) return;
         slider._dragBound = true;
 
-        // 注意：手機觸控完全交由瀏覽器原生 overflow-x: auto + -webkit-overflow-scrolling: touch 處理，跟 #dayPillsBar 一樣絲滑！
-        // 以下僅針對「電腦滑鼠」提供按住左右拖曳輔助
         let isDown = false;
         let isDragging = false;
         let startX = 0;
@@ -2247,7 +2245,7 @@
 
     function getCompanionAvatarHtml(name) {
       if (!name) return `<span class="avatar-badge">🏷️</span>`;
-      const found = (state.companions || []).find(c => c.name === name);
+      const found = getActiveCompanions().find(c => c.name === name) || (state.companions || []).find(c => c.name === name);
       const av = found ? found.avatar : "🧸";
       const resolved = resolveImageSrc(av);
       if (resolved && (resolved.startsWith("data:image") || resolved.startsWith("http"))) {
@@ -2391,6 +2389,12 @@
       document.getElementById(modalId).classList.remove("hidden");
     }
 
+    function toggleDrawer(drawerId, ev) {
+      if (ev) ev.stopPropagation();
+      const el = document.getElementById(drawerId);
+      if (el) el.classList.toggle("open");
+    }
+
     // 點擊空白處：自動關閉頂部抽屜，且若有任何展開中的「文內編輯器」，自動幫妳按下儲存！
     document.addEventListener("click", (e) => {
       if (!e.target.closest("header")) {
@@ -2410,8 +2414,7 @@
         }
       });
     });
-
-  // ==================== 10. 👥 旅伴系統（每趟旅程獨立旅伴名單） ====================
+    // ==================== 10. 👥 旅伴系統（每趟旅程獨立旅伴名單） ====================
     function getActiveCompanions() {
       const t = getTrip();
       if (!Array.isArray(t.companions)) {
@@ -2651,7 +2654,6 @@
       document.getElementById("topFlagEmoji").textContent = c.flag;
       document.getElementById("topTripName").textContent = t.title;
 
-      // 採用與 #dayPillsBar 完全一致的原生 <button> 結構，並加大觸控面積 (px-4 py-2)，手機左右滑動超級順暢！
       const flagBar = document.getElementById("flagBarContainer");
       flagBar.innerHTML = "";
       Object.entries(state.countries).forEach(([cid, cObj]) => {
@@ -2671,7 +2673,6 @@
           refreshCountryRate(false);
           saveAppState(false);
           renderAll();
-          // 點擊國家時保持任意門抽屜展開，讓使用者繼續挑選下方旅程！
         };
         attachLongPress(btn, () => {
           if (Object.keys(state.countries).length <= 1) return alert("至少需保留一個國家！");
@@ -2704,7 +2705,6 @@
           state.activeDay = 1;
           saveAppState(false);
           renderAll();
-          // 選擇完具體旅程後，才自動縮起任意門抽屜！
           document.getElementById("anywhereDoorDrawer")?.classList.remove("open");
         };
         attachLongPress(pill, () => {
@@ -3830,9 +3830,9 @@
     }
 
     function removePersonFromExpenseChart(personName) {
-      if (!confirm(`確定要刪除旅伴「${personName}」嗎？\n刪除後將從旅伴名單移除，且相關分攤紀錄也會一併更新。`)) return;
+      if (!confirm(`確定要刪除旅伴「${personName}」嗎？\n刪除後將從本趟旅伴名單移除，且相關分攤紀錄也會一併更新。`)) return;
       const t = getTrip();
-      state.companions = (state.companions || []).filter(c => c.name !== personName);
+      t.companions = getActiveCompanions().filter(c => c.name !== personName);
       t.expenses = (t.expenses || []).filter(e => e.payer !== personName);
       t.expenses.forEach(e => {
         if (Array.isArray(e.beneficiaries)) {
@@ -3990,7 +3990,7 @@
       embeddedBox.innerHTML = "";
 
       const openExpenseInlineFullEditor = (rowEl, expObj) => {
-        const allPeople = (state.companions || []).map(x => x.name);
+        const allPeople = getActiveCompanions().map(x => x.name);
         if (expObj.payer && !allPeople.includes(expObj.payer)) allPeople.push(expObj.payer);
         rowEl.innerHTML = `
           <div class="inline-full-editor w-full space-y-1.5 text-xs p-1" onclick="event.stopPropagation()">
@@ -4021,6 +4021,7 @@
               <select class="ex-ed-mode px-2 py-1 rounded-lg border bg-white">
                 <option value="split" ${expObj.mode === "split" ? "selected" : ""}>🤝 一般分攤</option>
                 <option value="gift" ${expObj.mode === "gift" ? "selected" : ""}>🎁 贈予/請客</option>
+                <option value="treat" ${expObj.mode === "treat" ? "selected" : ""}>🥂 代墊請客</option>
                 <option value="self" ${expObj.mode === "self" ? "selected" : ""}>👤 個人自付</option>
               </select>
             </div>
@@ -4136,7 +4137,7 @@
       document.getElementById("shopCatHistoryList").innerHTML = usedShopCats.map(cat => `<option value="${cat}"></option>`).join("");
       document.getElementById("foodCatHistoryList").innerHTML = usedFoodCats.map(cat => `<option value="${cat}"></option>`).join("");
 
-      const ownerSet = new Set((state.companions || []).map(x => x.name).filter(n => n !== "公費"));
+      const ownerSet = new Set(getActiveCompanions().map(x => x.name).filter(n => n !== "公費"));
       (t.shopping || []).forEach(s => { if (s.owner && s.owner.trim()) ownerSet.add(s.owner.trim()); });
       const ownersList = ["ALL", ...Array.from(ownerSet)];
       if (!ownersList.includes(state.activeShopOwner)) state.activeShopOwner = "ALL";
@@ -4584,11 +4585,7 @@
         </div>
       `).join("");
 
-      renderZoomableAssets("visaCardsBox", [...(c.visas || []), ...(t.customVisas || [])], "visa");
-      renderZoomableAssets("transitCardsBox", [...(c.transits || []), ...(t.customTransits || [])], "transit");
-    }
-
-    // 將舊有寫死在 country 的簽證/交通圖自動移入當前 trip，讓使用者可 100% 自由換圖與刪除！
+      // 將舊有寫死在 country 的簽證/交通圖自動移入當前 trip，讓使用者可 100% 自由換圖與刪除！
       if (Array.isArray(c.visas) && c.visas.length > 0) {
         if (!t.customVisas) t.customVisas = [];
         c.visas.forEach(v => { if (!t.customVisas.some(x => x.name === v.name)) t.customVisas.push(v); });
