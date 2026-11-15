@@ -113,7 +113,7 @@
 
     /* 內嵌全欄位編輯器：支援多行內容自由上下拖曳捲動 */
     .inline-full-editor {
-      max-height: 310px;
+      max-height: 330px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
@@ -129,7 +129,7 @@
       line-height: 1.45;
     }
 
-    /* 任意門與橫向膠囊列：解除子按鈕 pan-y 鎖定，手機觸控與滑鼠 100% 絲滑左右滑動 */
+    /* 任意門與橫向膠囊列：手機觸控與滑鼠 100% 絲滑左右滑動 */
     .drag-scroll-x {
       display: flex;
       flex-wrap: nowrap !important;
@@ -163,7 +163,7 @@
       color: #52796f;
     }
 
-    /* 導覽卡片跳轉高光閃爍動畫 */
+    /* 導覽卡片與返回行程跳轉高光閃爍動畫 */
     @keyframes guidePulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0); }
       35% { box-shadow: 0 0 0 6px rgba(224, 122, 95, 0.45); background-color: #fff7f3; }
@@ -222,6 +222,14 @@
   <!-- 🎨 跨裝置百分比定位貼圖層 -->
   <div id="stickerCanvasLayer"></div>
 
+  <!-- ↩️ 跨頁跳轉後「一鍵返回原處/上一個動作」懸浮膠囊 -->
+  <div id="quickReturnBar" class="fixed top-14 left-3 z-50 hidden">
+    <button onclick="returnToPreviousPlace()" class="px-3.5 py-2 rounded-full btn-gradient-rose text-white shadow-2xl border-2 border-white flex items-center gap-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition">
+      <i class="fa-solid fa-arrow-rotate-left"></i>
+      <span id="quickReturnText">返回原行程位置</span>
+    </button>
+  </div>
+
   <!-- 🔍 拍立得圖片放大檢視器 -->
   <div id="imageLightbox" onclick="closeImageLightbox()" class="fixed inset-0 z-[95] hidden bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-3">
     <div class="relative max-w-3xl w-full bg-[#fffdf9] rounded-3xl p-3 shadow-2xl border-2 border-[#e7dfd3]" onclick="event.stopPropagation()">
@@ -236,7 +244,7 @@
     </div>
   </div>
 
-  <!-- 🪄 左下角懸浮「免金鑰 AI 順路排程 & 經典推薦」快捷圓鈕 -->
+  <!-- 🪄 左下角懸浮「免金鑰 AI 智慧解析 & 順路排程」快捷圓鈕 -->
   <div id="aiFabWrapper" class="fixed left-3 bottom-20 z-40 flex flex-col items-start">
     <button onclick="openAiPlannerModal()" class="px-3.5 py-2.5 rounded-full btn-gradient-ai text-white shadow-xl border-2 border-white flex items-center gap-1.5 font-bold text-xs hover:scale-105 active:scale-95 transition whitespace-nowrap">
       <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
@@ -403,9 +411,12 @@
       <div class="journal-card p-3 sm:p-4">
         <div class="washi-tape green"></div>
         <div class="flex items-center justify-between gap-2 mb-3 whitespace-nowrap">
-          <h2 class="font-bold text-sm text-[#2b302c]">🧭 深度導覽</h2>
-          <div class="flex gap-1.5">
-            <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🪄 同步行程</button>
+          <div class="flex items-center gap-1.5 min-w-0">
+            <h2 class="font-bold text-sm text-[#2b302c]">🧭 重點景點深度導覽</h2>
+            <span class="sub-pill">嚴選地標 · AI摘要</span>
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]" title="僅擷取重點地標與特色景點">🪄 擷取重點景點</button>
             <button onclick="openGuideModal()" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-sage">+ 新增</button>
           </div>
         </div>
@@ -772,41 +783,46 @@
 
   <!-- ==================== MODALS 彈出視窗區 ==================== -->
 
-  <!-- 🪄 左下角專屬：免金鑰 AI 智慧順路排程 & 經典路線視窗 -->
+  <!-- 🪄 左下角專屬：免金鑰 AI 智慧行程解析 & 順路排程視窗 -->
   <div id="aiParserModal" onclick="closeModalDirect('aiParserModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-3">
       <div class="flex items-center justify-between border-b pb-2">
         <div class="flex items-center gap-1.5">
           <span class="px-2 py-0.5 rounded-lg btn-gradient-ai text-white text-xs font-bold">🪄 AI 排程</span>
-          <h3 class="font-bold text-sm text-[#2b302c]">熱門經典路線 & 一鍵順路排序</h3>
+          <h3 class="font-bold text-sm text-[#2b302c]">智慧貼文解析 & 順路排序</h3>
         </div>
         <button onclick="closeModalDirect('aiParserModal')" class="text-gray-400 text-base">✕</button>
       </div>
 
+      <div class="p-3 rounded-2xl bg-[#fbf8f3] border-2 border-[#b56576]/40 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-xs text-[#2b302c]">✍️ 1. 貼上行程文字或景點清單（支援時間、交通、餐飲自動解析）</span>
+          <span id="aiSortDayLabel" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">DAY 1</span>
+        </div>
+        <textarea id="aiRawTextInp" rows="6" placeholder="直接貼上整段行程文字，例如：&#10;上午 從飯店步行至 Asok Pier，體驗在地 空盛桑運河快船 前往 Pratunam Pier。&#10;11:00 碼頭附近 Superrich 換匯，逛 Central World 拍巨型聖誕樹。&#10;13:00 午餐：紅大哥水門雞飯，享用粉紅雞飯。&#10;18:30 欣賞 ICONSIAM 聖誕節水舞燈光秀..." class="w-full text-xs p-2.5 rounded-xl border bg-white leading-relaxed"></textarea>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          <button onclick="parsePastedScheduleTextToDay()" id="btnParseScheduleText" class="py-2 px-3 rounded-full btn-gradient-ai font-bold text-xs shadow-sm">
+            📥 智慧解析貼上文字 (保留時間順序)
+          </button>
+          <button onclick="runKeylessAiSmartRoutePlanner()" id="btnRunAiRoute" class="py-2 px-3 rounded-full btn-gradient-sage font-bold text-xs shadow-sm">
+            🚀 無時間景點 AI 座標順路排序
+          </button>
+        </div>
+      </div>
+
       <div class="p-3 rounded-2xl bg-[#e8f0ed] border border-[#c5dbd3] space-y-2">
         <div class="flex items-center justify-between whitespace-nowrap">
-          <span class="font-bold text-xs text-[#3d5a52]">🧭 1. 當日行程一鍵順路排序</span>
-          <span id="aiSortDayLabel" class="text-[11px] font-bold text-[#52796f]">DAY 1</span>
+          <span class="font-bold text-xs text-[#3d5a52]">🧭 2. 當日現有行程最佳化</span>
+          <button onclick="manualSortDayByTime(state.activeDay); closeModalDirect('aiParserModal');" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-[#3d5a52] border">🕒 依時間重排</button>
         </div>
         <button onclick="optimizeCurrentDayRouteWithAi()" class="w-full py-2 rounded-xl btn-gradient-sage font-bold text-xs shadow-2xs">
-          ⚡ 立即最佳化當日順序 & 自動計算站間交通時間
+          ⚡ 依座標最佳化當日順序 & 估算站間交通時間
         </button>
       </div>
 
       <div class="p-3 rounded-2xl bg-[#fef9ef] border border-[#f2cc8f] space-y-2">
-        <div class="font-bold text-xs text-[#9c6644]">🌟 2. 一鍵載入當地著名經典順路一日遊</div>
-        <div id="aiFamousTemplatesBox" class="grid grid-cols-2 gap-1.5"></div>
-      </div>
-
-      <div class="p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-2">
-        <div class="font-bold text-xs text-[#2b302c]">✍️ 3. 輸入想去的景點，AI 自動排最順路線＋估算車程</div>
-        <textarea id="aiRawTextInp" rows="4" placeholder="輸入想去的地點，一行一個：&#10;淺草寺雷門&#10;晴空塔&#10;上野阿美橫町&#10;銀座和光百貨" class="w-full text-xs p-2.5 rounded-xl border bg-white"></textarea>
-        <div class="flex gap-2">
-          <button onclick="runKeylessAiSmartRoutePlanner()" id="btnRunAiRoute" class="flex-1 py-2 rounded-full btn-gradient-ai font-bold text-xs">
-            🚀 AI 順路排序並排入行程
-          </button>
-          <button onclick="closeModalDirect('aiParserModal')" class="px-4 py-2 rounded-full bg-gray-100 text-gray-600 font-bold text-xs">關閉</button>
-        </div>
+        <div class="font-bold text-xs text-[#9c6644]">🌟 3. 一鍵載入當地著名經典順路一日遊</div>
+        <div id="aiFamousTemplatesBox" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
       </div>
     </div>
   </div>
@@ -842,7 +858,7 @@
     </div>
   </div>
 
-  <!-- 1. 新增行程點視窗 -->
+  <!-- 1. 新增行程點視窗（擴充 12 種常用分類） -->
   <div id="itineraryModal" onclick="autoSaveAndCloseModal('itineraryModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -868,9 +884,17 @@
         <input id="itiTitleInp" type="text" placeholder="行程 / 景點名稱 *" class="col-span-2 text-xs px-3 py-2 rounded-xl border bg-white" />
         <select id="itiCatSel" class="text-xs px-2 py-2 rounded-xl border bg-white">
           <option value="景點">📸 景點</option>
+          <option value="美食">🍽️ 美食</option>
+          <option value="咖啡廳">☕ 咖啡廳</option>
           <option value="購物">🛍️ 購物</option>
           <option value="交通">🚆 交通</option>
           <option value="體驗">🎡 體驗</option>
+          <option value="按摩SPA">💆‍♀️ 按摩SPA</option>
+          <option value="換匯">💱 換匯</option>
+          <option value="夜景/秀">🌃 夜景/秀</option>
+          <option value="寺廟古蹟">⛩️ 寺廟古蹟</option>
+          <option value="打卡機位">📷 打卡機位</option>
+          <option value="住宿">🏨 住宿</option>
         </select>
       </div>
       <input id="itiTransitInp" type="text" placeholder="🚇 交通方式與轉乘路線..." class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
@@ -960,7 +984,7 @@
     </div>
   </div>
 
-  <!-- 4. 導覽視窗 -->
+  <!-- 4. 導覽視窗（支援 Google AI 深度摘要 & Google 外部查詢） -->
   <div id="guideModal" onclick="autoSaveAndCloseModal('guideModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -969,7 +993,8 @@
       </div>
       <div class="flex gap-1.5">
         <input id="gdTitleInp" type="text" placeholder="輸入景點名稱 *" class="flex-1 text-xs px-3 py-1.5 rounded-xl border bg-white" />
-        <button type="button" onclick="autoFetchWikiGuide()" class="px-2.5 py-1.5 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold shrink-0">🪄 AI寫簡介</button>
+        <button type="button" onclick="autoFetchWikiGuide()" class="px-2.5 py-1.5 rounded-xl btn-gradient-ai text-white text-xs font-bold shrink-0">🪄 AI深度摘要</button>
+        <button type="button" onclick="openGoogleSearchForGuide(document.getElementById('gdTitleInp').value)" class="px-2.5 py-1.5 rounded-xl bg-[#e8f0ed] text-[#3d5a52] border text-xs font-bold shrink-0">🔍 G查詢</button>
       </div>
       <div class="grid grid-cols-3 gap-2">
         <input id="gdRegionInp" type="text" placeholder="區域" class="text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
@@ -982,7 +1007,7 @@
           選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'gdImgInp')" />
         </label>
       </div>
-      <textarea id="gdDescInp" rows="4" placeholder="📖 深度介紹..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
+      <textarea id="gdDescInp" rows="5" placeholder="📖 深度介紹（點上方『🪄 AI深度摘要』自動抓取歷史亮點、必拍機位與攻略）..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white leading-relaxed"></textarea>
       <input id="gdLinkInp" type="text" placeholder="🔗 官網或地圖連結" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
       <input type="hidden" id="editingGdId" value="" />
       <div class="flex gap-2">
@@ -1058,7 +1083,30 @@
     const LOCAL_PACKING_KEY = "WANDERNOTE_LOCAL_PACKING_V83";
     const SNAPSHOTS_KEY = "WANDERNOTE_SNAPSHOTS_V83";
 
-    // ==================== 0. 括號清理工具與手機原生滑動強化 ====================
+    // ==================== 0. 括號清理、常用行程分類表與跨頁返回記憶 ====================
+    const ITI_CATEGORIES_LIST = [
+      { val: "景點", label: "📸 景點" },
+      { val: "美食", label: "🍽️ 美食" },
+      { val: "咖啡廳", label: "☕ 咖啡廳" },
+      { val: "購物", label: "🛍️ 購物" },
+      { val: "交通", label: "🚆 交通" },
+      { val: "體驗", label: "🎡 體驗" },
+      { val: "按摩SPA", label: "💆‍♀️ 按摩SPA" },
+      { val: "換匯", label: "💱 換匯" },
+      { val: "夜景/秀", label: "🌃 夜景/秀" },
+      { val: "寺廟古蹟", label: "⛩️ 寺廟古蹟" },
+      { val: "打卡機位", label: "📷 打卡機位" },
+      { val: "住宿", label: "🏨 住宿" }
+    ];
+
+    function buildItiCategoryOptionsHtml(selectedCat = "景點") {
+      return ITI_CATEGORIES_LIST.map(c =>
+        `<option value="${c.val}" ${selectedCat === c.val ? "selected" : ""}>${c.label}</option>`
+      ).join("");
+    }
+
+    let lastJumpContext = null;
+
     function cleanParenText(str) {
       if (!str || typeof str !== "string") return "";
       return str.replace(/\s*[（(][^）)]*[）)]/g, "").trim();
@@ -1071,7 +1119,6 @@
       });
     }
 
-    // 注入與「每日行程日期列」完全一致的原生觸控滑動與加大感應區樣式
     (function injectNativeTouchScrollStyle() {
       const st = document.createElement("style");
       st.textContent = `
@@ -1175,10 +1222,20 @@
       return "🗺️導航";
     }
 
-    // ==================== 3. 點擊行程景點 ➔ 自動跳轉至「深度導覽」並高光定位 ====================
-    function jumpToGuideBySpotTitle(spotTitle, fallbackIti = null) {
+    // ==================== 3. 點擊行程景點 ➔ 跳轉「深度導覽」＋ 一鍵返回原行程位置 ====================
+    async function jumpToGuideBySpotTitle(spotTitle, fallbackIti = null) {
       const t = getTrip();
       if (!t.guides) t.guides = [];
+
+      // 記錄跳轉前的精準位置與行程卡片 ID，供「返回原行程位置」使用
+      lastJumpContext = {
+        tab: "itinerary",
+        day: state.activeDay,
+        scrollY: window.scrollY,
+        itiId: fallbackIti ? fallbackIti.id : null,
+        label: `返回 D${state.activeDay} 行程`
+      };
+
       const cleanSpot = cleanParenText(spotTitle || "")
         .replace(/^Day\s*\d+[:：]?\s*/i, "")
         .replace(/^\d{1,2}\/\d{1,2}[:：]?\s*/, "")
@@ -1192,25 +1249,35 @@
         (g.title && spotTitle.includes(g.title))
       );
 
+      let newlyCreated = false;
       if (!targetGuide && fallbackIti) {
         const newGd = {
           id: "gd_" + Date.now(),
           title: cleanSpot || cleanParenText(fallbackIti.title),
           region: fallbackIti.subRegion || "",
-          hours: fallbackIti.time ? `預計 ${fallbackIti.time}` : "依店家公告",
+          hours: fallbackIti.time ? `預計 ${fallbackIti.time}` : "依現場公告",
           price: "",
           img: fallbackIti.img || "",
-          desc: fallbackIti.note || `${fallbackIti.transit ? "🚇 " + fallbackIti.transit : "長按可補充深度導覽介紹，或點 AI 寫簡介自動生成"}`,
+          desc: "⏳ AI 正在為您彙整景點深度摘要...",
           link: fallbackIti.link || ""
         };
         t.guides.unshift(newGd);
+        targetGuide = newGd;
+        newlyCreated = true;
         saveAppState(false);
         renderGuidesSection();
-        targetGuide = newGd;
       }
 
       const guideNavBtn = document.querySelectorAll(".nav-bottom-btn")[1];
-      switchTab("guide", guideNavBtn);
+      switchTab("guide", guideNavBtn, true);
+
+      // 顯示左上角「返回原行程位置」快捷按鈕
+      const retBar = document.getElementById("quickReturnBar");
+      const retTxt = document.getElementById("quickReturnText");
+      if (retBar && retTxt) {
+        retTxt.textContent = `返回 D${lastJumpContext.day} · ${(cleanSpot || "原行程").slice(0, 8)}`;
+        retBar.classList.remove("hidden");
+      }
 
       if (targetGuide) {
         setTimeout(() => {
@@ -1222,10 +1289,44 @@
             el.classList.add("guide-highlight-flash");
           }
         }, 120);
+
+        if (newlyCreated) {
+          await populateGuideWithAiSummary(targetGuide, fallbackIti);
+          saveAppState(false);
+          renderGuidesSection();
+        }
       }
     }
 
-    // ==================== 4. 單機版預設行李清單（無括號清爽版） ====================
+    function returnToPreviousPlace() {
+      const retBar = document.getElementById("quickReturnBar");
+      if (retBar) retBar.classList.add("hidden");
+      if (!lastJumpContext) return;
+
+      const ctx = lastJumpContext;
+      lastJumpContext = null;
+
+      if (ctx.day) state.activeDay = ctx.day;
+      const itiNavBtn = document.querySelectorAll(".nav-bottom-btn")[0];
+      switchTab("itinerary", itiNavBtn);
+      renderAll();
+
+      setTimeout(() => {
+        if (ctx.itiId) {
+          const cardEl = document.querySelector(`[data-iti-id="${ctx.itiId}"]`);
+          if (cardEl) {
+            cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            cardEl.classList.remove("guide-highlight-flash");
+            void cardEl.offsetWidth;
+            cardEl.classList.add("guide-highlight-flash");
+            return;
+          }
+        }
+        window.scrollTo({ top: ctx.scrollY || 0, behavior: "smooth" });
+      }, 90);
+    }
+
+    // ==================== 4. 單機版預設行李清單 ====================
     const HARDCODED_PACKING_DEFAULTS = [
       { id: "def_1", cat: "重要證件與財務", title: "護照正本 & 影本", note: "效期6個月以上・隨身包必備", done: false },
       { id: "def_2", cat: "重要證件與財務", title: "入境卡截圖與憑證", note: "存手機相簿", done: false },
@@ -1365,144 +1466,6 @@
           { title: "⛅ 中國天氣網", url: "http://www.weather.com.cn/", icon: "fa-cloud-sun" },
           { title: "🌱 大陸素食餐廳查詢", url: "https://www.happycow.net/asia/china/", icon: "fa-leaf" }
         ]
-      },
-      VN: {
-        links: [
-          { title: "🗺️ Google Maps 越南", url: "https://www.google.com/maps", icon: "fa-map" },
-          { title: "🚕 Grab 越南叫車", url: "https://www.grab.com/vn/en/", icon: "fa-taxi" },
-          { title: "🚙 Xanh SM 電動計程車", url: "https://www.xanhsm.com/", icon: "fa-car-side" },
-          { title: "🍜 Foody.vn 越南美食", url: "https://www.foody.vn/", icon: "fa-utensils" },
-          { title: "🌱 越南素食地圖", url: "https://www.happycow.net/asia/vietnam/", icon: "fa-leaf" },
-          { title: "🚌 BusMap 越南公車", url: "https://busmap.vn/", icon: "fa-bus" },
-          { title: "🛂 越南電子簽證官網", url: "https://evisa.xuatnhapcanh.gov.vn/", icon: "fa-passport" },
-          { title: "⛅ 越南氣象預報", url: "https://nchmf.gov.vn/", icon: "fa-cloud-sun" }
-        ]
-      },
-      SG: {
-        links: [
-          { title: "🗺️ Google Maps 新加坡", url: "https://www.google.com/maps", icon: "fa-map" },
-          { title: "🚕 Grab 新加坡", url: "https://www.grab.com/sg/", icon: "fa-taxi" },
-          { title: "🚙 CDG Zig 計程車", url: "https://www.cdgtaxi.com.sg/", icon: "fa-car" },
-          { title: "🚇 MyTransport 地鐵", url: "https://www.lta.gov.sg/", icon: "fa-train-subway" },
-          { title: "🍽️ Burpple 美食指南", url: "https://www.burpple.com/sg", icon: "fa-utensils" },
-          { title: "🌱 新加坡素食地圖", url: "https://www.happycow.net/asia/singapore/", icon: "fa-leaf" },
-          { title: "🛂 SG 電子入境卡", url: "https://eservices.ica.gov.sg/sgarrivalcard/", icon: "fa-passport" }
-        ]
-      },
-      MY: {
-        links: [
-          { title: "🗺️ Google Maps 大馬", url: "https://www.google.com/maps", icon: "fa-map" },
-          { title: "🚕 Grab 馬來西亞", url: "https://www.grab.com/my/", icon: "fa-taxi" },
-          { title: "🚇 RapidKL 吉隆坡捷運", url: "https://myrapid.com.my/", icon: "fa-train-subway" },
-          { title: "🌱 大馬素食地圖", url: "https://www.happycow.net/asia/malaysia/", icon: "fa-leaf" },
-          { title: "🛂 MDAC 數位入境卡", url: "https://imigresen-online.imi.gov.my/mdac/main", icon: "fa-passport" },
-          { title: "⛅ MET 大馬氣象局", url: "https://www.met.gov.my/", icon: "fa-cloud-sun" }
-        ]
-      },
-      HK: {
-        links: [
-          { title: "🚇 MTR 港鐵行程指南", url: "https://www.mtr.com.hk/", icon: "fa-train-subway" },
-          { title: "🍜 OpenRice 開飯喇", url: "https://www.openrice.com/zh/hongkong", icon: "fa-utensils" },
-          { title: "🚕 HKTaxi / Uber 香港", url: "https://m.uber.com/", icon: "fa-taxi" },
-          { title: "🌱 香港素食地圖", url: "https://www.happycow.net/asia/china/hong_kong/", icon: "fa-leaf" },
-          { title: "⛅ 香港天文台天氣", url: "https://www.hko.gov.hk/tc/", icon: "fa-cloud-sun" },
-          { title: "🛂 台灣居民預辦入境", url: "https://www.immd.gov.hk/hkt/services/visas/pre-arrival_registration_for_taiwan_residents.html", icon: "fa-passport" }
-        ]
-      },
-      GB: {
-        links: [
-          { title: "🚇 TfL Go 倫敦地鐵", url: "https://tfl.gov.uk/", icon: "fa-train-subway" },
-          { title: "🚄 Trainline 英國火車", url: "https://www.thetrainline.com/", icon: "fa-train" },
-          { title: "🚕 Uber / Bolt 英國", url: "https://m.uber.com/", icon: "fa-taxi" },
-          { title: "🍽️ OpenTable 訂位", url: "https://www.opentable.co.uk/", icon: "fa-utensils" },
-          { title: "🌱 英國素食地圖", url: "https://www.happycow.net/europe/england/", icon: "fa-leaf" },
-          { title: "🛂 UK ETA 旅遊憑證", url: "https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta", icon: "fa-passport" }
-        ]
-      },
-      FR: {
-        links: [
-          { title: "🚇 Bonjour RATP 巴黎地鐵", url: "https://www.ratp.fr/en", icon: "fa-train-subway" },
-          { title: "🚄 SNCF Connect 法國高鐵", url: "https://www.sncf-connect.com/en-en/", icon: "fa-train" },
-          { title: "🍽️ TheFork 餐廳訂位折扣", url: "https://www.thefork.com/", icon: "fa-utensils" },
-          { title: "🚕 G7 Taxi / Bolt 叫車", url: "https://www.g7.fr/en/", icon: "fa-taxi" },
-          { title: "🌱 法國素食地圖", url: "https://www.happycow.net/europe/france/", icon: "fa-leaf" },
-          { title: "⛅ Météo-France 氣象", url: "https://meteofrance.com/", icon: "fa-cloud-sun" }
-        ]
-      },
-      CH: {
-        links: [
-          { title: "🚄 SBB Mobile 瑞士國鐵", url: "https://www.sbb.ch/en", icon: "fa-train" },
-          { title: "🏔️ 少女峰/馬特洪峰鏡頭", url: "https://www.jungfrau.ch/en-gb/live/webcams/", icon: "fa-camera" },
-          { title: "⛅ MeteoSwiss 瑞士天氣", url: "https://www.meteoswiss.admin.ch/", icon: "fa-cloud-sun" },
-          { title: "🌱 瑞士素食地圖", url: "https://www.happycow.net/europe/switzerland/", icon: "fa-leaf" },
-          { title: "🥾 Swisstopo 健行步道", url: "https://map.geo.admin.ch/", icon: "fa-person-hiking" }
-        ]
-      },
-      DE: {
-        links: [
-          { title: "🚄 DB Navigator 德國國鐵", url: "https://int.bahn.de/en", icon: "fa-train" },
-          { title: "🚕 FREE NOW / Bolt 叫車", url: "https://www.free-now.com/", icon: "fa-taxi" },
-          { title: "🍽️ TheFork 德國餐廳訂位", url: "https://www.thefork.de/", icon: "fa-utensils" },
-          { title: "🌱 德國素食地圖", url: "https://www.happycow.net/europe/germany/", icon: "fa-leaf" },
-          { title: "⛅ Wetter.com 德國天氣", url: "https://www.wetter.com/", icon: "fa-cloud-sun" }
-        ]
-      },
-      IT: {
-        links: [
-          { title: "🚄 Trenitalia 義大利國鐵", url: "https://www.trenitalia.com/en.html", icon: "fa-train" },
-          { title: "🚅 Italo 法拉利高鐵", url: "https://www.italotreno.it/en", icon: "fa-train-tram" },
-          { title: "🍽️ TheFork 義大利訂位", url: "https://www.thefork.it/", icon: "fa-utensils" },
-          { title: "🚕 FREE NOW 義大利叫車", url: "https://www.free-now.com/it/", icon: "fa-taxi" },
-          { title: "🌱 義大利素食地圖", url: "https://www.happycow.net/europe/italy/", icon: "fa-leaf" },
-          { title: "⛅ IlMeteo 義大利天氣", url: "https://www.ilmeteo.it/", icon: "fa-cloud-sun" }
-        ]
-      },
-      ES: {
-        links: [
-          { title: "🚄 Renfe 西班牙國鐵", url: "https://www.renfe.com/es/en", icon: "fa-train" },
-          { title: "🚕 Cabify / FREE NOW 叫車", url: "https://cabify.com/en", icon: "fa-taxi" },
-          { title: "🍽️ ElTenedor 餐廳訂位", url: "https://www.thefork.es/", icon: "fa-utensils" },
-          { title: "🌱 西班牙素食地圖", url: "https://www.happycow.net/europe/spain/", icon: "fa-leaf" },
-          { title: "⛅ AEMET 西班牙氣象", url: "https://www.aemet.es/en/portada", icon: "fa-cloud-sun" }
-        ]
-      },
-      IS: {
-        links: [
-          { title: "🛣️ Road.is 冰島封路路況", url: "https://umferdin.is/en", icon: "fa-road" },
-          { title: "🌌 Vedur.is 極光與天氣", url: "https://en.vedur.is/weather/forecasts/aurora/", icon: "fa-star" },
-          { title: "🛡️ SafeTravel 冰島安全", url: "https://safetravel.is/", icon: "fa-shield-heart" },
-          { title: "🅿️ Parka 冰島停車繳費", url: "https://parka.is/", icon: "fa-square-parking" },
-          { title: "🌱 冰島素食地圖", url: "https://www.happycow.net/europe/iceland/", icon: "fa-leaf" }
-        ]
-      },
-      US: {
-        links: [
-          { title: "🗺️ Google Maps 北美", url: "https://www.google.com/maps", icon: "fa-map" },
-          { title: "🚕 Uber 北美叫車", url: "https://m.uber.com/", icon: "fa-taxi" },
-          { title: "🚗 Lyft 叫車比價", url: "https://www.lyft.com/", icon: "fa-car" },
-          { title: "🍔 Yelp 美國餐廳評價", url: "https://www.yelp.com/", icon: "fa-utensils" },
-          { title: "🍽️ OpenTable 餐廳訂位", url: "https://www.opentable.com/", icon: "fa-calendar-check" },
-          { title: "🛂 ESTA 電子旅行授權", url: "https://esta.cbp.dhs.gov/", icon: "fa-passport" }
-        ]
-      },
-      AU: {
-        links: [
-          { title: "🗺️ Google Maps 澳洲", url: "https://www.google.com/maps", icon: "fa-map" },
-          { title: "🚕 Uber / DiDi 澳洲叫車", url: "https://m.uber.com/", icon: "fa-taxi" },
-          { title: "🚇 Opal / PTV 大眾運輸", url: "https://transportnsw.info/", icon: "fa-train-subway" },
-          { title: "🍽️ OpenTable 澳洲美食", url: "https://www.opentable.com.au/", icon: "fa-utensils" },
-          { title: "🌱 澳洲素食地圖", url: "https://www.happycow.net/oceania/australia/", icon: "fa-leaf" },
-          { title: "⛅ BOM 澳洲氣象局", url: "http://www.bom.gov.au/", icon: "fa-cloud-sun" }
-        ]
-      },
-      NZ: {
-        links: [
-          { title: "🚐 CamperMate 紐西蘭自駕", url: "https://campermate.com/", icon: "fa-caravan" },
-          { title: "🛣️ NZTA 紐西蘭公路路況", url: "https://www.journeys.nzta.govt.nz/highway-conditions", icon: "fa-road" },
-          { title: "⛅ MetService 紐西蘭天氣", url: "https://www.metservice.com/", icon: "fa-cloud-sun" },
-          { title: "🌱 紐西蘭素食地圖", url: "https://www.happycow.net/oceania/new_zealand/", icon: "fa-leaf" },
-          { title: "🛂 NZeTA 紐西蘭電子簽證", url: "https://nzeta.immigration.govt.nz/", icon: "fa-passport" }
-        ]
       }
     };
 
@@ -1511,35 +1474,13 @@
         return JSON.parse(JSON.stringify(COUNTRY_DEEP_PROFILES[code].links));
       }
       const enc = encodeURIComponent(name);
-      const reg = (region || "").toLowerCase();
-
-      if (reg.includes("europe")) {
-        return [
-          { title: `🗺️ Google Maps ${name}`, url: `https://www.google.com/maps/search/${enc}`, icon: "fa-map" },
-          { title: `🚄 Omio / Trainline 歐洲火車`, url: "https://www.omio.com/", icon: "fa-train" },
-          { title: `🚕 Bolt / Uber ${name}叫車`, url: "https://bolt.eu/", icon: "fa-taxi" },
-          { title: `🍽️ TheFork ${name}餐廳訂位`, url: "https://www.thefork.com/", icon: "fa-utensils" },
-          { title: `🌱 ${name}素食餐廳地圖`, url: `https://www.happycow.net/searchmap?s=${enc}`, icon: "fa-leaf" },
-          { title: `⛅ ${name}即時天氣預報`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
-        ];
-      }
-      if (reg.includes("asia")) {
-        return [
-          { title: `🗺️ Google Maps ${name}`, url: `https://www.google.com/maps/search/${enc}`, icon: "fa-map" },
-          { title: `🚕 Grab / 亞洲叫車`, url: "https://www.grab.com/", icon: "fa-taxi" },
-          { title: `🧭 Rome2Rio ${name}交通路線`, url: `https://www.rome2rio.com/s/${enc}`, icon: "fa-train-subway" },
-          { title: `🌱 ${name}素食餐廳地圖`, url: `https://www.happycow.net/searchmap?s=${enc}`, icon: "fa-leaf" },
-          { title: `🎫 Klook ${name}交通與門票`, url: `https://www.klook.com/zh-TW/search/result/?query=${enc}`, icon: "fa-ticket" },
-          { title: `⛅ ${name}即時天氣預報`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
-        ];
-      }
       return [
         { title: `🗺️ Google Maps ${name}`, url: `https://www.google.com/maps/search/${enc}`, icon: "fa-map" },
-        { title: `🚕 Uber / Careem ${name}叫車`, url: "https://m.uber.com/", icon: "fa-taxi" },
-        { title: `🧭 Rome2Rio ${name}交通規劃`, url: `https://www.rome2rio.com/s/${enc}`, icon: "fa-route" },
+        { title: `🚕 Grab / Uber ${name}叫車`, url: "https://www.grab.com/", icon: "fa-taxi" },
+        { title: `🧭 Rome2Rio ${name}交通路線`, url: `https://www.rome2rio.com/s/${enc}`, icon: "fa-train-subway" },
         { title: `🌱 ${name}素食餐廳地圖`, url: `https://www.happycow.net/searchmap?s=${enc}`, icon: "fa-leaf" },
-        { title: `🍽️ TripAdvisor ${name}美食`, url: `https://www.tripadvisor.com.tw/Search?q=${enc}`, icon: "fa-utensils" },
-        { title: `⛅ ${name}即時天氣`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
+        { title: `🎫 Klook ${name}交通與門票`, url: `https://www.klook.com/zh-TW/search/result/?query=${enc}`, icon: "fa-ticket" },
+        { title: `⛅ ${name}即時天氣預報`, url: `https://www.accuweather.com/en/search-locations?query=${enc}`, icon: "fa-cloud-sun" }
       ];
     }
 
@@ -1552,7 +1493,7 @@
       const name = rawInput.trim();
       if (GLOBAL_COUNTRY_LOOKUP[name]) {
         const hit = GLOBAL_COUNTRY_LOOKUP[name];
-        return { ...hit, region: ["JP", "KR", "TH", "CN", "VN", "SG", "MY", "HK", "MO", "TW", "ID", "PH", "IN", "NP", "LK", "MV"].includes(hit.code) ? "Asia" : "Europe" };
+        return { ...hit, region: "Asia" };
       }
       for (const [k, v] of Object.entries(GLOBAL_COUNTRY_LOOKUP)) {
         if (name.includes(k) || k.includes(name)) return { ...v, region: "World" };
@@ -1565,12 +1506,10 @@
           const tData = await tRes.json();
           queryEn = (tData[0]?.[0]?.[0] || name).trim();
         }
-
         const endpoints = [
           `https://restcountries.com/v3.1/name/${encodeURIComponent(queryEn)}`,
           `https://restcountries.com/v3.1/translation/${encodeURIComponent(name)}`
         ];
-
         for (const url of endpoints) {
           const r = await fetch(url);
           if (r.ok) {
@@ -1581,24 +1520,17 @@
               const flag = best.flag || cca2ToFlagEmoji(code);
               const currency = Object.keys(best.currencies || { USD: {} })[0] || "USD";
               const langIso3 = Object.keys(best.languages || { eng: "English" })[0] || "eng";
-              const langMap = { jpn: "ja", kor: "ko", tha: "th", zho: "zh-CN", cmn: "zh-CN", vie: "vi", fra: "fr", deu: "de", spa: "es", ita: "it", por: "pt", rus: "ru", ara: "ar", tur: "tr", nld: "nl", ces: "cs", pol: "pl", hun: "hu", ell: "el", swe: "sv", nor: "no", dan: "da", fin: "fi", ind: "id", msa: "ms" };
+              const langMap = { jpn: "ja", kor: "ko", tha: "th", zho: "zh-CN", cmn: "zh-CN", vie: "vi", fra: "fr", deu: "de", spa: "es", ita: "it" };
               const shortLang = langMap[langIso3] || langIso3.slice(0, 2);
-              return {
-                code, flag, currency,
-                lang: shortLang,
-                speech: `${shortLang}-${code}`,
-                defaultRate: 1,
-                region: best.region || "World"
-              };
+              return { code, flag, currency, lang: shortLang, speech: `${shortLang}-${code}`, defaultRate: 1, region: best.region || "World" };
             }
           }
         }
       } catch (e) {}
-
       return { code: "W_" + Date.now().toString().slice(-2), flag: "🌍", currency: "USD", lang: "en", speech: "en-US", defaultRate: 32.4, region: "World" };
     }
 
-    // ==================== 6. 各國深度客製情境字卡庫（無多餘括號清爽版） ====================
+    // ==================== 6. 各國深度客製情境字卡庫 ====================
     const PHRASE_CATEGORIES = [
       { key: "all", label: "🌟 全部" },
       { key: "veg", label: "🌱 素食叮嚀" },
@@ -1611,24 +1543,19 @@
     const BASE_ZH_PHRASES = [
       { cat: "veg", zh: "我是嚴格素食者，不吃肉、魚、海鮮與動物高湯" },
       { cat: "veg", zh: "請用植物油烹調，不要加魚露、蠔油或動物脂肪" },
-      { cat: "veg", zh: "我不吃蔥、蒜、洋蔥，可以幫我拿掉嗎？" },
       { cat: "dining", zh: "我們有預約，請幫忙確認這個預約畫面" },
       { cat: "dining", zh: "請給我英文或圖片菜單，並推薦招牌菜" },
       { cat: "dining", zh: "請做成不辣或微辣 / 請幫我們結帳，可以刷卡嗎？" },
       { cat: "shopping", zh: "請問這個多少錢？買多一點可以算便宜嗎？" },
       { cat: "shopping", zh: "請問可以辦理退稅嗎？需要開退稅單" },
-      { cat: "shopping", zh: "請幫我找這張照片裡的商品！請問有新庫存嗎？" },
       { cat: "transit", zh: "請載我們到這個地址，麻煩打開後車廂放行李" },
-      { cat: "transit", zh: "請問開往這個方向的月台 / 車站在哪裡？" },
-      { cat: "hotel", zh: "請問入住前 / 退房後可以先免費寄放行李嗎？" },
-      { cat: "hotel", zh: "請問附近的洗手間 / 藥局在哪裡？" }
+      { cat: "hotel", zh: "請問入住前 / 退房後可以先免費寄放行李嗎？" }
     ];
 
     function buildExpandedPhrases(lang) {
       if (lang === "ja") {
         return [
           { cat: "veg", zh: "我是素食者，不吃肉、魚、海鮮與柴魚高湯", local: "私はベジタリアンです。肉、魚、魚介類、鰹出汁は食べられません。", romaji: "Bejitarian desu. Niku, sakana, dashi wa taberaremasen." },
-          { cat: "veg", zh: "我不吃五辛，可以拿掉嗎？", local: "ネギ、ニンニク、ニラ、玉ねぎ抜きで作っていただけますか？", romaji: "Gokun nuki de tsukutte itadakemasu ka?" },
           { cat: "dining", zh: "我們有預約，這是預約確認畫面", local: "予約しています。これが予約確認画面です。", romaji: "Yoyaku shiteimasu." },
           { cat: "dining", zh: "請給我菜單 / 請幫我們結帳", local: "メニューをお願いします ／ お会計をお願いします。", romaji: "Menyuu / Okaikei wo onegaishimasu." },
           { cat: "shopping", zh: "請問這個可以辦理免稅嗎？", local: "これは免税手続きできますか？", romaji: "Kore wa menzei dekimasu ka?" },
@@ -1657,7 +1584,6 @@
       if (lang === "zh-CN") {
         return [
           { cat: "veg", zh: "純素叮嚀：請用植物油炒，不放豬油、肉沫、雞精與蠔油", local: "師傅您好，我們吃純素，請一定用植物油炒，不要放豬油、雞精、蠔油或肉湯底喔！", romaji: "" },
-          { cat: "veg", zh: "菌菇鍋底確認：請給純清水＋鮮菌菇底，不加雞湯大骨湯", local: "請問菌湯鍋底是純清水煮的嗎？我們吃素，請幫我們換成純清水加鮮菌菇！", romaji: "" },
           { cat: "dining", zh: "請做成免辣或微辣、少油少鹽，謝謝", local: "麻煩幫我們做成免辣或微辣、少油清淡一點，謝謝您！", romaji: "" },
           { cat: "transit", zh: "師傅您好，我們有行李箱，麻煩幫忙開一下後備箱", local: "師傅您好，我們有大件行李，麻煩幫忙開一下後備箱，謝謝！", romaji: "" }
         ];
@@ -1716,24 +1642,17 @@
       }
     }
 
-    // ==================== 7. 橫向滑動引擎（手機完全採用與每日行程日期列一致的原生觸控，零卡頓！） ====================
+    // ==================== 7. 橫向滑動引擎與手勢回饋 ====================
     function enableDragScrollOnContainers() {
       document.querySelectorAll(".drag-scroll-x").forEach(slider => {
         if (slider._dragBound) return;
         slider._dragBound = true;
-
-        let isDown = false;
-        let isDragging = false;
-        let startX = 0;
-        let scrollLeft = 0;
-
+        let isDown = false, isDragging = false, startX = 0, scrollLeft = 0;
         slider.addEventListener("mousedown", e => {
-          isDown = true;
-          isDragging = false;
+          isDown = true; isDragging = false;
           startX = e.pageX - slider.offsetLeft;
           scrollLeft = slider.scrollLeft;
         });
-
         slider.addEventListener("mousemove", e => {
           if (!isDown) return;
           const x = e.pageX - slider.offsetLeft;
@@ -1744,33 +1663,24 @@
             slider.scrollLeft = scrollLeft - walk * 1.4;
           }
         });
-
         const stopDrag = () => {
           if (!isDown) return;
           isDown = false;
           slider.classList.remove("dragging");
           setTimeout(() => { isDragging = false; }, 50);
         };
-
         slider.addEventListener("mouseup", stopDrag);
         slider.addEventListener("mouseleave", stopDrag);
-
         slider.addEventListener("click", e => {
-          if (isDragging) {
-            e.stopPropagation();
-            e.preventDefault();
-            isDragging = false;
-          }
+          if (isDragging) { e.stopPropagation(); e.preventDefault(); isDragging = false; }
         }, true);
       });
     }
 
-    // 長按手勢（一旦手指左右滑動超過 6px 立即解除長按，絕不干擾手機橫向滑動！）
     function attachLongPress(el, onLongPress) {
-      let timer = null;
-      let startX = 0, startY = 0;
+      let timer = null, startX = 0, startY = 0;
       const start = (e) => {
-        if (e.target.closest("input") || e.target.closest("select") || e.target.closest("textarea") || e.target.closest(".polaroid-img") || e.target.closest(".inline-full-editor")) return;
+        if (e.target.closest("input") || e.target.closest("select") || e.target.closest("textarea") || e.target.closest(".polaroid-img") || e.target.closest(".inline-full-editor") || e.target.closest(".iti-drag-handle")) return;
         const pt = e.touches ? e.touches[0] : e;
         startX = pt.clientX; startY = pt.clientY;
         timer = setTimeout(() => {
@@ -1802,14 +1712,10 @@
       el.addEventListener("mouseleave", cancel);
     }
 
-    // 列表列手勢：長按展開編輯 ＋ 只限「明確往右滑動超過 95px」才觸發刪除！
     function attachRowGestures(el, { onLongPressEdit, onSwipeDelete }) {
-      let timer = null;
-      let startX = 0, startY = 0, currentX = 0;
-      let swipingRight = false;
-
+      let timer = null, startX = 0, startY = 0, currentX = 0, swipingRight = false;
       const onStart = (cx, cy, target) => {
-        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link")) return;
+        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link") || target.closest(".iti-drag-handle")) return;
         startX = cx; startY = cy; currentX = cx; swipingRight = false;
         el.classList.add("pressing");
         timer = setTimeout(() => {
@@ -1819,10 +1725,8 @@
           if (onLongPressEdit) onLongPressEdit();
         }, 550);
       };
-
       const onMove = (cx, cy) => {
-        const dx = cx - startX;
-        const dy = cy - startY;
+        const dx = cx - startX, dy = cy - startY;
         if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
           if (timer) { clearTimeout(timer); timer = null; }
           el.classList.remove("pressing");
@@ -1838,7 +1742,6 @@
           el.classList.remove("swiping-del");
         }
       };
-
       const onEnd = () => {
         if (timer) { clearTimeout(timer); timer = null; }
         el.classList.remove("pressing");
@@ -1853,7 +1756,6 @@
           }
         }
       };
-
       el.addEventListener("touchstart", e => { if (e.touches[0]) onStart(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive: true });
       el.addEventListener("touchmove", e => { if (e.touches[0]) onMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
       el.addEventListener("touchend", onEnd);
@@ -1863,7 +1765,7 @@
       el.addEventListener("mouseleave", onEnd);
     }
 
-    // ==================== 8. 預設首爾與東京行程保底結構（全無括號清爽版） ====================
+    // ==================== 8. 預設首爾與東京行程保底結構 ====================
     function buildDefaultKoreaTrip() {
       return {
         id: "trip_kr_1",
@@ -1875,11 +1777,11 @@
           { id: "kr_fl_2", date: "2026-06-26", time: "16:20", arrTime: "17:55", flightNo: "回程班機", from: "ICN/GMP 首爾", to: "TPE 台北", link: "", img: "", note: "滿載戰利品回程" }
         ],
         itinerary: [
-          { id: "kr_iti_1", day: 1, time: "12:00", subRegion: "麻浦/汝矣島", title: "真味食堂 米其林必比登醬油螃蟹", cat: "景點", transit: "地鐵5號線兒嶺站4號出口步行約5分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "需提前預約，必點爆膏醬蟹套餐" },
+          { id: "kr_iti_1", day: 1, time: "12:00", subRegion: "麻浦/汝矣島", title: "真味食堂 米其林必比登醬油螃蟹", cat: "美食", transit: "地鐵5號線兒嶺站4號出口步行約5分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "需提前預約，必點爆膏醬蟹套餐" },
           { id: "kr_iti_2", day: 1, time: "16:30", subRegion: "明洞", title: "明洞商圈逛街 & 換錢所換匯", cat: "購物", transit: "地鐵4號線明洞站5、6號出口步行即達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "入住 HOMES Red Myeongdong，晚上逛明洞夜市與 Olive Young" },
-          { id: "kr_iti_3", day: 2, time: "10:30", subRegion: "江南/聖水洞", title: "COEX 星空圖書館 Starfield Library", cat: "景點", transit: "地鐵2號線三成站6號出口經地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "13公尺高巨型書牆必拍機位" },
+          { id: "kr_iti_3", day: 2, time: "10:30", subRegion: "江南/聖水洞", title: "COEX 星空圖書館 Starfield Library", cat: "打卡機位", transit: "地鐵2號線三成站6號出口經地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "13公尺高巨型書牆必拍機位" },
           { id: "kr_iti_4", day: 2, time: "14:00", subRegion: "江南/聖水洞", title: "聖水洞潮流街區 Dior概念店 & Tamburins", cat: "購物", transit: "三成站搭地鐵2號線直達聖水站3號出口約10分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "首爾最潮文創選物、鹽麵包與咖啡廳巡禮" },
-          { id: "kr_iti_5", day: 3, time: "11:00", subRegion: "麻浦/汝矣島", title: "鷺梁津水產市場 現挑帝王蟹與活章魚", cat: "景點", transit: "地鐵1號或9號線鷺梁津站7號出口步行3分", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "1樓買海鮮、2樓代客料理，必吃蟹膏炒飯" },
+          { id: "kr_iti_5", day: 3, time: "11:00", subRegion: "麻浦/汝矣島", title: "鷺梁津水產市場 現挑帝王蟹與活章魚", cat: "美食", transit: "地鐵1號或9號線鷺梁津站7號出口步行3分", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "1樓買海鮮、2樓代客料理，必吃蟹膏炒飯" },
           { id: "kr_iti_6", day: 3, time: "15:30", subRegion: "麻浦/汝矣島", title: "汝矣島現代百貨 The Hyundai Seoul", cat: "購物", transit: "9號線鷺梁津站搭2站至汝矣島站地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "B2 韓國潮牌匯集，頂樓空中花園" },
           { id: "kr_iti_7", day: 4, time: "10:00", subRegion: "明洞", title: "明洞樂天超市最後採買 ➔ 前往機場", cat: "購物", transit: "忠武路或明洞搭乘機場巴士或 AREX 前往機場", hotel: "", link: "", img: "", note: "預留退稅時間" }
         ],
@@ -1889,9 +1791,9 @@
           { id: "kr_ml_3", day: 3, type: "午餐", title: "鷺梁津水產市場 帝王蟹海鮮大餐", link: "", img: "", note: "配蟹膏炒飯" }
         ],
         guides: [
-          { id: "kr_gd_1", title: "真味食堂 Jinmi Sikdang", region: "麻浦區", hours: "12:00 - 20:00", price: "₩45,000 / 人", img: "", desc: "首爾三大醬油螃蟹名店之一，嚴選西海岸延坪島爆膏母蟹，搭配海苔、鍋巴湯與十多道韓式小菜。", link: "" },
-          { id: "kr_gd_2", title: "鷺梁津水產市場 Noryangjin Market", region: "銅雀區", hours: "24小時營業", price: "依時價計", img: "", desc: "首爾最大海產批發市場，一樓挑選活體松葉蟹、帝王蟹與生章魚後，直接帶上二樓合作餐廳清蒸並製作蟹膏炒飯。", link: "" },
-          { id: "kr_gd_3", title: "星空圖書館 Starfield Library", region: "江南區", hours: "10:30 - 22:00", price: "免費參觀", img: "", desc: "位於江南 COEX Mall 中心廣場，擁有三座高達 13 公尺的巨型書架與自然採光天窗。", link: "" }
+          { id: "kr_gd_1", title: "真味食堂 Jinmi Sikdang", region: "麻浦區", hours: "12:00 - 20:00", price: "₩45,000 / 人", img: "", desc: "✨ 【AI 深度摘要】首爾三大醬油螃蟹名店之一，連續多年獲米其林必比登推薦。\n🌟 【必吃亮點】嚴選西海岸延坪島爆膏母蟹，蟹肉鮮甜如凝脂，必將橘紅蟹膏拌入熱騰騰海苔飯並搭配濃郁鍋巴湯。", link: "" },
+          { id: "kr_gd_2", title: "鷺梁津水產市場 Noryangjin Market", region: "銅雀區", hours: "24小時營業", price: "依時價計", img: "", desc: "✨ 【AI 深度摘要】首爾規模最大海產批發市場。\n🌟 【體驗攻略】一樓挑選活體松葉蟹、帝王蟹、生章魚與大明蝦後，直接帶上二樓合作食堂代客清蒸，最後用蟹蓋加麻油海苔做蟹膏炒飯。", link: "" },
+          { id: "kr_gd_3", title: "星空圖書館 Starfield Library", region: "江南區", hours: "10:30 - 22:00", price: "免費參觀", img: "", desc: "✨ 【AI 深度摘要】位於江南 COEX Mall 中央廣場的文化地標。\n📷 【最佳機位】搭乘手扶梯由下往上仰拍 13 公尺高巨型弧形書牆，或上二樓空橋俯拍全景，冬季更有浪漫聖誕燈飾秀。", link: "" }
         ],
         mustEat: [
           { id: "kr_me_1", cat: "麻浦/鷺梁津", name: "真味食堂 醬蟹", link: "", note: "米其林必比登推薦", img: "", done: false },
@@ -1911,7 +1813,7 @@
 
     function createInitialState() {
       return {
-        version: "83.0",
+        version: "84.0",
         activeCountryId: "KR",
         activeTripId: "trip_kr_1",
         activeDay: 1,
@@ -2034,183 +1936,6 @@
         });
         return true;
       }
-
-      if (Array.isArray(rawJson.flights) || Array.isArray(rawJson.itinerary) || Array.isArray(rawJson.shoppingList)) {
-        const str = JSON.stringify(rawJson);
-        let cid = "KR";
-        if (fnLower.includes("korea") || fnLower.includes("kr") || fnLower.includes("seoul")) {
-          cid = "KR";
-        } else if (fnLower.includes("japan") || fnLower.includes("jp") || fnLower.includes("tokyo")) {
-          cid = "JP";
-        } else if (str.includes("明洞") || str.includes("聖水") || str.includes("真味食堂") || str.includes("鷺梁津") || str.includes("KRW")) {
-          cid = "KR";
-        } else if (str.includes("成田") || str.includes("輕井澤") || str.includes("淺草")) {
-          cid = "JP";
-        }
-        const tid = "trip_" + cid.toLowerCase() + "_1";
-        const isJP = cid === "JP";
-
-        const flights = (rawJson.flights || []).map(f => {
-          const tParts = (f.time || "").split("-");
-          return {
-            id: "fl_" + (f.id || Math.random()),
-            date: f.date || "",
-            time: (tParts[0] || "").trim(),
-            arrTime: (tParts[1] || "").trim(),
-            flightNo: cleanParenText(f.code || ""),
-            from: cleanParenText(f.dep || ""),
-            to: cleanParenText(f.arr || ""),
-            link: f.url || "",
-            img: f.photo || "",
-            note: ""
-          };
-        });
-
-        const itinerary = [];
-        const meals = [];
-        const transits = [];
-        (rawJson.itinerary || []).forEach((d, idx) => {
-          const dayNum = idx + 1;
-          const regionName = cleanParenText((d.date || `Day ${dayNum}`).replace(/^Day\s*\d+\s*/i, "").trim()) || `Day ${dayNum}`;
-          const lines = (d.content || "").split("\n").map(s => cleanParenText(s.trim())).filter(Boolean);
-          const transText = (d.transportation || []).map(t => {
-            if (Array.isArray(t.photos)) {
-              t.photos.forEach((pUrl, pIdx) => {
-                transits.push({ name: `${d.date || "Day" + dayNum} ${t.content || "票券"} #${pIdx + 1}`, url: pUrl, img: pUrl });
-              });
-            }
-            return `【${t.time ? t.time + " " : ""}${t.content || ""}】${t.note || ""}`;
-          }).join(" ｜ ");
-          const firstPhoto = (d.photos && d.photos[0]) || (d.accPhotos && d.accPhotos[0]) || "";
-
-          itinerary.push({
-            id: `iti_${cid}_${dayNum}`,
-            day: dayNum,
-            time: "",
-            subRegion: regionName,
-            title: `${d.date || "Day " + dayNum}：${lines.join(" ➔ ") || "自由探索"}`,
-            cat: "景點",
-            transit: transText,
-            hotel: d.accommodation ? `${cleanParenText(d.accommodation)}${d.accommodationNote ? " · " + cleanParenText(d.accommodationNote) : ""}` : "",
-            link: d.accommodationUrl || "",
-            img: firstPhoto,
-            note: d.dayNote || ""
-          });
-
-          if (d.meals) {
-            const mapType = { b: "早餐", l: "午餐", d: "晚餐" };
-            ["b", "l", "d"].forEach(k => {
-              if (d.meals[k] && (d.meals[k].name || d.meals[k].note)) {
-                meals.push({
-                  id: `ml_${cid}_${dayNum}_${k}`,
-                  day: dayNum,
-                  type: mapType[k],
-                  title: cleanParenText(d.meals[k].name || d.meals[k].note),
-                  link: d.meals[k].link || "",
-                  img: "",
-                  note: d.meals[k].note || ""
-                });
-              }
-            });
-          }
-        });
-
-        const mustEat = [];
-        (rawJson.mustEatList || []).forEach(loc => {
-          (loc.themes || []).forEach(th => {
-            mustEat.push({
-              id: "me_" + (th.id || Math.random()),
-              cat: loc.location || "必吃",
-              name: cleanParenText(th.name || ""),
-              link: th.url || "",
-              note: `${th.isVeg ? "🌱素食｜" : ""}${th.note || ""}`.trim(),
-              img: "",
-              done: false
-            });
-          });
-        });
-
-        const shopping = (rawJson.shoppingList || []).map(s => ({
-          id: "sh_" + (s.id || Math.random()),
-          cat: s.category || "必買",
-          title: cleanParenText(s.name || ""),
-          price: s.price || "",
-          owner: s.owner || "凱",
-          note: s.qty ? `數量: ${s.qty}` : "",
-          img: s.photo || "",
-          done: !!s.done
-        }));
-
-        const expenses = (rawJson.expenses || []).map(e => {
-          const pName = e.paidBy || "凱";
-          if (pName && !state.companions.some(x => x.name === pName)) {
-            state.companions.push({ id: "cp_" + Math.random(), name: pName, avatar: "🧸" });
-          }
-          (e.splitBy || []).forEach(bName => {
-            if (bName && !state.companions.some(x => x.name === bName)) {
-              state.companions.push({ id: "cp_" + Math.random(), name: bName, avatar: "🐶" });
-            }
-          });
-          return {
-            id: "ex_" + (e.id || Math.random()),
-            title: cleanParenText(e.note || e.cat || "消費"),
-            cat: normalizeCatName(e.cat),
-            amount: Number(e.amt) || 0,
-            currency: e.curr || (isJP ? "JPY" : "KRW"),
-            payer: pName,
-            mode: (e.note || "").includes("謝謝") ? "gift" : "split",
-            beneficiaries: Array.isArray(e.splitBy) && e.splitBy.length ? e.splitBy : [pName],
-            note: "",
-            img: e.photo || "",
-            date: ""
-          };
-        });
-
-        const guides = (rawJson.guides || []).map(g => ({
-          id: "gd_" + (g.id || Math.random()),
-          title: cleanParenText(g.title || ""),
-          region: "",
-          hours: g.time || "",
-          price: g.price || "",
-          img: g.photo || "",
-          desc: g.desc || "",
-          link: ""
-        }));
-
-        const visas = (rawJson.vjwData && Array.isArray(rawJson.vjwData.items))
-          ? rawJson.vjwData.items.map(v => ({ name: `${v.name} 入境憑證`, url: v.image, img: v.image }))
-          : [];
-
-        if (state.countries[cid]) {
-          if (visas.length) state.countries[cid].visas = visas;
-          if (transits.length) state.countries[cid].transits = transits;
-        }
-
-        const totalParsed = itinerary.length + flights.length + expenses.length + shopping.length;
-        if (totalParsed > 0) {
-          state.trips[tid] = {
-            id: tid,
-            countryId: cid,
-            title: isJP ? "1/10-1/16 東京＆輕井澤冬日之旅" : "6/23-6/26 首爾明洞＆聖水洞潮旅",
-            subRegions: [...new Set(itinerary.map(i => i.subRegion).filter(Boolean))],
-            flightSegments: flights,
-            itinerary,
-            meals,
-            guides,
-            mustEat,
-            shopping,
-            expenses,
-            memos: [],
-            stickers: [],
-            customLinks: [],
-            customVisas: visas,
-            customTransits: transits,
-            customPhrases: []
-          };
-        }
-        return true;
-      }
-
       if (Array.isArray(rawJson.countryList)) return true;
       return false;
     }
@@ -2395,7 +2120,6 @@
       if (el) el.classList.toggle("open");
     }
 
-    // 點擊空白處：自動關閉頂部抽屜，且若有任何展開中的「文內編輯器」，自動幫妳按下儲存！
     document.addEventListener("click", (e) => {
       if (!e.target.closest("header")) {
         document.getElementById("anywhereDoorDrawer")?.classList.remove("open");
@@ -2404,8 +2128,6 @@
       if (!e.target.closest("#dayFabWrapper")) {
         document.getElementById("dayFabMenu")?.classList.add("hidden");
       }
-
-      // 檢查是否有正在展開編輯的卡片，若點擊在該卡片外部空白處，自動觸發儲存按鈕！
       const activeEditors = document.querySelectorAll(".inline-full-editor");
       activeEditors.forEach(editor => {
         if (!editor.contains(e.target) && !e.target.closest("#imageLightbox")) {
@@ -2418,7 +2140,6 @@
     function getActiveCompanions() {
       const t = getTrip();
       if (!Array.isArray(t.companions)) {
-        // 首次自動繼承全域旅伴作為初始值，之後各旅程完全獨立！
         t.companions = JSON.parse(JSON.stringify(state.companions || []));
       }
       return t.companions;
@@ -2501,7 +2222,6 @@
       const shopOwner = document.getElementById("shopItemOwner");
       const modeSel = document.getElementById("expModeSelect");
 
-      // 確保記帳模式選單包含「🥂 代墊請客」與選單連動
       if (modeSel && !modeSel.querySelector("option[value='treat']")) {
         const opt = document.createElement("option");
         opt.value = "treat";
@@ -2564,7 +2284,7 @@
       }
     }
 
-    // ==================== 11. 任意門：完全比照日期列 `<button>` 原生滑動 ＋ 選完旅程才收合 ====================
+    // ==================== 11. 任意門：國家與旅程切換 ====================
     async function autoAddCountryByName() {
       const rawName = prompt("🌍 請輸入任何國家或城市名稱：\n✨ 系統會自動抓出國旗、外幣、即時匯率、當地專屬工具與雙語字卡！");
       if (!rawName || !rawName.trim()) return;
@@ -2624,7 +2344,6 @@
         updateCalcPreview();
         return;
       }
-      // 若使用者已手動自訂鎖定匯率，且不是強制點 🔄 刷新，則保留自訂匯率
       if (c.customRateLocked && !forceLive) {
         if (badge) badge.textContent = `✎ 1 ${c.currency}=${c.rate}`;
         updateCalcPreview();
@@ -2746,7 +2465,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數與每日行程（全面去除多餘括號） ====================
+    // ==================== 12. 航班、天數、每日行程（支援拖曳上下排序 ＋ 壓時間自動依時間排序） ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2987,6 +2706,117 @@
       renderAll();
     }
 
+    // 🕒 當日行程依時間順序自動排列
+    function sortDayItineraryByTime(trip, dayNum) {
+      const all = trip.itinerary || [];
+      const dayItems = all.filter(i => Number(i.day) === Number(dayNum));
+      if (dayItems.length <= 1) return;
+
+      const timed = dayItems
+        .filter(i => i.time && /^\d{1,2}:\d{2}$/.test(i.time.trim()))
+        .sort((a, b) => a.time.trim().padStart(5, "0").localeCompare(b.time.trim().padStart(5, "0")));
+
+      if (timed.length === 0) return;
+
+      let tIdx = 0;
+      const mergedDay = dayItems.map(item => {
+        if (item.time && /^\d{1,2}:\d{2}$/.test(item.time.trim())) {
+          return timed[tIdx++];
+        }
+        return item;
+      });
+
+      let dIdx = 0;
+      trip.itinerary = all.map(item => {
+        if (Number(item.day) === Number(dayNum)) {
+          return mergedDay[dIdx++];
+        }
+        return item;
+      });
+    }
+
+    function manualSortDayByTime(dayNum) {
+      const t = getTrip();
+      sortDayItineraryByTime(t, dayNum);
+      commitChange(`🕒 D${dayNum} 依時間排序`);
+    }
+
+    // ⠿ 每日行程卡片上下拖曳排序引擎
+    function bindDayItineraryDragSort(listBox, dayNum) {
+      let draggingEl = null;
+
+      const onPointerDown = (e) => {
+        const handle = e.target.closest(".iti-drag-handle");
+        if (!handle) return;
+        const card = handle.closest(".iti-sortable-card");
+        if (!card) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        draggingEl = card;
+        card.classList.add("opacity-75", "scale-[0.99]", "ring-2", "ring-[#52796f]", "shadow-xl", "z-30", "bg-[#fffdf9]");
+        if (navigator.vibrate) navigator.vibrate(25);
+
+        const onPointerMove = (moveEv) => {
+          if (!draggingEl) return;
+          if (moveEv.cancelable) moveEv.preventDefault();
+          const clientY = moveEv.touches ? moveEv.touches[0].clientY : moveEv.clientY;
+
+          const siblings = [...listBox.querySelectorAll(".iti-sortable-card")].filter(el => el !== draggingEl);
+          let nextSibling = null;
+          for (const sib of siblings) {
+            const rect = sib.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (clientY < midY) {
+              nextSibling = sib;
+              break;
+            }
+          }
+          if (nextSibling) {
+            listBox.insertBefore(draggingEl, nextSibling);
+          } else {
+            listBox.appendChild(draggingEl);
+          }
+        };
+
+        const onPointerUp = () => {
+          if (!draggingEl) return;
+          draggingEl.classList.remove("opacity-75", "scale-[0.99]", "ring-2", "ring-[#52796f]", "shadow-xl", "z-30", "bg-[#fffdf9]");
+          draggingEl = null;
+
+          window.removeEventListener("mousemove", onPointerMove);
+          window.removeEventListener("mouseup", onPointerUp);
+          window.removeEventListener("touchmove", onPointerMove);
+          window.removeEventListener("touchend", onPointerUp);
+          window.removeEventListener("touchcancel", onPointerUp);
+
+          const trip = getTrip();
+          const newIdOrder = [...listBox.querySelectorAll(".iti-sortable-card")].map(el => el.dataset.itiId);
+          const itemMap = {};
+          (trip.itinerary || []).forEach(it => { itemMap[it.id] = it; });
+
+          let ptr = 0;
+          trip.itinerary = (trip.itinerary || []).map(it => {
+            if (Number(it.day) === Number(dayNum) && newIdOrder.includes(it.id)) {
+              return itemMap[newIdOrder[ptr++]];
+            }
+            return it;
+          });
+
+          commitChange(`調整 D${dayNum} 行程順序`);
+        };
+
+        window.addEventListener("mousemove", onPointerMove, { passive: false });
+        window.addEventListener("mouseup", onPointerUp);
+        window.addEventListener("touchmove", onPointerMove, { passive: false });
+        window.addEventListener("touchend", onPointerUp);
+        window.addEventListener("touchcancel", onPointerUp);
+      };
+
+      listBox.addEventListener("mousedown", onPointerDown);
+      listBox.addEventListener("touchstart", onPointerDown, { passive: false });
+    }
+
     function renderItineraryAndMeals() {
       const trip = getTrip();
       const maxDay = getMaxDays(trip);
@@ -3010,12 +2840,13 @@
         const dayCard = document.createElement("div");
         dayCard.className = "journal-card p-3 sm:p-4 space-y-2.5";
         dayCard.innerHTML = `
-          <div class="flex items-center justify-between gap-2 border-b border-dashed border-[#e8dfd3] pb-2 whitespace-nowrap">
-            <div class="flex items-center gap-2 min-w-0">
+          <div class="flex items-center justify-between gap-1.5 border-b border-dashed border-[#e8dfd3] pb-2 whitespace-nowrap">
+            <div class="flex items-center gap-1.5 min-w-0">
               <span class="px-2.5 py-0.5 rounded-xl btn-gradient-sage text-white font-bold text-xs en-font shrink-0">DAY ${dayNum}</span>
               <h3 class="font-bold text-sm text-[#2b302c] truncate">${cleanParenText(dayItis[0]?.subRegion || `第 ${dayNum} 天`)}</h3>
             </div>
             <div class="flex items-center gap-1 shrink-0">
+              <button onclick="manualSortDayByTime(${dayNum})" title="依時間順序排列" class="text-[11px] font-bold px-2 py-1 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-[#9c6644]">🕒 依時間</button>
               <button onclick="openItineraryModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f1ed] text-[#3b5a4e]">+ 行程</button>
               <button onclick="openMealModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32]">+ 餐飲</button>
             </div>
@@ -3039,22 +2870,26 @@
 
         const itiListBox = dayCard.querySelector(".day-iti-list");
         if (!dayItis.length) {
-          itiListBox.innerHTML = `<div class="text-center py-2 text-xs text-[#78807b]">尚無行程</div>`;
+          itiListBox.innerHTML = `<div class="text-center py-2 text-xs text-[#78807b]">尚無行程 · 可點左下角「🪄 AI 排程」貼上行程文字自動帶入</div>`;
         } else {
           dayItis.forEach(item => {
             const itiImgSrc = resolveImageSrc(item.img);
             const itemNavUrl = buildSmartMapUrl(item.title, item.link);
             const displayTitle = cleanParenText(item.title);
             const itemEl = document.createElement("div");
-            itemEl.className = "gesture-box p-2.5 sm:p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-1.5";
+            itemEl.dataset.itiId = item.id;
+            itemEl.className = "iti-sortable-card gesture-box p-2.5 sm:p-3 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-1.5 transition";
 
             const renderItiNormal = () => {
               itemEl.innerHTML = `
                 <div class="flex items-center justify-between gap-1.5 whitespace-nowrap">
                   <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="iti-drag-handle cursor-grab active:cursor-grabbing px-1.5 py-0.5 -ml-1 rounded text-[#8c948f] hover:text-[#52796f] select-none shrink-0" title="按住上下拖曳調整順序" style="touch-action: none;">
+                      <i class="fa-solid fa-grip-vertical text-xs"></i>
+                    </span>
                     ${item.time ? `<span class="px-1.5 py-0.5 rounded-md bg-[#4f7768] text-white text-[10px] font-bold en-font shrink-0">${item.time}</span>` : ""}
                     <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
-                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left">${displayTitle} 🧭</button>
+                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點此查看重點導覽（含返回鍵）">${displayTitle} 🧭</button>
                   </div>
                   <a href="${itemNavUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[10px] font-bold text-[#4f7768] shrink-0 hover:bg-[#e8f0ed]">${mapBadge}</a>
                 </div>
@@ -3086,10 +2921,7 @@
                   <div class="grid grid-cols-3 gap-1.5">
                     <textarea rows="2" class="iti-ed-title col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" placeholder="景點名稱 *">${item.title || ""}</textarea>
                     <select class="iti-ed-cat px-2 py-1 rounded-lg border bg-white">
-                      <option value="景點" ${item.cat === "景點" ? "selected" : ""}>📸景點</option>
-                      <option value="購物" ${item.cat === "購物" ? "selected" : ""}>🛍️購物</option>
-                      <option value="交通" ${item.cat === "交通" ? "selected" : ""}>🚆交通</option>
-                      <option value="體驗" ${item.cat === "體驗" ? "selected" : ""}>🎡體驗</option>
+                      ${buildItiCategoryOptionsHtml(item.cat || "景點")}
                     </select>
                   </div>
                   <textarea rows="2" class="iti-ed-transit w-full px-2 py-1 rounded-lg border bg-white" placeholder="🚇 交通與轉乘路線...">${item.transit || ""}</textarea>
@@ -3120,6 +2952,7 @@
                 item.link = itemEl.querySelector(".iti-ed-link").value.trim();
                 item.img = itemEl.querySelector(".iti-ed-img").value.trim();
                 item.note = itemEl.querySelector(".iti-ed-note").value.trim();
+                if (item.time) sortDayItineraryByTime(trip, item.day);
                 commitChange(`修改行程：${item.title}`);
               };
               itemEl.querySelector(".btn-cancel-iti").onclick = () => renderItineraryAndMeals();
@@ -3137,6 +2970,8 @@
             });
             itiListBox.appendChild(itemEl);
           });
+
+          bindDayItineraryDragSort(itiListBox, dayNum);
         }
 
         const findMeal = (typeKey) => dayMeals.find(m => (m.type || "").includes(typeKey));
@@ -3174,7 +3009,7 @@
                 <span class="text-[10px] font-bold text-[#c85a32] shrink-0">${slot.icon}${mObj.type || slot.label}</span>
                 <a href="${mealNavUrl}" target="_blank" class="text-[10px] font-bold text-[#4f7768]" title="開啟當地地圖">📍</a>
               </div>
-              <div class="font-bold text-xs text-[#2b302c] truncate" onclick="jumpToGuideBySpotTitle('${mObj.title.replace(/'/g, "")}')">${cleanParenText(mObj.title)}</div>
+              <div class="font-bold text-xs text-[#2b302c] truncate" onclick="jumpToGuideBySpotTitle('${mObj.title.replace(/'/g, "")}', {id:'${mObj.id}', title:'${mObj.title.replace(/'/g, "")}', note:'${(mObj.note || "").replace(/'/g, "")}'})">${cleanParenText(mObj.title)}</div>
               ${mObj.note ? `<div class="text-[10px] text-[#78807b] truncate">${cleanParenText(mObj.note)}</div>` : ""}
             `;
           }
@@ -3276,7 +3111,13 @@
         if (idx > -1) t.itinerary[idx] = obj;
       } else {
         t.itinerary.push(obj);
-        autoSyncGuideSpot(t, obj);
+        // 僅在符合「重點特別景點」條件時才自動加入導覽列
+        if (isSpecialLandmarkSpot(obj)) {
+          autoSyncGuideSpot(t, obj);
+        }
+      }
+      if (obj.time) {
+        sortDayItineraryByTime(t, obj.day);
       }
       document.getElementById("itiTitleInp").value = "";
       state.activeDay = obj.day;
@@ -3331,15 +3172,15 @@
       commitChange(`儲存餐飲：${title}`);
     }
 
-    // ==================== 13. 🤖 左下角免金鑰 AI 智慧順路排程 ＆ 經典路線引擎 ====================
+    // ==================== 13. 🤖 AI 智慧貼文解析、順路排程 & 嚴選景點 AI 深度導覽 ====================
     const FAMOUS_TEMPLATES = {
       JP: [
         {
           name: "🗼 東京下町＆銀座經典順路一日",
           region: "上野/淺草/銀座",
           items: [
-            { time: "09:30", title: "淺草寺雷門 ➔ 仲見世通", cat: "景點", transit: "銀座線淺草站1號出口步行2分", note: "淺草文化觀光中心8樓免費拍全景" },
-            { time: "12:00", title: "東京晴空塔 Solamachi", cat: "購物", transit: "淺草搭乘東武晴空塔線1站約3分鐘", note: "順路午餐與伴手禮採買" },
+            { time: "09:30", title: "淺草寺雷門 ➔ 仲見世通", cat: "寺廟古蹟", transit: "銀座線淺草站1號出口步行2分", note: "淺草文化觀光中心8樓免費拍全景" },
+            { time: "12:00", title: "東京晴空塔 Solamachi", cat: "景點", transit: "淺草搭乘東武晴空塔線1站約3分鐘", note: "順路午餐與伴手禮採買" },
             { time: "15:00", title: "銀座中央通 ➔ 和光百貨鐘樓", cat: "購物", transit: "淺草線轉銀座線直達銀座站約18分鐘", note: "週末午後步行者天國封街" },
             { time: "18:00", title: "上野阿美橫町商圈", cat: "購物", transit: "銀座線直達上野站約12分鐘", note: "藥妝補貨與晚餐" }
           ]
@@ -3349,7 +3190,7 @@
           region: "輕井澤",
           items: [
             { time: "09:30", title: "雲場池森林散步", cat: "景點", transit: "輕井澤站北口步行或單車約12分鐘", note: "晨間湖面倒影最美" },
-            { time: "11:30", title: "舊輕井澤銀座通 & 淺野屋麵包", cat: "購物", transit: "雲場池步行約10分鐘順路抵達", note: "必吃番茄起司麵包與果醬" },
+            { time: "11:30", title: "舊輕井澤銀座通 & 淺野屋麵包", cat: "美食", transit: "雲場池步行約10分鐘順路抵達", note: "必吃番茄起司麵包與果醬" },
             { time: "14:30", title: "石之教會 & 高原教會 ➔ 榆樹街小鎮", cat: "景點", transit: "搭星野免費接駁巴士至中輕井澤約15分鐘", note: "木棧道溪流咖啡廳" },
             { time: "17:00", title: "輕井澤王子購物廣場 Outlet", cat: "購物", transit: "接駁車返抵輕井澤站南口即達", note: "傍晚點燈與晚餐" }
           ]
@@ -3360,22 +3201,319 @@
           name: "✨ 首爾聖水洞潮牌＆江南星空圖書館順路遊",
           region: "聖水洞/江南",
           items: [
-            { time: "10:00", title: "COEX 星空圖書館", cat: "景點", transit: "地鐵2號線三成站5、6號出口直通", note: "13公尺巨型書牆打卡" },
+            { time: "10:00", title: "COEX 星空圖書館", cat: "打卡機位", transit: "地鐵2號線三成站5、6號出口直通", note: "13公尺巨型書牆打卡" },
             { time: "13:00", title: "聖水洞潮流旗艦街區 & Dior概念店", cat: "購物", transit: "三成站搭2號線直達聖水站3號出口約8分鐘", note: "必逛Tamburins、Matin Kim與鹽麵包" },
-            { time: "17:30", title: "纛島漢江公園草皮看夕陽", cat: "景點", transit: "聖水站搭2號線1站轉7號線至自陽站2號出口約10分鐘", note: "漢江絕美金黃日落" }
+            { time: "17:30", title: "纛島漢江公園草皮看夕陽", cat: "夜景/秀", transit: "聖水站搭2號線1站轉7號線至自陽站2號出口約10分鐘", note: "漢江絕美金黃日落" }
           ]
-        },
+        }
+      ],
+      TH: [
         {
-          name: "🦀 真味食堂醬蟹＆鷺梁津水產＆汝矣島順路遊",
-          region: "麻浦/汝矣島",
+          name: "🚤 曼谷水門運河快船＆ICONSIAM＆夜遊湄南河",
+          region: "水門/河濱",
           items: [
-            { time: "12:00", title: "真味食堂 米其林必比登醬油螃蟹", cat: "景點", transit: "地鐵5號線兒嶺站4號出口步行5分", note: "爆膏西海延坪島母蟹" },
-            { time: "15:00", title: "汝矣島現代百貨 The Hyundai Seoul", cat: "購物", transit: "兒嶺站搭5號線直達汝矣島站約12分鐘", note: "韓國最美室內空中花園百貨" },
-            { time: "18:30", title: "鷺梁津水產市場 帝王蟹與活章魚", cat: "景點", transit: "汝矣島搭9號線2站至鷺梁津站7號出口約6分鐘", note: "現挑活海鮮代客料理" }
+            { time: "09:30", title: "空盛桑運河快船 Asok Pier ➔ 水門碼頭", cat: "體驗", transit: "從飯店步行至 Asok Pier 搭船至 Pratunam Pier", note: "體驗曼谷在地水上交通" },
+            { time: "11:00", title: "Superrich 換匯 & Central World 巨型聖誕樹", cat: "打卡機位", transit: "水門碼頭步行約 5 分鐘", note: "換泰銖並拍戶外廣場聖誕裝置" },
+            { time: "13:00", title: "紅大哥水門雞飯 總店", cat: "美食", transit: "Central World 步行至水門市場對面", note: "米其林必比登粉紅制服海南雞飯" },
+            { time: "14:30", title: "PLATINUM POP Tofu 藥妝採買", cat: "購物", transit: "水門雞飯步行約 3 分鐘", note: "泰國本土保養品與彩妝批發價" },
+            { time: "18:30", title: "ICONSIAM 水上市場 & 聖誕水舞燈光秀", cat: "夜景/秀", transit: "BTS 搭至 Saphan Taksin 站轉乘接駁船", note: "G樓室內水上市場與河濱聲光水舞秀" },
+            { time: "20:00", title: "超級銀河號 Super Galaxy Cruise 夜遊湄南河", cat: "夜景/秀", transit: "於 ICONSIAM 4號碼頭登船", note: "海鮮 Buffet、河岸燈光節與煙火秀" }
           ]
         }
       ]
     };
+
+    // 內建熱門景點 Google AI Overview 等級深度摘要知識庫
+    const AI_SPOT_KNOWLEDGE_BASE = {
+      "空盛桑運河快船": {
+        hours: "05:30 - 20:30 (平日) / 06:00 - 19:00 (週末)",
+        price: "約 12 - 22 泰銖 (依距離收費)",
+        desc: "✨ 【Google AI 深度摘要】曼谷最道地、完全不塞車的水上動脈，因行經運河水花四濺且兩側設有防濺帆布，被旅人暱稱為「髒髒船」。\n🌟 【體驗亮點】穿梭於曼谷市中心高樓與老社區河道之間，從 Asok 站搭到 Pratunam 水門碼頭僅需約 10-15 分鐘，比地面計程車快上數倍。\n💡 【搭乘秘訣】船靠岸節奏極快，請先扶穩繩索再跨步上船；上船後船務員會站在船舷收費，直接出示「Pratunam」字樣即可，水門碼頭為轉乘大站。"
+      },
+      "Pratunam": {
+        hours: "05:30 - 20:30",
+        price: "約 12 - 22 泰銖",
+        desc: "✨ 【Google AI 深度摘要】水門碼頭 (Pratunam Pier) 是空盛桑運河快船東西線交會的中央總站，出碼頭步行 3-5 分鐘即達 Superrich 總部、水門雞飯、Big C 與 Central World。\n📷 【Vlog 機位】站在碼頭天橋上俯拍運河快船交會與拉帆布瞬間，極具曼谷街頭生命力。"
+      },
+      "Central World": {
+        hours: "10:00 - 22:00",
+        price: "免費參觀",
+        desc: "✨ 【Google AI 深度摘要】泰國規模最大的旗艦級複合購物中心之一，位於 Chit Lom 與 Siam 商圈核心，雲集超過 500 間國際品牌、泰國本土設計師潮牌與米其林餐廳。\n📷 【必拍機位】每年 11 月至跨年期間，戶外廣場會豎立東南亞最高的「巨型聖誕樹與主題燈海」，走上連接 BTS 的 Skywalk 空橋可拍出無遮擋人像大片。"
+      },
+      "中央世界購物商場": {
+        hours: "10:00 - 22:00",
+        price: "免費參觀",
+        desc: "✨ 【Google AI 深度摘要】曼谷市中心指標性購物巨艦，戶外廣場冬季限定巨型聖誕樹與燈飾展是曼谷年底最熱門的打卡聖地，商場 7 樓美食街與 1 樓香氛選品店極好逛。"
+      },
+      "紅大哥水門雞飯": {
+        hours: "06:00 - 14:00、15:00 - 22:00",
+        price: "約 60 - 150 泰銖",
+        desc: "✨ 【Google AI 深度摘要】創立於 1960 年的曼谷傳奇海南雞飯名店（Go-Ang Pratunam），因店員全員身穿桃粉紅色Polo衫而聞名，連續多年榮獲米其林必比登推介。\n🍽️ 【必點招牌】油亮滑嫩的白斬雞飯搭配靈魂黑豆鼓薑蒜辣醬、苦瓜排骨清湯與泰式古早味冰奶茶。"
+      },
+      "ICONSIAM": {
+        hours: "10:00 - 22:00 (水舞秀約 18:30 / 20:00)",
+        price: "免費入場",
+        desc: "✨ 【Google AI 深度摘要】耗資 540 億泰銖打造的昭披耶河畔頂級地標「暹羅天地」，將整座泰式傳統水上市場「SookSiam」直接搬進 G 樓冷氣室內，匯集全泰 77 府道地小吃。\n📷 【必看亮點】1. G樓室內水上市場船夫與傳統泰式木屋；2. 6樓星巴克與 Alangkarn 瀑布餐廳露台俯瞰湄南河；3. 河濱廣場長達 400 公尺的東南亞最長聲光水舞秀。"
+      },
+      "超級銀河號": {
+        hours: "20:00 - 22:00 (建議 19:00 前於 4 號碼頭報到換票)",
+        price: "依預訂票券",
+        desc: "✨ 【Google AI 深度摘要】曼谷最新世代三層豪華雙體遊輪（Super Galaxy Cruise），頂層擁有 360 度全露天無遮擋甲板視野。\n🌃 【航程亮點】自 ICONSIAM 啟航，沿途飽覽鄭王廟（黎明寺）、大皇宮、拉瑪八世大橋與河畔摩天輪璀璨夜景，船上供應澎湃泰式與國際海鮮 Buffet、現場樂團演唱，年底更可直擊湄南河岸燈光節與煙火秀。"
+      },
+      "Super Galaxy": {
+        hours: "20:00 - 22:00",
+        price: "依預訂票券",
+        desc: "✨ 【Google AI 深度摘要】湄南河頂級三層敞篷觀光遊輪，於 ICONSIAM 4號碼頭登船，結合豪華海鮮自助晚宴、Live Band 派對與鄭王廟河岸璀璨夜色。"
+      }
+    };
+
+    // 判斷是否為「值得進入導覽列的特別景點」（排除純換匯、純交通移動、一般藥妝補貨與普通吃飯）
+    function isSpecialLandmarkSpot(iti) {
+      if (!iti || !iti.title) return false;
+      const t = iti.title;
+      const c = iti.cat || "";
+
+      // 若命中內建知名地標庫，必定收錄
+      if (Object.keys(AI_SPOT_KNOWLEDGE_BASE).some(k => t.toLowerCase().includes(k.toLowerCase()))) {
+        if (/Superrich|Tofu|藥妝/i.test(t) && !/Central World|ICONSIAM/i.test(t)) return false;
+        return true;
+      }
+
+      // 明確排除瑣碎行程分類或純交通/純換匯/純採買字眼
+      if (["交通", "換匯", "住宿", "按摩SPA", "咖啡廳"].includes(c)) return false;
+      if (/^(步行|搭乘|前往|轉乘|退房|入住|換匯|採買)/.test(t) && !/遊船|快船|銀河號|ICONSIAM|Central|寺|宮|塔|山|湖/.test(t)) return false;
+      if (/藥妝|超市|便利商店|換錢|Superrich|Tofu/i.test(t) && !/Central World|ICONSIAM/i.test(t)) return false;
+
+      // 重點分類（景點、夜景/秀、寺廟古蹟、打卡機位、體驗）優先收錄
+      if (["景點", "夜景/秀", "寺廟古蹟", "打卡機位", "體驗"].includes(c)) return true;
+
+      return false;
+    }
+
+    // 智慧清理景點標題（把動作詞去掉，取出核心景點名供導覽與 AI 查詢使用）
+    function extractCoreLandmarkName(rawTitle) {
+      let s = cleanParenText(rawTitle || "");
+      for (const k of Object.keys(AI_SPOT_KNOWLEDGE_BASE)) {
+        if (rawTitle.toLowerCase().includes(k.toLowerCase())) {
+          if (k === "Central World") return "Central World 中央世界購物商場";
+          if (k === "ICONSIAM") return "ICONSIAM 暹羅天地";
+          if (k === "超級銀河號" || k === "Super Galaxy") return "超級銀河號 Super Galaxy Cruise";
+          if (k === "空盛桑運河快船") return "空盛桑運河快船 Khlong Saen Saep Boat";
+          if (k === "紅大哥水門雞飯") return "紅大哥水門雞飯 Go-Ang Pratunam";
+          return k;
+        }
+      }
+      return s
+        .replace(/^(上午|下午|晚上|中午|早晨|傍晚)\s*/, "")
+        .replace(/^(欣賞|體驗在地|體驗|搭乘|參觀|逛|前往|走訪|探訪|拍攝)\s*/, "")
+        .split(/[，,。；;！!]/)[0]
+        .trim() || s;
+    }
+
+    // 📥 智慧解析貼上的整段行程文字（如使用者貼的曼谷一日行程）並自動帶入當日行程與餐飲
+    async function parsePastedScheduleTextToDay() {
+      const raw = document.getElementById("aiRawTextInp").value.trim();
+      if (!raw) return alert("請先在文字框貼上行程內容！");
+
+      const t = getTrip();
+      const c = getCountry();
+      const dayNum = state.activeDay || 1;
+      const defaultRegion = state.activeSubRegion !== "ALL" ? state.activeSubRegion : (t.subRegions?.[0] || c.name);
+
+      // 清除零寬字元並依換行切割
+      const lines = raw
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .split(/\r?\n+/)
+        .map(l => l.trim())
+        .filter(Boolean);
+
+      if (lines.length === 0) return;
+
+      const periodFallbackTime = {
+        "清晨": "07:30", "早上": "08:30", "上午": "09:30",
+        "中午": "12:00", "下午": "14:30", "傍晚": "17:30", "晚上": "19:30", "宵夜": "21:30"
+      };
+
+      let addedCount = 0;
+      const newSpotsForGuide = [];
+
+      for (let idx = 0; idx < lines.length; idx++) {
+        let line = lines[idx].replace(/^[-•*▪▸\d+.)、]+\s*/, "").trim();
+        let timeStr = "";
+
+        // 1. 偵測 11:00 / 9:30 等時間格式
+        const timeMatch = line.match(/^(\d{1,2}:\d{2})\s*(?:[-~～]\s*\d{1,2}:\d{2})?\s*(.*)/);
+        if (timeMatch) {
+          timeStr = timeMatch[1].padStart(5, "0");
+          line = timeMatch[2].trim();
+        } else {
+          // 2. 偵測「上午 / 下午 / 晚上」時段開頭
+          const pMatch = line.match(/^(清晨|早上|上午|中午|下午|傍晚|晚上|宵夜)\s*(.*)/);
+          if (pMatch) {
+            timeStr = periodFallbackTime[pMatch[1]] || "09:30";
+            line = pMatch[2].trim();
+          }
+        }
+
+        // 3. 自動判斷分類
+        let cat = "景點";
+        if (/水舞|燈光秀|煙火|夜景|遊船|Cruise|銀河號/i.test(line)) cat = "夜景/秀";
+        else if (/早餐|午餐|晚餐|雞飯|餐廳|享用|Buffet|美食|小吃/i.test(line)) cat = "美食";
+        else if (/咖啡|下午茶|甜點|Cafe/i.test(line)) cat = "咖啡廳";
+        else if (/按摩|SPA|泰式按摩/i.test(line)) cat = "按摩SPA";
+        else if (/換匯|Superrich|換錢/i.test(line) && !/Central World|逛/i.test(line)) cat = "換匯";
+        else if (/採買|藥妝|購物|商場|百貨|逛|Central World|Tofu|PLATINUM|伴手禮/i.test(line)) cat = "購物";
+        else if (/快船|髒髒船|體驗/i.test(line)) cat = "體驗";
+        else if (/寺|廟|神社|古蹟|大皇宮|鄭王廟/i.test(line)) cat = "寺廟古蹟";
+        else if (/搭空鐵|轉乘|前往|步行至/i.test(line) && !/體驗|逛|採買|欣賞|享用/i.test(line)) cat = "交通";
+
+        // 4. 智慧分離「標題」、「🚇 交通動線」與「💡 備註」
+        let title = line;
+        let transit = "";
+        let note = "";
+
+        constclauses = line.split(/[，,。]/).map(s => s.trim()).filter(Boolean);
+        if (clauses.length >= 2) {
+          const transitParts = [];
+          const actionParts = [];
+          const noteParts = [];
+
+          clauses.forEach(cl => {
+            if (/^(從飯店|從\s*BTS|從\s*MRT|步行至|搭空鐵|搭乘|轉乘|於.*碼頭登船|碼頭附近)/i.test(cl) && !/體驗在地|搭乘.*銀河號/.test(cl)) {
+              transitParts.push(cl);
+            } else if (/^(拍\s*Vlog|兩人一起|享用|欣賞.*煙火)/i.test(cl)) {
+              noteParts.push(cl);
+            } else {
+              actionParts.push(cl);
+            }
+          });
+
+          if (actionParts.length > 0) {
+            title = actionParts.join(" · ");
+            transit = transitParts.join(" ➔ ");
+            note = noteParts.join("，");
+          } else {
+            title = clauses.slice(0, 2).join(" ➔ ");
+            transit = clauses.join("，");
+          }
+        }
+
+        // 若句中含有「前往 XXX」且未提取出交通，補充至交通欄
+        if (!transit && /(步行|搭船|搭空鐵|轉乘|碼頭)/.test(line)) {
+          transit = line;
+        }
+
+        // 5. 若包含「早餐/午餐/晚餐：XXX」，同步寫入當日下方餐飲格
+        const mealMatch = line.match(/(早餐|午餐|下午茶|晚餐|宵夜)[:：]\s*([^，,。]+)/);
+        if (mealMatch) {
+          const mType = mealMatch[1];
+          const mTitle = cleanParenText(mealMatch[2].trim());
+          const existsMeal = (t.meals || []).some(m => Number(m.day) === Number(dayNum) && m.type === mType);
+          if (!existsMeal && mTitle) {
+            t.meals.push({
+              id: "ml_ai_" + Date.now() + "_" + idx,
+              day: dayNum,
+              type: mType,
+              title: mTitle,
+              link: "",
+              img: "",
+              note: note || clauses.slice(1).join("，")
+            });
+          }
+        }
+
+        const newIti = {
+          id: "iti_paste_" + Date.now() + "_" + idx,
+          day: dayNum,
+          time: timeStr,
+          subRegion: defaultRegion,
+          title: cleanParenText(title),
+          cat,
+          transit: cleanParenText(transit),
+          hotel: "",
+          link: "",
+          img: "",
+          note: cleanParenText(note)
+        };
+
+        t.itinerary.push(newIti);
+        addedCount++;
+
+        // 嚴選重點地標加入深度導覽佇列
+        if (isSpecialLandmarkSpot({ title: line, cat, subRegion: defaultRegion, time: timeStr, note })) {
+          newSpotsForGuide.push({ ...newIti, rawLine: line });
+        }
+      }
+
+      // 按時間順序自動排列當日行程
+      sortDayItineraryByTime(t, dayNum);
+
+      // 針對嚴選出的重點景點，自動生成深度導覽與 AI 摘要
+      for (const sp of newSpotsForGuide) {
+        const coreTitle = extractCoreLandmarkName(sp.rawLine || sp.title);
+        const exists = (t.guides || []).some(g => g.title.includes(coreTitle) || coreTitle.includes(g.title));
+        if (!exists) {
+          const gdObj = {
+            id: "gd_ai_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5),
+            title: coreTitle,
+            region: sp.subRegion || defaultRegion,
+            hours: sp.time ? `預計 ${sp.time} 造訪` : "",
+            price: "",
+            img: "",
+            desc: "",
+            link: ""
+          };
+          await populateGuideWithAiSummary(gdObj, sp);
+          t.guides.push(gdObj);
+        }
+      }
+
+      document.getElementById("aiRawTextInp").value = "";
+      closeModalDirect("aiParserModal");
+      commitChange(`🪄 智慧帶入 D${dayNum} 共 ${addedCount} 個行程點`);
+    }
+
+    // 🪄 為導覽卡片自動生成 Google AI Overview 等級深度摘要（結合內建知識庫 ＋ 多源百科 API）
+    async function populateGuideWithAiSummary(guideObj, fallbackIti = null) {
+      const rawTitle = (fallbackIti?.rawLine || guideObj.title || "").trim();
+
+      // 1. 優先比對內建高精準度知識庫
+      for (const [key, kb] of Object.entries(AI_SPOT_KNOWLEDGE_BASE)) {
+        if (rawTitle.toLowerCase().includes(key.toLowerCase()) || guideObj.title.toLowerCase().includes(key.toLowerCase())) {
+          if (!guideObj.hours || guideObj.hours.startsWith("預計")) guideObj.hours = kb.hours;
+          if (!guideObj.price) guideObj.price = kb.price;
+          guideObj.desc = kb.desc;
+          return;
+        }
+      }
+
+      // 2. 線上查詢中文/英文維基百科並轉譯為結構化 AI 摘要
+      const cleanQuery = cleanParenText(guideObj.title)
+        .replace(/^(欣賞|體驗|搭乘|逛|參觀)\s*/, "")
+        .split(/[·➔]/)[0]
+        .trim();
+
+      try {
+        const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.extract) {
+            guideObj.desc = `✨ 【Google AI 深度摘要】${data.extract}\n💡 【行程貼士】${fallbackIti?.note || fallbackIti?.transit || "建議預留充裕拍照與探索時間。"}`;
+            if (data.thumbnail?.source && !guideObj.img) guideObj.img = data.thumbnail.source;
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 3. 智慧保底結構化摘要
+      guideObj.desc = `✨ 【景點亮點】${guideObj.title}\n${fallbackIti?.transit ? "🚇 【交通動線】" + fallbackIti.transit + "\n" : ""}${fallbackIti?.note ? "💡 【遊玩重點】" + fallbackIti.note : "點右上角『🔍 G查詢』或長按卡片可隨時補充最新旅遊攻略。"}`;
+    }
+
+    function openGoogleSearchForGuide(spotName) {
+      const c = getCountry();
+      const q = `${cleanParenText(spotName || "")} ${c.name || ""} 必看亮點 營業時間 攻略`.trim();
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, "_blank");
+    }
 
     function openAiPlannerModal() {
       const c = getCountry();
@@ -3389,7 +3527,7 @@
           items: [
             { time: "09:30", title: `${c.name}歷史文化地標巡禮`, cat: "景點", transit: "市中心地鐵直達約15分鐘", note: "上午人潮較少好拍照" },
             { time: "13:30", title: `${c.name}核心潮流購物街區`, cat: "購物", transit: "順路步行或地鐵2站約8分鐘", note: "退稅採買與下午茶" },
-            { time: "17:30", title: `${c.name}河畔高空夕陽夜景`, cat: "景點", transit: "地鐵或計程車順路前往約12分鐘", note: "絕美日落與夜景" }
+            { time: "17:30", title: `${c.name}河畔高空夕陽夜景`, cat: "夜景/秀", transit: "地鐵或計程車順路前往約12分鐘", note: "絕美日落與夜景" }
           ]
         }
       ];
@@ -3412,7 +3550,7 @@
       if (!tpl) return;
       if (tpl.region && !t.subRegions.includes(tpl.region)) t.subRegions.push(tpl.region);
       tpl.items.forEach((it, i) => {
-        t.itinerary.push({
+        const newIti = {
           id: "iti_ai_" + Date.now() + "_" + i,
           day: state.activeDay,
           time: it.time,
@@ -3421,8 +3559,11 @@
           cat: it.cat,
           transit: it.transit,
           hotel: "", link: "", img: "", note: it.note
-        });
+        };
+        t.itinerary.push(newIti);
+        if (isSpecialLandmarkSpot(newIti)) autoSyncGuideSpot(t, newIti);
       });
+      sortDayItineraryByTime(t, state.activeDay);
       closeModalDirect("aiParserModal");
       commitChange(`載入經典行程：${tpl.name}`);
     }
@@ -3507,6 +3648,12 @@
     async function runKeylessAiSmartRoutePlanner() {
       const raw = document.getElementById("aiRawTextInp").value.trim();
       if (!raw) return alert("請先輸入想去的景點名稱！");
+
+      // 若貼上文字內含多個時間點或整段行程描述，自動改走「智慧貼文解析」保留時間順序！
+      if (/\d{1,2}:\d{2}|上午|下午|晚上|午餐|晚餐/.test(raw)) {
+        return parsePastedScheduleTextToDay();
+      }
+
       const t = getTrip();
       const c = getCountry();
       const btn = document.getElementById("btnRunAiRoute");
@@ -3517,13 +3664,9 @@
 
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
-        const timeMatch = line.match(/\b(\d{1,2}:\d{2})\b/);
-        const time = timeMatch ? timeMatch[1].padStart(5, "0") : "";
-        if (timeMatch) line = line.replace(timeMatch[0], "").trim();
         const coords = await geocodeSpotKeyless(line, c.name);
         tempSpots.push({
           title: line,
-          time,
           cat: /買|逛|商場|Outlet|超市|藥妝/.test(line) ? "購物" : "景點",
           lat: coords?.lat,
           lon: coords?.lon
@@ -3553,8 +3696,8 @@
       }
 
       ordered.forEach((sp, idx) => {
-        const autoTime = sp.time || `${String(9 + idx * 2).padStart(2, "0")}:30`;
-        t.itinerary.push({
+        const autoTime = `${String(9 + idx * 2).padStart(2, "0")}:30`;
+        const newIti = {
           id: "iti_ai_" + Date.now() + "_" + idx,
           day: state.activeDay,
           time: autoTime,
@@ -3563,11 +3706,14 @@
           cat: sp.cat,
           transit: sp.transit || "起點出發",
           hotel: "", link: "", img: "", note: ""
-        });
+        };
+        t.itinerary.push(newIti);
+        if (isSpecialLandmarkSpot(newIti)) autoSyncGuideSpot(t, newIti);
       });
 
+      sortDayItineraryByTime(t, state.activeDay);
       document.getElementById("aiRawTextInp").value = "";
-      btn.textContent = "🚀 AI 順路排序並排入行程";
+      btn.textContent = "🚀 無時間景點 AI 座標順路排序";
       closeModalDirect("aiParserModal");
       commitChange(`🪄 AI 順路規劃 ${ordered.length} 個行程點`);
     }
@@ -3575,37 +3721,80 @@
     async function autoFetchWikiGuide() {
       const title = document.getElementById("gdTitleInp").value.trim();
       if (!title) return alert("請先輸入景點名稱！");
-      try {
-        const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        if (data.extract) document.getElementById("gdDescInp").value = data.extract;
-        if (data.thumbnail?.source && !document.getElementById("gdImgInp").value) {
-          document.getElementById("gdImgInp").value = data.thumbnail.source;
-        }
-      } catch (e) {
-        alert("找不到同名維基條目，請嘗試簡短關鍵字！");
+      const dummyGuide = {
+        title,
+        hours: document.getElementById("gdHoursInp").value.trim(),
+        price: document.getElementById("gdPriceInp").value.trim(),
+        img: document.getElementById("gdImgInp").value.trim(),
+        desc: ""
+      };
+      await populateGuideWithAiSummary(dummyGuide, { title });
+      document.getElementById("gdDescInp").value = dummyGuide.desc;
+      if (dummyGuide.hours) document.getElementById("gdHoursInp").value = dummyGuide.hours;
+      if (dummyGuide.price) document.getElementById("gdPriceInp").value = dummyGuide.price;
+      if (dummyGuide.img && !document.getElementById("gdImgInp").value) {
+        document.getElementById("gdImgInp").value = dummyGuide.img;
       }
     }
 
     function autoSyncGuideSpot(trip, iti) {
       if (!trip.guides) trip.guides = [];
-      if (iti.cat === "交通") return;
-      const cleanT = cleanParenText(iti.title);
-      const exists = trip.guides.some(g => g.title.includes(cleanT) || cleanT.includes(g.title));
+      if (!isSpecialLandmarkSpot(iti)) return;
+      const coreTitle = extractCoreLandmarkName(iti.title);
+      const exists = trip.guides.some(g => g.title.includes(coreTitle) || coreTitle.includes(g.title));
       if (!exists) {
-        trip.guides.push({
+        const newGd = {
           id: "gd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5),
-          title: cleanT, region: cleanParenText(iti.subRegion || ""), hours: iti.time ? `預計 ${iti.time}` : "",
-          price: "", img: iti.img || "", desc: cleanParenText(iti.note || `Day ${iti.day} 景點導覽`), link: iti.link || ""
+          title: coreTitle,
+          region: cleanParenText(iti.subRegion || ""),
+          hours: iti.time ? `預計 ${iti.time}` : "",
+          price: "",
+          img: iti.img || "",
+          desc: "",
+          link: iti.link || ""
+        };
+        populateGuideWithAiSummary(newGd, iti).then(() => {
+          saveAppState(false);
+          renderGuidesSection();
         });
+        trip.guides.push(newGd);
       }
     }
 
-    function syncGuidesFromItinerary() {
+    async function syncGuidesFromItinerary() {
       const t = getTrip();
-      (t.itinerary || []).forEach(i => autoSyncGuideSpot(t, i));
-      commitChange("同步導覽");
+      if (!t.guides) t.guides = [];
+      let count = 0;
+      for (const i of (t.itinerary || [])) {
+        if (isSpecialLandmarkSpot(i)) {
+          const coreTitle = extractCoreLandmarkName(i.title);
+          const exists = t.guides.some(g => g.title.includes(coreTitle) || coreTitle.includes(g.title));
+          if (!exists) {
+            const newGd = {
+              id: "gd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5),
+              title: coreTitle,
+              region: cleanParenText(i.subRegion || ""),
+              hours: i.time ? `預計 ${i.time}` : "",
+              price: "",
+              img: i.img || "",
+              desc: "",
+              link: i.link || ""
+            };
+            await populateGuideWithAiSummary(newGd, i);
+            t.guides.push(newGd);
+            count++;
+          }
+        }
+      }
+      commitChange(`擷取 ${count} 個重點景點至導覽`);
+    }
+
+    async function refreshSingleGuideAiSummary(guideId) {
+      const t = getTrip();
+      const g = (t.guides || []).find(x => x.id === guideId);
+      if (!g) return;
+      await populateGuideWithAiSummary(g, { title: g.title });
+      commitChange(`更新導覽 AI 摘要：${g.title}`);
     }
 
     function renderGuidesSection() {
@@ -3615,7 +3804,7 @@
       box.innerHTML = "";
       const list = t.guides || [];
       if (list.length === 0) {
-        box.innerHTML = `<div class="col-span-2 text-center py-6 text-xs text-[#7a827d]">點右上角「🪄 同步行程」生成導覽卡</div>`;
+        box.innerHTML = `<div class="col-span-2 text-center py-6 text-xs text-[#7a827d]">點右上角「🪄 擷取重點景點」自動篩選特別地標並生成 AI 深度摘要</div>`;
         return;
       }
       list.forEach(g => {
@@ -3638,9 +3827,12 @@
         card.innerHTML = `
           <div>
             ${gdSrc ? `<img src="${gdSrc}" onclick="event.stopPropagation(); openImageLightbox('${g.img.replace(/'/g, "")}', '${cleanGTitle.replace(/'/g, "")}')" class="polaroid-img w-full h-36 object-cover mb-2.5" />` : ""}
-            <div class="flex items-center gap-1.5 mb-1.5 whitespace-nowrap">
-              ${g.region ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] shrink-0">${cleanParenText(g.region)}</span>` : ""}
-              <h3 class="font-bold text-sm text-[#2b302c] truncate">${cleanGTitle}</h3>
+            <div class="flex items-center justify-between gap-1.5 mb-1.5 whitespace-nowrap">
+              <div class="flex items-center gap-1.5 min-w-0">
+                ${g.region ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] shrink-0">${cleanParenText(g.region)}</span>` : ""}
+                <h3 class="font-bold text-sm text-[#2b302c] truncate">${cleanGTitle}</h3>
+              </div>
+              <button type="button" onclick="event.stopPropagation(); refreshSingleGuideAiSummary('${g.id}')" class="px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold shrink-0">🪄 AI摘要</button>
             </div>
             <div class="flex flex-wrap gap-1.5 text-[11px] font-bold mb-1.5">
               ${g.hours ? `<span class="px-2 py-0.5 rounded-full bg-[#fbf8f3] border text-[#7a827d]">🕒 ${cleanParenText(g.hours)}</span>` : ""}
@@ -3648,8 +3840,11 @@
             </div>
             <p class="text-xs text-[#4a524d] leading-relaxed whitespace-pre-line">${g.desc || ""}</p>
           </div>
-          <div class="mt-2.5 pt-2 border-t border-[#efe7dc] flex items-center justify-between text-xs">
-            <a href="${gdNavUrl}" target="_blank" class="font-bold text-[#52796f] hover:underline">${mapBadge} ↗</a>
+          <div class="mt-2.5 pt-2 border-t border-[#efe7dc] flex items-center justify-between text-xs whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <a href="${gdNavUrl}" target="_blank" onclick="event.stopPropagation()" class="font-bold text-[#52796f] hover:underline">${mapBadge} ↗</a>
+              <button type="button" onclick="event.stopPropagation(); openGoogleSearchForGuide('${cleanGTitle.replace(/'/g, "")}')" class="font-bold text-[#c85a32] hover:underline">🔍 Google深查</button>
+            </div>
             <span class="text-[10px] text-gray-400">長按修改 · 右滑刪除</span>
           </div>
         `;
@@ -3707,7 +3902,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 14. 📊 分帳記帳系統（全面移除括號，改用微膠囊） ====================
+    // ==================== 14. 📊 分帳記帳系統 ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -3889,7 +4084,6 @@
         if (e.payer && pStats[e.payer]) pStats[e.payer].paid += twd;
 
         if (e.mode === "treat") {
-          // 🥂 代墊請客：payer 先刷卡/付現，但由 host 請客買單！
           const hostName = e.host || e.payer;
           if (e.payer !== "公費" && pStats[e.payer]) pStats[e.payer].net += twd;
           if (hostName !== "公費" && pStats[hostName]) {
@@ -4117,7 +4311,7 @@
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
 
-    // ==================== 15. 🛍️ 清單中心（全面移除多餘括號） ====================
+    // ==================== 15. 🛍️ 清單中心 ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
         document.getElementById("listBox-" + k).classList.toggle("hidden", k !== tabKey);
@@ -4585,7 +4779,6 @@
         </div>
       `).join("");
 
-      // 將舊有寫死在 country 的簽證/交通圖自動移入當前 trip，讓使用者可 100% 自由換圖與刪除！
       if (Array.isArray(c.visas) && c.visas.length > 0) {
         if (!t.customVisas) t.customVisas = [];
         c.visas.forEach(v => { if (!t.customVisas.some(x => x.name === v.name)) t.customVisas.push(v); });
@@ -4857,7 +5050,7 @@
           if (trip) {
             filesPayload[fName] = {
               content: JSON.stringify({
-                version: "83.0",
+                version: "84.0",
                 countryId: c.id,
                 title: trip.title,
                 subRegions: trip.subRegions || [],
@@ -4879,7 +5072,7 @@
 
         filesPayload["global_trip_list.json"] = {
           content: JSON.stringify({
-            version: "83.0",
+            version: "84.0",
             activeCountryId: state.activeCountryId,
             companions: state.companions || [],
             countryList
@@ -4906,7 +5099,7 @@
       localStorage.setItem("GIST_ID", gistId);
       if (token) localStorage.setItem("GIST_TOKEN", token);
 
-      status.textContent = "⏳ 正在讀取日本與韓國等所有格子...";
+      status.textContent = "⏳ 正在讀取雲端所有國家與旅程格子...";
       try {
         const headers = token ? { Authorization: `token ${token}` } : {};
         const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
@@ -5029,12 +5222,15 @@
       r.readAsText(f);
     }
 
-    function switchTab(tabName, btnEl) {
+    function switchTab(tabName, btnEl, keepReturnBar = false) {
       document.querySelectorAll(".tab-panel").forEach(p => p.classList.add("hidden"));
       document.getElementById("tabPanel-" + tabName).classList.remove("hidden");
       const isIti = tabName === "itinerary";
       document.getElementById("dayFabWrapper").classList.toggle("hidden", !isIti);
       document.getElementById("aiFabWrapper").classList.toggle("hidden", !isIti);
+      if (!keepReturnBar) {
+        document.getElementById("quickReturnBar")?.classList.add("hidden");
+      }
       document.querySelectorAll(".nav-bottom-btn").forEach(b => {
         b.classList.remove("text-[#52796f]", "font-bold");
         b.classList.add("text-[#8c948f]");
