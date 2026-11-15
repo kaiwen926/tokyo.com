@@ -129,15 +129,35 @@
       line-height: 1.45;
     }
 
-    /* 任意門左右滑動拖曳容器 */
+    /* 任意門與橫向膠囊列：零延遲絲滑左右拖曳 */
     .drag-scroll-x {
+      display: flex;
       overflow-x: auto;
+      overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-x;
       cursor: grab;
-      scroll-behavior: smooth;
+      user-select: none;
     }
-    .drag-scroll-x:active { cursor: grabbing; }
+    .drag-scroll-x.dragging {
+      cursor: grabbing;
+      scroll-behavior: auto !important;
+    }
+    .drag-scroll-x > * {
+      flex-shrink: 0;
+    }
+
+    /* 取代括號的極簡微膠囊標籤 */
+    .sub-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(82, 121, 111, 0.1);
+      color: #52796f;
+    }
 
     /* 導覽卡片跳轉高光閃爍動畫 */
     @keyframes guidePulse {
@@ -347,7 +367,7 @@
       <div class="journal-card p-2.5 sm:p-3.5">
         <div class="washi-tape pink"></div>
         <div class="flex items-center justify-between gap-1.5 mb-2 whitespace-nowrap">
-          <span class="font-bold text-sm text-[#2b302c] shrink-0">📅 每日行程 <span class="text-[10px] font-normal text-[#7a827d]"></span></span>
+          <span class="font-bold text-sm text-[#2b302c] shrink-0">📅 每日行程 <span class="text-[10px] font-normal text-[#7a827d]">(點景點跳導覽 · 長按修改 · 右滑刪除)</span></span>
           <div class="flex items-center gap-1 shrink-0">
             <button onclick="toggleDrawer('subRegionDrawer', event)" id="btnRegionFilter" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fef9ef] text-[#9c6644] border border-[#f2cc8f]">📍地區</button>
             <div class="inline-flex rounded-full bg-[#f5efe6] p-0.5 border border-[#e2d8c9]">
@@ -379,7 +399,7 @@
       <div class="journal-card p-3 sm:p-4">
         <div class="washi-tape green"></div>
         <div class="flex items-center justify-between gap-2 mb-3 whitespace-nowrap">
-          <h2 class="font-bold text-sm text-[#2b302c]">🧭 深度導覽 <span class="text-[10px] font-normal text-[#7a827d]"></span></h2>
+          <h2 class="font-bold text-sm text-[#2b302c]">🧭 深度導覽 <span class="text-[10px] font-normal text-[#7a827d]">(長按修改 · 右滑刪除)</span></h2>
           <div class="flex gap-1.5">
             <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🪄 同步行程</button>
             <button onclick="openGuideModal()" class="text-xs font-bold px-3 py-1 rounded-full btn-gradient-sage">+ 新增</button>
@@ -1674,20 +1694,49 @@
       document.querySelectorAll(".drag-scroll-x").forEach(slider => {
         if (slider._dragBound) return;
         slider._dragBound = true;
-        let isDown = false, startX = 0, scrollLeft = 0;
+
+        let isDown = false;
+        let isDragging = false;
+        let startX = 0;
+        let scrollLeft = 0;
+
         slider.addEventListener("mousedown", e => {
           isDown = true;
+          isDragging = false;
           startX = e.pageX - slider.offsetLeft;
           scrollLeft = slider.scrollLeft;
         });
-        slider.addEventListener("mouseleave", () => { isDown = false; });
-        slider.addEventListener("mouseup", () => { isDown = false; });
+
         slider.addEventListener("mousemove", e => {
           if (!isDown) return;
-          e.preventDefault();
           const x = e.pageX - slider.offsetLeft;
-          slider.scrollLeft = scrollLeft - (x - startX) * 1.4;
+          const walk = x - startX;
+          // 只有真正左右拉動超過 8px 時，才啟動拖曳模式
+          if (Math.abs(walk) > 8) {
+            isDragging = true;
+            slider.classList.add("dragging");
+            slider.scrollLeft = scrollLeft - walk * 1.2;
+          }
         });
+
+        const stopDrag = () => {
+          if (!isDown) return;
+          isDown = false;
+          slider.classList.remove("dragging");
+          setTimeout(() => { isDragging = false; }, 50);
+        };
+
+        slider.addEventListener("mouseup", stopDrag);
+        slider.addEventListener("mouseleave", stopDrag);
+
+        // 只有在「拖曳超過 8px」放開時才攔截誤觸，一般輕點 100% 放行給國旗按鈕！
+        slider.addEventListener("click", e => {
+          if (isDragging) {
+            e.stopPropagation();
+            e.preventDefault();
+            isDragging = false;
+          }
+        }, true);
       });
     }
 
@@ -2518,6 +2567,7 @@
           refreshCountryRate(false);
           saveAppState(false);
           renderAll();
+          document.getElementById("anywhereDoorDrawer")?.classList.remove("open");
         };
         attachLongPress(btn, () => {
           if (Object.keys(state.countries).length <= 1) return alert("至少需保留一個國家！");
@@ -3687,6 +3737,22 @@
       }
     }
 
+    function removePersonFromExpenseChart(personName) {
+      if (!confirm(`確定要刪除旅伴「${personName}」嗎？\n刪除後將從旅伴名單移除，且相關分攤紀錄也會一併更新。`)) return;
+      const t = getTrip();
+      state.companions = (state.companions || []).filter(c => c.name !== personName);
+      // 同步清理該旅伴的消費與分攤名單
+      t.expenses = (t.expenses || []).filter(e => e.payer !== personName);
+      t.expenses.forEach(e => {
+        if (Array.isArray(e.beneficiaries)) {
+          e.beneficiaries = e.beneficiaries.filter(b => b !== personName);
+          if (e.beneficiaries.length === 0 && e.payer) e.beneficiaries = [e.payer];
+        }
+      });
+      if (state.activeChartTarget === personName) state.activeChartTarget = "ALL";
+      commitChange(`刪除旅伴：${personName}`);
+    }
+
     function toggleChartDetailList() {
       document.getElementById("chartEmbeddedDetailDrawer")?.classList.toggle("open");
     }
@@ -3740,7 +3806,7 @@
             } else {
               pStats[b].ownSpend += share;
               pStats[b].cats[cKey] += share;
-              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `👤 自付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
+              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `自付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
             }
           });
         } else {
@@ -3750,34 +3816,42 @@
             pStats[b].ownSpend += share;
             if (e.payer !== "公費") pStats[b].net -= share;
             pStats[b].cats[cKey] += share;
-            pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `${e.payer}付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
+            pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `${e.payer}先付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
           });
         }
       });
 
       const activeTarget = (state.activeChartTarget && pStats[state.activeChartTarget]) ? state.activeChartTarget : "ALL";
 
+      // 渲染上方「全體統整 ｜ 旅伴個人花費」切換膠囊（無括號、支援長按刪除該旅伴！）
       const pillsBox = document.getElementById("chartTargetPills");
-      let pillsHtml = `
-        <button onclick="selectChartTarget('ALL')" class="shrink-0 px-3 py-1 rounded-full text-xs font-bold border whitespace-nowrap transition ${
-          activeTarget === "ALL" ? "btn-gradient-sage text-white border-transparent shadow-2xs" : "bg-[#fbf8f3] text-[#4a524d] border-[#dcd2c4]"
-        }">📊 統整 (NT$${Math.round(grandTotalTWD).toLocaleString()})</button>
-      `;
+      pillsBox.innerHTML = "";
+
+      const allBtn = document.createElement("button");
+      allBtn.className = `shrink-0 px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 whitespace-nowrap transition ${
+        activeTarget === "ALL" ? "btn-gradient-sage text-white border-transparent shadow-2xs" : "bg-[#fbf8f3] text-[#4a524d] border-[#dcd2c4]"
+      }`;
+      allBtn.innerHTML = `<span>📊 統整</span><span class="text-[10px] opacity-85 en-font">NT$${Math.round(grandTotalTWD).toLocaleString()}</span>`;
+      allBtn.onclick = () => selectChartTarget("ALL");
+      pillsBox.appendChild(allBtn);
+
       Array.from(peopleSet).forEach(p => {
         const s = pStats[p];
         const pTotal = includeGift ? Math.round(s.ownSpend + s.giftRec) : Math.round(s.ownSpend);
         const active = activeTarget === p;
-        pillsHtml += `
-          <button onclick="selectChartTarget('${p}')" class="shrink-0 pl-1.5 pr-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1 whitespace-nowrap transition ${
-            active ? "btn-gradient-rose text-white border-transparent shadow-2xs" : "bg-white text-[#2b302c] border-[#dcd2c4]"
-          }">
-            ${getCompanionAvatarHtml(p)}
-            <span>${p}</span>
-            <span class="text-[10px] opacity-85 en-font">NT$${pTotal.toLocaleString()}</span>
-          </button>
+        const pBtn = document.createElement("div");
+        pBtn.className = `gesture-box shrink-0 pl-1.5 pr-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition ${
+          active ? "btn-gradient-rose text-white border-transparent shadow-2xs" : "bg-white text-[#2b302c] border-[#dcd2c4]"
+        }`;
+        pBtn.innerHTML = `
+          ${getCompanionAvatarHtml(p)}
+          <span>${p}</span>
+          <span class="text-[10px] opacity-85 en-font">NT$${pTotal.toLocaleString()}</span>
         `;
+        pBtn.onclick = () => selectChartTarget(p);
+        attachLongPress(pBtn, () => removePersonFromExpenseChart(p));
+        pillsBox.appendChild(pBtn);
       });
-      pillsBox.innerHTML = pillsHtml;
 
       const targetCats = activeTarget === "ALL" ? groupCats : pStats[activeTarget].cats;
       const targetTotal = activeTarget === "ALL"
@@ -3794,7 +3868,8 @@
           <div onclick="toggleChartDetailList()" class="flex items-center justify-between whitespace-nowrap cursor-pointer hover:opacity-80">
             <span class="flex items-center gap-1.5 font-bold text-[#2b302c]">
               <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${catColors[k]}"></span>
-              ${k.slice(0, 2)} (${pct}%)
+              <span>${k.slice(0, 2)}</span>
+              <span class="sub-pill en-font">${pct}%</span>
             </span>
             <span class="font-bold text-[#52796f] en-font">NT$ ${Math.round(v).toLocaleString()}</span>
           </div>
@@ -3811,9 +3886,9 @@
         if (expObj.payer && !allPeople.includes(expObj.payer)) allPeople.push(expObj.payer);
         rowEl.innerHTML = `
           <div class="inline-full-editor w-full space-y-1.5 text-xs p-1" onclick="event.stopPropagation()">
-            <div class="font-bold text-[#52796f]">✏️ 修改帳務完整內容</div>
+            <div class="font-bold text-[#52796f]">✏️ 修改帳務內容</div>
             <div class="grid grid-cols-3 gap-1">
-              <input type="text" class="ex-ed-date px-2 py-1 rounded-lg border bg-white" value="${expObj.date || ""}" placeholder="日期 (06/24)" />
+              <input type="text" class="ex-ed-date px-2 py-1 rounded-lg border bg-white" value="${expObj.date || ""}" placeholder="日期" />
               <input type="text" class="ex-ed-title col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" value="${expObj.title || ""}" placeholder="項目名稱 *" />
             </div>
             <div class="grid grid-cols-3 gap-1">
@@ -3841,7 +3916,7 @@
                 <option value="self" ${expObj.mode === "self" ? "selected" : ""}>👤 個人自付</option>
               </select>
             </div>
-            <input type="text" class="ex-ed-bens w-full px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="分攤人 (用逗號分隔，如: 凱,淨)" />
+            <input type="text" class="ex-ed-bens w-full px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="分攤人：凱, 淨" />
             <input type="text" class="ex-ed-note w-full px-2 py-1 rounded-lg border bg-white" value="${expObj.note || ""}" placeholder="📝 備註" />
             <div class="flex gap-1.5 pt-1">
               <button type="button" class="btn-save-ex flex-1 py-1.5 rounded-lg btn-gradient-sage font-bold">✓ 儲存修改</button>
@@ -3878,7 +3953,7 @@
               ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
               <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${(origExp.cat || "消費").slice(0, 2)}</span>
               <span class="font-bold text-xs text-[#2b302c] truncate">${origExp.title}</span>
-              <span class="text-[10px] text-[#7a827d] shrink-0">(${isPersonalView ? entry.role : origExp.payer})</span>
+              <span class="sub-pill shrink-0">${isPersonalView ? entry.role : origExp.payer}</span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${expImgSrc ? `<button onclick="event.stopPropagation(); openImageLightbox('${origExp.img.replace(/'/g, "")}', '${origExp.title.replace(/'/g, "")}')" class="text-[10px] text-[#c85a32]">📸</button>` : ""}
@@ -3899,12 +3974,12 @@
       };
 
       if (activeTarget === "ALL") {
-        embeddedTitle.textContent = `📋 全體帳務明細 (${list.length} 筆)`;
+        embeddedTitle.innerHTML = `📋 全體帳務明細 <span class="sub-pill ml-1">${list.length} 筆</span>`;
         renderExpRowList(list, false);
       } else {
         const s = pStats[activeTarget];
         const visibleItems = s.items.filter(it => includeGift || !it.isGiftRec);
-        embeddedTitle.textContent = `📋 ${activeTarget} 的明細 (${visibleItems.length} 筆 · 代墊 NT$${Math.round(s.paid).toLocaleString()})`;
+        embeddedTitle.innerHTML = `📋 ${activeTarget} 的明細 <span class="sub-pill ml-1">代墊 NT$${Math.round(s.paid).toLocaleString()}</span>`;
         renderExpRowList(visibleItems, true);
       }
 
@@ -3931,7 +4006,6 @@
       document.getElementById("settleTransfersBox").innerHTML =
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
-
     // ==================== 15. 🛍️ 清單中心 ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
@@ -3942,7 +4016,7 @@
       });
     }
 
-    function renderListsSection() {
+function renderListsSection() {
       const t = getTrip();
       const c = getCountry();
       const mapBadge = getMapProviderBadge();
@@ -3951,6 +4025,28 @@
       const usedFoodCats = [...new Set((t.mustEat || []).map(f => f.cat).filter(Boolean))];
       document.getElementById("shopCatHistoryList").innerHTML = usedShopCats.map(cat => `<option value="${cat}"></option>`).join("");
       document.getElementById("foodCatHistoryList").innerHTML = usedFoodCats.map(cat => `<option value="${cat}"></option>`).join("");
+
+      // 🛍️ 必買清單：上方旅伴專屬切換篩選列（自動整合旅伴名單與必買項目出現過的名字）
+      const ownerSet = new Set((state.companions || []).map(x => x.name).filter(n => n !== "公費"));
+      (t.shopping || []).forEach(s => { if (s.owner && s.owner.trim()) ownerSet.add(s.owner.trim()); });
+      const ownersList = ["ALL", ...Array.from(ownerSet)];
+      if (!ownersList.includes(state.activeShopOwner)) state.activeShopOwner = "ALL";
+
+      const ownerFilterBox = document.getElementById("shopOwnerFilterPills");
+      if (ownerFilterBox) {
+        ownerFilterBox.innerHTML = ownersList.map(o => {
+          const cnt = o === "ALL" ? (t.shopping || []).length : (t.shopping || []).filter(s => s.owner === o).length;
+          const active = state.activeShopOwner === o;
+          return `
+            <button onclick="state.activeShopOwner='${o}'; renderListsSection();" class="shrink-0 text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1.5 whitespace-nowrap transition ${
+              active ? "btn-gradient-rose text-white border-transparent shadow-2xs" : "bg-[#fbf8f3] text-[#4a524d] border-[#dcd2c4]"
+            }">
+              ${o === "ALL" ? `<span>🛍️ 全部</span>` : `${getCompanionAvatarHtml(o)}<span>${o}</span>`}
+              <span class="text-[10px] opacity-80 en-font">${cnt}</span>
+            </button>
+          `;
+        }).join("");
+      }
 
       const shopFiltered = (t.shopping || []).filter(s => state.activeShopOwner === "ALL" || s.owner === state.activeShopOwner);
       const shopGroups = {};
@@ -3964,7 +4060,7 @@
       shopDrawersBox.innerHTML = "";
       const shopCatKeys = Object.keys(shopGroups);
       if (shopCatKeys.length === 0) {
-        shopDrawersBox.innerHTML = `<div class="text-center py-4 text-xs text-[#7a827d]">點右上角「+ 新增」建立必買抽屜</div>`;
+        shopDrawersBox.innerHTML = `<div class="text-center py-4 text-xs text-[#7a827d]">尚無必買項目，點右上角「+ 新增」建立</div>`;
       } else {
         shopCatKeys.forEach((catName, idx) => {
           const items = shopGroups[catName];
@@ -3976,7 +4072,7 @@
             <div onclick="toggleDrawer('${dId}', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#f5efe6] to-[#fbf8f3] flex items-center justify-between cursor-pointer whitespace-nowrap">
               <div class="flex items-center gap-2">
                 <span class="font-bold text-xs sm:text-sm text-[#2b302c]">🏪 ${catName}</span>
-                <span class="text-[11px] font-bold px-2 py-0.2 rounded-full bg-white border text-[#52796f]">${doneCnt}/${items.length}</span>
+                <span class="sub-pill en-font">${doneCnt}/${items.length}</span>
               </div>
               <span class="text-xs text-[#7a827d]">▾</span>
             </div>
@@ -3992,9 +4088,12 @@
             const renderShopNormal = () => {
               card.innerHTML = `
                 <div>
-                  <div class="flex items-center gap-1.5">
-                    <input type="checkbox" ${s.done ? "checked" : ""} onchange="toggleShopDone('${s.id}')" class="w-3.5 h-3.5 accent-[#52796f] shrink-0 cursor-pointer" />
-                    <span class="font-bold text-xs flex-1 ${s.done ? "line-through text-gray-400" : "text-[#2b302c]"}">${s.title || s.name}</span>
+                  <div class="flex items-center justify-between gap-1">
+                    <label class="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer">
+                      <input type="checkbox" ${s.done ? "checked" : ""} onchange="toggleShopDone('${s.id}')" class="w-3.5 h-3.5 accent-[#52796f] shrink-0" />
+                      <span class="font-bold text-xs truncate ${s.done ? "line-through text-gray-400" : "text-[#2b302c]"}">${s.title || s.name}</span>
+                    </label>
+                    ${s.owner ? `<span class="sub-pill shrink-0">${s.owner}</span>` : ""}
                   </div>
                   ${s.price ? `<div class="text-[10px] font-bold text-[#c85a32] en-font mt-0.5">💰 ${Number(s.price).toLocaleString()} ${c.currency}</div>` : ""}
                   ${s.note ? `<div class="text-[10px] text-[#7a827d]">${s.note}</div>` : ""}
@@ -4005,13 +4104,15 @@
 
             const openShopInlineEditor = () => {
               const tmpImgId = "inline_sh_img_" + s.id;
+              const ownerOpts = [`<option value="">🏷️ 共同</option>`, ...Array.from(ownerSet).map(o => `<option value="${o}" ${s.owner === o ? "selected" : ""}>${o}</option>`)].join("");
               card.className = "col-span-full p-2.5 rounded-xl bg-white border-2 border-[#52796f] space-y-1.5 text-xs";
               card.innerHTML = `
                 <div class="inline-full-editor space-y-1.5" onclick="event.stopPropagation()">
-                  <div class="font-bold text-[#52796f]">🛍️ 修改必買商品完整內容</div>
-                  <div class="grid grid-cols-2 gap-1.5">
+                  <div class="font-bold text-[#52796f]">🛍️ 修改必買商品</div>
+                  <div class="grid grid-cols-3 gap-1.5">
                     <input type="text" class="sh-ed-cat px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${s.cat || ""}" placeholder="店家/分類" />
                     <input type="text" class="sh-ed-title px-2 py-1 rounded-lg border bg-[#fbf8f3] font-bold" value="${s.title || s.name || ""}" placeholder="商品名稱 *" />
+                    <select class="sh-ed-owner px-1.5 py-1 rounded-lg border bg-[#fbf8f3]">${ownerOpts}</select>
                   </div>
                   <div class="grid grid-cols-2 gap-1.5">
                     <input type="number" class="sh-ed-price px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${s.price || ""}" placeholder="預估金額" />
@@ -4031,6 +4132,7 @@
                 s.cat = card.querySelector(".sh-ed-cat").value.trim() || s.cat;
                 s.title = card.querySelector(".sh-ed-title").value.trim() || s.title;
                 s.name = s.title;
+                s.owner = card.querySelector(".sh-ed-owner").value;
                 s.price = card.querySelector(".sh-ed-price").value.trim();
                 s.note = card.querySelector(".sh-ed-note").value.trim();
                 s.img = card.querySelector(".sh-ed-img").value.trim();
@@ -4054,6 +4156,7 @@
         });
       }
 
+      // 🍜 必吃清單（無多餘括號）
       const foodGroups = {};
       (t.mustEat || []).forEach(f => {
         const cat = (f.cat && f.cat.trim()) ? f.cat.trim() : "精選必吃";
@@ -4074,7 +4177,10 @@
           wrap.className = "rounded-2xl border border-[#e6dcd0] bg-[#fbf8f3] overflow-hidden";
           wrap.innerHTML = `
             <div onclick="toggleDrawer('${dId}', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#fdf0ec] to-[#fbf8f3] flex items-center justify-between cursor-pointer whitespace-nowrap">
-              <span class="font-bold text-xs sm:text-sm text-[#2b302c]">🍴 ${catName} (${items.length})</span>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-xs sm:text-sm text-[#2b302c]">🍴 ${catName}</span>
+                <span class="sub-pill en-font">${items.length}</span>
+              </div>
               <span class="text-xs text-[#7a827d]">▾</span>
             </div>
             <div id="${dId}" class="drawer-panel open p-2.5 space-y-1.5 bg-white"></div>
@@ -4089,13 +4195,13 @@
             const openFoodInlineEditor = () => {
               row.innerHTML = `
                 <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
-                  <div class="font-bold text-[#c85a32]">🍜 修改必吃美食完整內容</div>
+                  <div class="font-bold text-[#c85a32]">🍜 修改必吃美食</div>
                   <div class="grid grid-cols-3 gap-1.5">
                     <input type="text" class="fd-ed-cat px-2 py-1 rounded-lg border bg-white" value="${f.cat || ""}" placeholder="地區分類" />
                     <input type="text" class="fd-ed-name col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" value="${f.name || ""}" placeholder="餐廳名稱 *" />
                   </div>
-                  <input type="text" class="fd-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 專屬地圖連結 (可留空)" />
-                  <textarea rows="2" class="fd-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註 (營業時間/必點)">${f.note || ""}</textarea>
+                  <input type="text" class="fd-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 專屬地圖連結" />
+                  <textarea rows="2" class="fd-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註">${f.note || ""}</textarea>
                   <div class="flex gap-1.5 pt-1">
                     <button type="button" class="btn-save-fd flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
                     <button type="button" class="btn-cancel-fd px-3 py-1 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
@@ -4135,12 +4241,13 @@
         });
       }
 
+      // 🧳 單機行李（無括號清爽膠囊）
       const packCats = ["ALL", "重要證件與財務", "3C與攝影器材", "衣物與穿搭配件", "常備藥品與保健", "盥洗與保養美妝", "隨身雜物與其他"];
       document.getElementById("packingCategoryPills").innerHTML = packCats.map(cat => {
         const itemsInCat = cat === "ALL" ? localPackingItems : localPackingItems.filter(x => x.cat === cat);
         const doneCnt = itemsInCat.filter(x => x.done).length;
         const active = state.activePackCat === cat;
-        return `<button onclick="state.activePackCat='${cat}'; renderListsSection();" class="shrink-0 text-xs font-bold px-2.5 py-1 rounded-full border ${active ? "btn-gradient-sage border-transparent" : "bg-[#fbf8f3] text-[#4a524d]"}">${cat === "ALL" ? `全部 (${doneCnt}/${itemsInCat.length})` : `${cat.slice(0, 4)} (${doneCnt}/${itemsInCat.length})`}</button>`;
+        return `<button onclick="state.activePackCat='${cat}'; renderListsSection();" class="shrink-0 text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1.5 whitespace-nowrap ${active ? "btn-gradient-sage border-transparent" : "bg-[#fbf8f3] text-[#4a524d]"}"><span>${cat === "ALL" ? "全部" : cat.slice(0, 4)}</span><span class="text-[10px] opacity-80 en-font">${doneCnt}/${itemsInCat.length}</span></button>`;
       }).join("");
 
       const packContainer = document.getElementById("localPackingListContainer");
@@ -4196,6 +4303,7 @@
         packContainer.appendChild(row);
       });
 
+      // 📝 備忘錄
       const memoBox = document.getElementById("memoListBox");
       memoBox.innerHTML = "";
       (t.memos || []).forEach(m => {
@@ -4208,7 +4316,7 @@
           const tmpImgId = "inline_mm_img_" + m.id;
           div.innerHTML = `
             <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
-              <div class="font-bold text-[#52796f]">📝 修改備忘與圖片 (可上下捲動)</div>
+              <div class="font-bold text-[#52796f]">📝 修改備忘與圖片</div>
               <input type="text" class="mm-ed-title w-full px-2 py-1 rounded-lg border bg-white font-bold" value="${m.title || ""}" placeholder="備忘標題 *" />
               <textarea rows="3" class="mm-ed-body w-full px-2 py-1 rounded-lg border bg-white" placeholder="備忘內容或網址...">${m.body || ""}</textarea>
               <div class="flex gap-1">
@@ -4248,7 +4356,6 @@
         memoBox.appendChild(div);
       });
     }
-
     function addShopItem() {
       const t = getTrip();
       const cat = document.getElementById("shopCatInput").value.trim() || "綜合必買";
