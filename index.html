@@ -437,9 +437,9 @@
             <span id="rateBadgeText" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">匯率</span>
             <button onclick="refreshCountryRate(true)" class="w-6 h-6 rounded-full border bg-white text-[10px] text-[#52796f]"><i class="fa-solid fa-arrows-rotate"></i></button>
           </div>
-          <label class="flex items-center gap-1 text-xs font-bold text-[#6b21a8] cursor-pointer">
+          <label class="flex items-center gap-1 text-xs font-bold text-[#6b21a8] cursor-pointer" title="勾選後，別人請客/贈予的項目（如旅伴請客的機票）也會計入妳的個人花費圓餅圖統計">
             <input id="chkIncludeGiftTotal" type="checkbox" checked onchange="renderExpenseSection()" class="w-3.5 h-3.5 accent-[#6b21a8]" />
-            <span>🎁 含受贈</span>
+            <span>🎁 個人總花費含受贈/被請客</span>
           </label>
         </div>
 
@@ -457,7 +457,7 @@
         </div>
 
         <!-- 🧾 圓餅圖內嵌明細抽屜 -->
-        <div id="chartEmbeddedDetailDrawer" class="drawer-panel bg-white rounded-2xl border border-[#ece3d5]">
+        <div id="chartEmbeddedDetailDrawer" class="drawer-panel open bg-white rounded-2xl border border-[#ece3d5]">
           <div class="px-3 py-1.5 bg-[#fdf0ec]/50 border-b border-[#ece3d5] flex items-center justify-between text-[11px] font-bold text-[#c85a32] whitespace-nowrap">
             <span id="embeddedListTitle">📋 帳務明細</span>
             <span class="text-[10px] text-[#7a827d] font-normal">長按修改 · 右滑刪除</span>
@@ -468,10 +468,11 @@
         <!-- 🤝 代墊結算抽屜 -->
         <div class="pt-2 border-t border-dashed border-[#e8dfd3]">
           <div onclick="toggleDrawer('settleDrawerBox', event)" class="flex items-center justify-between cursor-pointer whitespace-nowrap">
-            <span class="font-bold text-xs text-[#2b302c]">🤝 代墊結算</span>
+            <span class="font-bold text-xs text-[#2b302c]">🤝 代墊結算 & 應收還款</span>
             <span class="text-[11px] text-[#52796f] font-bold">展開 ▾</span>
           </div>
-          <div id="settleDrawerBox" class="drawer-panel open pt-1.5">
+          <div id="settleDrawerBox" class="drawer-panel open pt-1.5 space-y-1.5">
+            <div id="settleSummaryBadges" class="flex flex-wrap gap-1.5"></div>
             <div id="settleTransfersBox" class="space-y-1 text-xs"></div>
           </div>
         </div>
@@ -538,15 +539,20 @@
               <span class="text-[11px] font-bold text-[#7a827d] shrink-0">💳先付</span>
               <select id="expPayerSelect" class="w-full text-xs font-bold bg-transparent outline-none"></select>
             </div>
-            <select id="expModeSelect" class="text-xs px-2 py-1.5 rounded-xl border border-[#dcd2c4] bg-white">
+            <select id="expModeSelect" onchange="toggleTreatHostRow()" class="text-xs px-2 py-1.5 rounded-xl border border-[#dcd2c4] bg-white font-bold text-[#2b302c]">
               <option value="split">🤝 一般分攤</option>
-              <option value="gift">🎁 贈予/請客</option>
+              <option value="treat">🥂 代墊請客 (我先付·對方請客)</option>
+              <option value="gift">🎁 贈予/請客 (付款人直接請)</option>
               <option value="self">👤 個人自付</option>
             </select>
+            <div id="expHostSelectWrap" class="hidden col-span-2 flex items-center justify-between gap-2 bg-[#fdf0ec] px-3 py-1.5 rounded-xl border border-[#f4c2b2]">
+              <span class="text-[11px] font-bold text-[#c85a32] shrink-0">🥂 誰說要請客買單 (欠款人)：</span>
+              <select id="expHostSelect" class="flex-1 text-xs font-bold bg-white px-2 py-1 rounded-lg border border-[#f4c2b2] text-[#c85a32] outline-none"></select>
+            </div>
           </div>
 
           <div class="flex items-center gap-1.5 drag-scroll-x no-scrollbar whitespace-nowrap py-0.5">
-            <span class="text-[11px] font-bold text-[#7a827d] shrink-0">🎯 分攤：</span>
+            <span class="text-[11px] font-bold text-[#7a827d] shrink-0">🎯 享有人：</span>
             <div id="expBenCheckboxes" class="flex items-center gap-1.5"></div>
           </div>
 
@@ -796,16 +802,16 @@
 
       <div class="p-3 rounded-2xl bg-[#fbf8f3] border-2 border-[#b56576]/40 space-y-2">
         <div class="flex items-center justify-between">
-          <span class="font-bold text-xs text-[#2b302c]">✍️ 1. 貼上行程文字或景點清單（支援時間、交通、餐飲自動解析）</span>
+          <span class="font-bold text-xs text-[#2b302c]">✍️ 1. 貼上行程文字或景點清單</span>
           <span id="aiSortDayLabel" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">DAY 1</span>
         </div>
         <textarea id="aiRawTextInp" rows="6" placeholder="直接貼上整段行程文字，例如：&#10;上午 從飯店步行至 Asok Pier，體驗在地 空盛桑運河快船 前往 Pratunam Pier。&#10;11:00 碼頭附近 Superrich 換匯，逛 Central World 拍巨型聖誕樹。&#10;13:00 午餐：紅大哥水門雞飯，享用粉紅雞飯。&#10;18:30 欣賞 ICONSIAM 聖誕節水舞燈光秀..." class="w-full text-xs p-2.5 rounded-xl border bg-white leading-relaxed"></textarea>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-          <button onclick="parsePastedScheduleTextToDay()" id="btnParseScheduleText" class="py-2 px-3 rounded-full btn-gradient-ai font-bold text-xs shadow-sm">
-            📥 智慧解析貼上文字 (保留時間順序)
+          <button type="button" onclick="parsePastedScheduleTextToDay()" id="btnParseScheduleText" class="py-2 px-3 rounded-full btn-gradient-ai font-bold text-xs shadow-sm cursor-pointer">
+            📥 智慧解析貼上文字
           </button>
-          <button onclick="runKeylessAiSmartRoutePlanner()" id="btnRunAiRoute" class="py-2 px-3 rounded-full btn-gradient-sage font-bold text-xs shadow-sm">
-            🚀 無時間景點 AI 座標順路排序
+          <button type="button" onclick="runKeylessAiSmartRoutePlanner()" id="btnRunAiRoute" class="py-2 px-3 rounded-full btn-gradient-sage font-bold text-xs shadow-sm cursor-pointer">
+            🚀 AI 座標順路排序
           </button>
         </div>
       </div>
@@ -813,9 +819,9 @@
       <div class="p-3 rounded-2xl bg-[#e8f0ed] border border-[#c5dbd3] space-y-2">
         <div class="flex items-center justify-between whitespace-nowrap">
           <span class="font-bold text-xs text-[#3d5a52]">🧭 2. 當日現有行程最佳化</span>
-          <button onclick="manualSortDayByTime(state.activeDay); closeModalDirect('aiParserModal');" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-[#3d5a52] border">🕒 依時間重排</button>
+          <button type="button" onclick="manualSortDayByTime(state.activeDay); closeModalDirect('aiParserModal');" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-[#3d5a52] border">🕒 依時間重排</button>
         </div>
-        <button onclick="optimizeCurrentDayRouteWithAi()" class="w-full py-2 rounded-xl btn-gradient-sage font-bold text-xs shadow-2xs">
+        <button type="button" onclick="optimizeCurrentDayRouteWithAi(this)" class="w-full py-2 rounded-xl btn-gradient-sage font-bold text-xs shadow-2xs cursor-pointer">
           ⚡ 依座標最佳化當日順序 & 估算站間交通時間
         </button>
       </div>
@@ -1007,7 +1013,7 @@
           選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'gdImgInp')" />
         </label>
       </div>
-      <textarea id="gdDescInp" rows="5" placeholder="📖 深度介紹（點上方『🪄 AI深度摘要』自動抓取歷史亮點、必拍機位與攻略）..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white leading-relaxed"></textarea>
+      <textarea id="gdDescInp" rows="5" placeholder="📖 深度介紹..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white leading-relaxed"></textarea>
       <input id="gdLinkInp" type="text" placeholder="🔗 官網或地圖連結" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
       <input type="hidden" id="editingGdId" value="" />
       <div class="flex gap-2">
@@ -1076,7 +1082,7 @@
       </div>
     </div>
   </div>
-  <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
+<!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
   <script>
     const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V83_DATA";
     const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V83_IMAGES";
@@ -1227,7 +1233,6 @@
       const t = getTrip();
       if (!t.guides) t.guides = [];
 
-      // 記錄跳轉前的精準位置與行程卡片 ID，供「返回原行程位置」使用
       lastJumpContext = {
         tab: "itinerary",
         day: state.activeDay,
@@ -1271,7 +1276,6 @@
       const guideNavBtn = document.querySelectorAll(".nav-bottom-btn")[1];
       switchTab("guide", guideNavBtn, true);
 
-      // 顯示左上角「返回原行程位置」快捷按鈕
       const retBar = document.getElementById("quickReturnBar");
       const retTxt = document.getElementById("quickReturnText");
       if (retBar && retTxt) {
@@ -1387,35 +1391,7 @@
       "法國": { code: "FR", flag: "🇫🇷", currency: "EUR", lang: "fr", speech: "fr-FR", defaultRate: 34.8 },
       "德國": { code: "DE", flag: "🇩🇪", currency: "EUR", lang: "de", speech: "de-DE", defaultRate: 34.8 },
       "義大利": { code: "IT", flag: "🇮🇹", currency: "EUR", lang: "it", speech: "it-IT", defaultRate: 34.8 },
-      "西班牙": { code: "ES", flag: "🇪🇸", currency: "EUR", lang: "es", speech: "es-ES", defaultRate: 34.8 },
-      "葡萄牙": { code: "PT", flag: "🇵🇹", currency: "EUR", lang: "pt", speech: "pt-PT", defaultRate: 34.8 },
-      "荷蘭": { code: "NL", flag: "🇳🇱", currency: "EUR", lang: "nl", speech: "nl-NL", defaultRate: 34.8 },
-      "比利時": { code: "BE", flag: "🇧🇪", currency: "EUR", lang: "fr", speech: "fr-BE", defaultRate: 34.8 },
-      "奧地利": { code: "AT", flag: "🇦🇹", currency: "EUR", lang: "de", speech: "de-AT", defaultRate: 34.8 },
-      "希臘": { code: "GR", flag: "🇬🇷", currency: "EUR", lang: "el", speech: "el-GR", defaultRate: 34.8 },
-      "芬蘭": { code: "FI", flag: "🇫🇮", currency: "EUR", lang: "fi", speech: "fi-FI", defaultRate: 34.8 },
-      "愛爾蘭": { code: "IE", flag: "🇮🇪", currency: "EUR", lang: "en", speech: "en-IE", defaultRate: 34.8 },
-      "瑞士": { code: "CH", flag: "🇨🇭", currency: "CHF", lang: "de", speech: "de-CH", defaultRate: 36.8 },
-      "冰島": { code: "IS", flag: "🇮🇸", currency: "ISK", lang: "is", speech: "is-IS", defaultRate: 0.23 },
-      "挪威": { code: "NO", flag: "🇳🇴", currency: "NOK", lang: "no", speech: "nb-NO", defaultRate: 3.0 },
-      "瑞典": { code: "SE", flag: "🇸🇪", currency: "SEK", lang: "sv", speech: "sv-SE", defaultRate: 3.1 },
-      "丹麥": { code: "DK", flag: "🇩🇰", currency: "DKK", lang: "da", speech: "da-DK", defaultRate: 4.6 },
-      "捷克": { code: "CZ", flag: "🇨🇿", currency: "CZK", lang: "cs", speech: "cs-CZ", defaultRate: 1.4 },
-      "匈牙利": { code: "HU", flag: "🇭🇺", currency: "HUF", lang: "hu", speech: "hu-HU", defaultRate: 0.09 },
-      "波蘭": { code: "PL", flag: "🇵🇱", currency: "PLN", lang: "pl", speech: "pl-PL", defaultRate: 8.1 },
-      "土耳其": { code: "TR", flag: "🇹🇷", currency: "TRY", lang: "tr", speech: "tr-TR", defaultRate: 0.95 },
-      "埃及": { code: "EG", flag: "🇪🇬", currency: "EGP", lang: "ar", speech: "ar-EG", defaultRate: 0.66 },
-      "摩洛哥": { code: "MA", flag: "🇲🇦", currency: "MAD", lang: "ar", speech: "ar-MA", defaultRate: 3.2 },
-      "杜拜": { code: "AE", flag: "🇦🇪", currency: "AED", lang: "ar", speech: "ar-AE", defaultRate: 8.8 },
-      "阿聯酋": { code: "AE", flag: "🇦🇪", currency: "AED", lang: "ar", speech: "ar-AE", defaultRate: 8.8 },
-      "印度": { code: "IN", flag: "🇮🇳", currency: "INR", lang: "hi", speech: "hi-IN", defaultRate: 0.38 },
-      "尼泊爾": { code: "NP", flag: "🇳🇵", currency: "NPR", lang: "ne", speech: "ne-NP", defaultRate: 0.24 },
-      "斯里蘭卡": { code: "LK", flag: "🇱🇰", currency: "LKR", lang: "si", speech: "si-LK", defaultRate: 0.11 },
-      "馬爾地夫": { code: "MV", flag: "🇲🇻", currency: "MVR", lang: "en", speech: "en-US", defaultRate: 2.1 },
-      "墨西哥": { code: "MX", flag: "🇲🇽", currency: "MXN", lang: "es", speech: "es-MX", defaultRate: 1.6 },
-      "巴西": { code: "BR", flag: "🇧🇷", currency: "BRL", lang: "pt", speech: "pt-BR", defaultRate: 5.7 },
-      "阿根廷": { code: "AR", flag: "🇦🇷", currency: "ARS", lang: "es", speech: "es-AR", defaultRate: 0.03 },
-      "秘魯": { code: "PE", flag: "🇵🇪", currency: "PEN", lang: "es", speech: "es-PE", defaultRate: 8.6 }
+      "西班牙": { code: "ES", flag: "🇪🇸", currency: "EUR", lang: "es", speech: "es-ES", defaultRate: 34.8 }
     };
 
     const COUNTRY_DEEP_PROFILES = {
@@ -1813,7 +1789,7 @@
 
     function createInitialState() {
       return {
-        version: "84.0",
+        version: "85.0",
         activeCountryId: "KR",
         activeTripId: "trip_kr_1",
         activeDay: 1,
@@ -1877,9 +1853,9 @@
       return CAT_NORM_MAP[rawCat] || "其他雜支";
     }
 
+    // 支援舊版與新版多旅程 Gist 資料無損合併
     function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false, filename = "") {
       if (!rawJson || typeof rawJson !== "object") return false;
-      const fnLower = (filename || "").toLowerCase();
 
       if (Array.isArray(rawJson.companions)) {
         rawJson.companions.forEach(cp => {
@@ -1894,48 +1870,78 @@
           }
         });
       }
-      if (rawJson.activeCountryId && state.countries[rawJson.activeCountryId]) {
-        state.activeCountryId = rawJson.activeCountryId;
-      }
 
-      if (rawJson.countryId && (Array.isArray(rawJson.flightSegments) || Array.isArray(rawJson.itinerary))) {
-        const cid = rawJson.countryId.toUpperCase();
-        const tid = "trip_" + cid.toLowerCase() + "_1";
-        const normExpenses = (rawJson.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
-        const incomingCount = (rawJson.itinerary?.length || 0) + (rawJson.flightSegments?.length || 0) + (rawJson.expenses?.length || 0);
-        if (incomingCount === 0 && state.trips[tid] && (state.trips[tid].itinerary?.length || 0) > 0) {
-          return true;
-        }
-        state.trips[tid] = {
-          id: tid, countryId: cid, title: rawJson.title || `${cid} 之旅`,
-          subRegions: rawJson.subRegions || [], flightSegments: rawJson.flightSegments || [],
-          itinerary: rawJson.itinerary || [], meals: rawJson.meals || [], guides: rawJson.guides || [],
-          mustEat: rawJson.mustEat || [], shopping: rawJson.shopping || [], expenses: normExpenses,
-          memos: rawJson.memos || [], stickers: rawJson.stickers || [],
-          customLinks: [], customVisas: rawJson.visas || [], customTransits: rawJson.transits || [], customPhrases: []
-        };
-        if (Array.isArray(rawJson.visas) && state.countries[cid]) state.countries[cid].visas = rawJson.visas;
-        if (Array.isArray(rawJson.transits) && state.countries[cid]) state.countries[cid].transits = rawJson.transits;
-        return true;
-      }
-
-      if (rawJson.trips && typeof rawJson.trips === "object") {
-        if (rawJson.countries) {
-          Object.entries(rawJson.countries).forEach(([k, v]) => {
-            state.countries[k] = { ...state.countries[k], ...v, quickLinks: buildCountryQuickLinks(k, v.name || k, "") };
-          });
-        }
+      // 若是完整的多國多旅程封包 (wandernote_full_state.json)
+      if (rawJson.trips && typeof rawJson.trips === "object" && rawJson.countries) {
+        Object.entries(rawJson.countries).forEach(([k, v]) => {
+          state.countries[k] = {
+            ...state.countries[k],
+            ...v,
+            quickLinks: buildCountryQuickLinks(k.split("_")[0], v.name || k, ""),
+            phrases: (v.phrases && v.phrases.length >= 4) ? v.phrases : buildExpandedPhrases(v.lang || "en")
+          };
+        });
         Object.entries(rawJson.trips).forEach(([tid, tObj]) => {
           tObj.expenses = (tObj.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
-          const cKey = (tObj.countryId || "KR").toUpperCase();
-          const normTid = "trip_" + cKey.toLowerCase() + "_1";
-          const incomingCount = (tObj.itinerary?.length || 0) + (tObj.flightSegments?.length || 0) + (tObj.expenses?.length || 0);
-          if (incomingCount > 0 || !state.trips[normTid]) {
-            state.trips[normTid] = { ...tObj, id: normTid, countryId: cKey };
-          }
+          state.trips[tid] = { ...tObj, id: tid };
         });
+        if (rawJson.activeCountryId && state.countries[rawJson.activeCountryId]) {
+          state.activeCountryId = rawJson.activeCountryId;
+        }
+        if (rawJson.activeTripId && state.trips[rawJson.activeTripId]) {
+          state.activeTripId = rawJson.activeTripId;
+        }
         return true;
       }
+
+      // 若是單一國家 JSON 檔案（如 thailand_data.json）且內含 trips 陣列或單一旅程
+      if (rawJson.countryId) {
+        const cid = rawJson.countryId.toUpperCase();
+        if (!state.countries[cid]) {
+          const hit = GLOBAL_COUNTRY_LOOKUP[rawJson.countryName || cid] || { flag: "🌍", currency: "USD", defaultRate: 1, lang: "en", speech: "en-US" };
+          state.countries[cid] = {
+            id: cid,
+            name: rawJson.countryName || cid,
+            flag: rawJson.flag || hit.flag,
+            currency: rawJson.currency || hit.currency,
+            rate: rawJson.rate || hit.defaultRate,
+            lang: rawJson.lang || hit.lang,
+            speech: rawJson.speech || hit.speech,
+            quickLinks: buildCountryQuickLinks(cid.split("_")[0], rawJson.countryName || cid, ""),
+            visas: [], transits: [],
+            phrases: buildExpandedPhrases(rawJson.lang || hit.lang)
+          };
+        }
+
+        if (Array.isArray(rawJson.allTripsInCountry) && rawJson.allTripsInCountry.length > 0) {
+          rawJson.allTripsInCountry.forEach(tObj => {
+            const tid = tObj.id || ("trip_" + cid.toLowerCase() + "_1");
+            tObj.expenses = (tObj.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
+            state.trips[tid] = { ...tObj, id: tid, countryId: cid };
+          });
+          return true;
+        }
+
+        if (Array.isArray(rawJson.flightSegments) || Array.isArray(rawJson.itinerary)) {
+          const tid = rawJson.id || ("trip_" + cid.toLowerCase() + "_1");
+          const normExpenses = (rawJson.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
+          const incomingCount = (rawJson.itinerary?.length || 0) + (rawJson.flightSegments?.length || 0) + (rawJson.expenses?.length || 0) + (rawJson.shopping?.length || 0) + (rawJson.mustEat?.length || 0) + (rawJson.memos?.length || 0);
+          if (incomingCount === 0 && state.trips[tid] && (state.trips[tid].itinerary?.length || 0) > 0) {
+            return true;
+          }
+          state.trips[tid] = {
+            id: tid, countryId: cid, title: rawJson.title || `${cid} 之旅`,
+            companions: rawJson.companions || [],
+            subRegions: rawJson.subRegions || [], flightSegments: rawJson.flightSegments || [],
+            itinerary: rawJson.itinerary || [], meals: rawJson.meals || [], guides: rawJson.guides || [],
+            mustEat: rawJson.mustEat || [], shopping: rawJson.shopping || [], expenses: normExpenses,
+            memos: rawJson.memos || [], stickers: rawJson.stickers || [],
+            customLinks: rawJson.customLinks || [], customVisas: rawJson.visas || [], customTransits: rawJson.transits || [], customPhrases: rawJson.customPhrases || []
+          };
+          return true;
+        }
+      }
+
       if (Array.isArray(rawJson.countryList)) return true;
       return false;
     }
@@ -2136,6 +2142,7 @@
         }
       });
     });
+
     // ==================== 10. 👥 旅伴系統（每趟旅程獨立旅伴名單） ====================
     function getActiveCompanions() {
       const t = getTrip();
@@ -2161,6 +2168,10 @@
       const existing = list.find(c => c.name === name);
       if (existing) existing.avatar = avatar;
       else list.push({ id: "cp_" + Date.now(), name, avatar });
+
+      if (!state.companions.some(c => c.name === name)) {
+        state.companions.push({ id: "cp_g_" + Date.now(), name, avatar });
+      }
 
       state.lastSelectedPayer = name;
       state.lastSelectedOwner = name;
@@ -2215,45 +2226,36 @@
       `;
     }
 
+    function toggleTreatHostSelector() {
+      const modeSel = document.getElementById("expModeSelect");
+      const hostWrap = document.getElementById("expHostSelectWrap");
+      if (!modeSel || !hostWrap) return;
+      if (modeSel.value === "treat") {
+        hostWrap.classList.remove("hidden");
+        const payerVal = document.getElementById("expPayerSelect")?.value;
+        const hostSel = document.getElementById("expHostSelect");
+        if (hostSel && hostSel.options.length > 1 && hostSel.value === payerVal) {
+          const otherOpt = Array.from(hostSel.options).find(o => o.value !== payerVal);
+          if (otherOpt) hostSel.value = otherOpt.value;
+        }
+      } else {
+        hostWrap.classList.add("hidden");
+      }
+    }
+
     function renderMemberSelectors() {
       const comps = getActiveCompanions();
       const payerSel = document.getElementById("expPayerSelect");
+      const hostSel = document.getElementById("expHostSelect");
       const benBox = document.getElementById("expBenCheckboxes");
       const shopOwner = document.getElementById("shopItemOwner");
-      const modeSel = document.getElementById("expModeSelect");
-
-      if (modeSel && !modeSel.querySelector("option[value='treat']")) {
-        const opt = document.createElement("option");
-        opt.value = "treat";
-        opt.textContent = "🥂 代墊請客";
-        modeSel.appendChild(opt);
-        modeSel.onchange = () => {
-          let hostWrap = document.getElementById("expHostSelectWrap");
-          if (modeSel.value === "treat") {
-            if (!hostWrap) {
-              hostWrap = document.createElement("div");
-              hostWrap.id = "expHostSelectWrap";
-              hostWrap.className = "col-span-2 flex items-center gap-1.5 bg-[#fdf0ec] px-2.5 py-1.5 rounded-xl border border-[#f4c2b2]";
-              modeSel.parentElement.appendChild(hostWrap);
-            }
-            hostWrap.classList.remove("hidden");
-            hostWrap.innerHTML = `
-              <span class="text-[11px] font-bold text-[#c85a32] shrink-0">🥂 由誰請客：</span>
-              <select id="expHostSelect" class="w-full text-xs font-bold bg-transparent text-[#c85a32] outline-none">
-                ${comps.filter(c => c.name !== "公費").map(c => `<option value="${c.name}">${c.name} 請客</option>`).join("")}
-              </select>
-            `;
-          } else if (hostWrap) {
-            hostWrap.classList.add("hidden");
-          }
-        };
-      }
 
       const dateInp = document.getElementById("expDateInput");
       if (dateInp && !dateInp.value) dateInp.value = new Date().toISOString().slice(0, 10);
 
       if (comps.length === 0) {
         if (payerSel) payerSel.innerHTML = `<option value="">點頂部🧸新增旅伴</option>`;
+        if (hostSel) hostSel.innerHTML = `<option value="">點頂部🧸新增旅伴</option>`;
         if (benBox) benBox.innerHTML = `<span onclick="openModal('memberModal')" class="text-xs text-[#c85a32] underline cursor-pointer">+ 點此新增本趟旅伴</span>`;
         if (shopOwner) shopOwner.innerHTML = `<option value="">🏷️ 共同</option>`;
         return;
@@ -2262,7 +2264,19 @@
       if (payerSel) {
         payerSel.innerHTML = comps.map(c => `<option value="${c.name}">${c.name}</option>`).join("");
         if (comps.some(c => c.name === state.lastSelectedPayer)) payerSel.value = state.lastSelectedPayer;
-        payerSel.onchange = () => { state.lastSelectedPayer = payerSel.value; saveAppState(false); };
+        payerSel.onchange = () => {
+          state.lastSelectedPayer = payerSel.value;
+          toggleTreatHostSelector();
+          saveAppState(false);
+        };
+      }
+
+      if (hostSel) {
+        const peopleOnly = comps.filter(c => c.name !== "公費");
+        hostSel.innerHTML = peopleOnly.map(c => `<option value="${c.name}">${c.name} 請客買單</option>`).join("");
+        const currentPayer = payerSel ? payerSel.value : "";
+        const diffHost = peopleOnly.find(c => c.name !== currentPayer);
+        if (diffHost) hostSel.value = diffHost.name;
       }
 
       if (benBox) {
@@ -2282,6 +2296,8 @@
         if (comps.some(c => c.name === state.lastSelectedOwner)) shopOwner.value = state.lastSelectedOwner;
         shopOwner.onchange = () => { state.lastSelectedOwner = shopOwner.value; saveAppState(false); };
       }
+
+      toggleTreatHostSelector();
     }
 
     // ==================== 11. 任意門：國家與旅程切換 ====================
@@ -2445,6 +2461,7 @@
       const id = "trip_" + Date.now();
       state.trips[id] = {
         id, countryId: state.activeCountryId, title: title.trim(),
+        companions: JSON.parse(JSON.stringify(state.companions || [])),
         subRegions: [title.trim()], flightSegments: [], itinerary: [], meals: [], guides: [],
         expenses: [], shopping: [], mustEat: [], memos: [], stickers: [],
         customLinks: [], customVisas: [], customTransits: [], customPhrases: []
@@ -2465,7 +2482,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數、每日行程（支援拖曳上下排序 ＋ 壓時間自動依時間排序） ====================
+    // ==================== 12. 航班、天數、每日行程 ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2706,7 +2723,6 @@
       renderAll();
     }
 
-    // 🕒 當日行程依時間順序自動排列
     function sortDayItineraryByTime(trip, dayNum) {
       const all = trip.itinerary || [];
       const dayItems = all.filter(i => Number(i.day) === Number(dayNum));
@@ -2741,7 +2757,6 @@
       commitChange(`🕒 D${dayNum} 依時間排序`);
     }
 
-    // ⠿ 每日行程卡片上下拖曳排序引擎
     function bindDayItineraryDragSort(listBox, dayNum) {
       let draggingEl = null;
 
@@ -2886,10 +2901,10 @@
                   <div class="flex items-center gap-1.5 min-w-0">
                     <span class="iti-drag-handle cursor-grab active:cursor-grabbing px-1.5 py-0.5 -ml-1 rounded text-[#8c948f] hover:text-[#52796f] select-none shrink-0" title="按住上下拖曳調整順序" style="touch-action: none;">
                       <i class="fa-solid fa-grip-vertical text-xs"></i>
-                    </span>
+</span>
                     ${item.time ? `<span class="px-1.5 py-0.5 rounded-md bg-[#4f7768] text-white text-[10px] font-bold en-font shrink-0">${item.time}</span>` : ""}
                     <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
-                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點此查看重點導覽（含返回鍵）">${displayTitle} 🧭</button>
+                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點此查看重點導覽">${displayTitle} 🧭</button>
                   </div>
                   <a href="${itemNavUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[10px] font-bold text-[#4f7768] shrink-0 hover:bg-[#e8f0ed]">${mapBadge}</a>
                 </div>
@@ -3111,7 +3126,6 @@
         if (idx > -1) t.itinerary[idx] = obj;
       } else {
         t.itinerary.push(obj);
-        // 僅在符合「重點特別景點」條件時才自動加入導覽列
         if (isSpecialLandmarkSpot(obj)) {
           autoSyncGuideSpot(t, obj);
         }
@@ -3223,7 +3237,6 @@
       ]
     };
 
-    // 內建熱門景點 Google AI Overview 等級深度摘要知識庫
     const AI_SPOT_KNOWLEDGE_BASE = {
       "空盛桑運河快船": {
         hours: "05:30 - 20:30 (平日) / 06:00 - 19:00 (週末)",
@@ -3267,30 +3280,25 @@
       }
     };
 
-    // 判斷是否為「值得進入導覽列的特別景點」（排除純換匯、純交通移動、一般藥妝補貨與普通吃飯）
     function isSpecialLandmarkSpot(iti) {
       if (!iti || !iti.title) return false;
       const t = iti.title;
       const c = iti.cat || "";
 
-      // 若命中內建知名地標庫，必定收錄
       if (Object.keys(AI_SPOT_KNOWLEDGE_BASE).some(k => t.toLowerCase().includes(k.toLowerCase()))) {
         if (/Superrich|Tofu|藥妝/i.test(t) && !/Central World|ICONSIAM/i.test(t)) return false;
         return true;
       }
 
-      // 明確排除瑣碎行程分類或純交通/純換匯/純採買字眼
       if (["交通", "換匯", "住宿", "按摩SPA", "咖啡廳"].includes(c)) return false;
       if (/^(步行|搭乘|前往|轉乘|退房|入住|換匯|採買)/.test(t) && !/遊船|快船|銀河號|ICONSIAM|Central|寺|宮|塔|山|湖/.test(t)) return false;
       if (/藥妝|超市|便利商店|換錢|Superrich|Tofu/i.test(t) && !/Central World|ICONSIAM/i.test(t)) return false;
 
-      // 重點分類（景點、夜景/秀、寺廟古蹟、打卡機位、體驗）優先收錄
       if (["景點", "夜景/秀", "寺廟古蹟", "打卡機位", "體驗"].includes(c)) return true;
 
       return false;
     }
 
-    // 智慧清理景點標題（把動作詞去掉，取出核心景點名供導覽與 AI 查詢使用）
     function extractCoreLandmarkName(rawTitle) {
       let s = cleanParenText(rawTitle || "");
       for (const k of Object.keys(AI_SPOT_KNOWLEDGE_BASE)) {
@@ -3310,7 +3318,7 @@
         .trim() || s;
     }
 
-    // 📥 智慧解析貼上的整段行程文字（如使用者貼的曼谷一日行程）並自動帶入當日行程與餐飲
+    // 📥 修復後的智慧解析貼上文字（已修正原本 const clauses 漏空白的語法錯誤）
     async function parsePastedScheduleTextToDay() {
       const raw = document.getElementById("aiRawTextInp").value.trim();
       if (!raw) return alert("請先在文字框貼上行程內容！");
@@ -3320,7 +3328,6 @@
       const dayNum = state.activeDay || 1;
       const defaultRegion = state.activeSubRegion !== "ALL" ? state.activeSubRegion : (t.subRegions?.[0] || c.name);
 
-      // 清除零寬字元並依換行切割
       const lines = raw
         .replace(/[\u200B-\u200D\uFEFF]/g, "")
         .split(/\r?\n+/)
@@ -3341,13 +3348,11 @@
         let line = lines[idx].replace(/^[-•*▪▸\d+.)、]+\s*/, "").trim();
         let timeStr = "";
 
-        // 1. 偵測 11:00 / 9:30 等時間格式
         const timeMatch = line.match(/^(\d{1,2}:\d{2})\s*(?:[-~～]\s*\d{1,2}:\d{2})?\s*(.*)/);
         if (timeMatch) {
           timeStr = timeMatch[1].padStart(5, "0");
           line = timeMatch[2].trim();
         } else {
-          // 2. 偵測「上午 / 下午 / 晚上」時段開頭
           const pMatch = line.match(/^(清晨|早上|上午|中午|下午|傍晚|晚上|宵夜)\s*(.*)/);
           if (pMatch) {
             timeStr = periodFallbackTime[pMatch[1]] || "09:30";
@@ -3355,7 +3360,6 @@
           }
         }
 
-        // 3. 自動判斷分類
         let cat = "景點";
         if (/水舞|燈光秀|煙火|夜景|遊船|Cruise|銀河號/i.test(line)) cat = "夜景/秀";
         else if (/早餐|午餐|晚餐|雞飯|餐廳|享用|Buffet|美食|小吃/i.test(line)) cat = "美食";
@@ -3367,12 +3371,11 @@
         else if (/寺|廟|神社|古蹟|大皇宮|鄭王廟/i.test(line)) cat = "寺廟古蹟";
         else if (/搭空鐵|轉乘|前往|步行至/i.test(line) && !/體驗|逛|採買|欣賞|享用/i.test(line)) cat = "交通";
 
-        // 4. 智慧分離「標題」、「🚇 交通動線」與「💡 備註」
         let title = line;
         let transit = "";
         let note = "";
 
-        constclauses = line.split(/[，,。]/).map(s => s.trim()).filter(Boolean);
+        const clauses = line.split(/[，,。]/).map(s => s.trim()).filter(Boolean);
         if (clauses.length >= 2) {
           const transitParts = [];
           const actionParts = [];
@@ -3398,12 +3401,10 @@
           }
         }
 
-        // 若句中含有「前往 XXX」且未提取出交通，補充至交通欄
         if (!transit && /(步行|搭船|搭空鐵|轉乘|碼頭)/.test(line)) {
           transit = line;
         }
 
-        // 5. 若包含「早餐/午餐/晚餐：XXX」，同步寫入當日下方餐飲格
         const mealMatch = line.match(/(早餐|午餐|下午茶|晚餐|宵夜)[:：]\s*([^，,。]+)/);
         if (mealMatch) {
           const mType = mealMatch[1];
@@ -3439,16 +3440,13 @@
         t.itinerary.push(newIti);
         addedCount++;
 
-        // 嚴選重點地標加入深度導覽佇列
         if (isSpecialLandmarkSpot({ title: line, cat, subRegion: defaultRegion, time: timeStr, note })) {
           newSpotsForGuide.push({ ...newIti, rawLine: line });
         }
       }
 
-      // 按時間順序自動排列當日行程
       sortDayItineraryByTime(t, dayNum);
 
-      // 針對嚴選出的重點景點，自動生成深度導覽與 AI 摘要
       for (const sp of newSpotsForGuide) {
         const coreTitle = extractCoreLandmarkName(sp.rawLine || sp.title);
         const exists = (t.guides || []).some(g => g.title.includes(coreTitle) || coreTitle.includes(g.title));
@@ -3473,11 +3471,9 @@
       commitChange(`🪄 智慧帶入 D${dayNum} 共 ${addedCount} 個行程點`);
     }
 
-    // 🪄 為導覽卡片自動生成 Google AI Overview 等級深度摘要（結合內建知識庫 ＋ 多源百科 API）
     async function populateGuideWithAiSummary(guideObj, fallbackIti = null) {
       const rawTitle = (fallbackIti?.rawLine || guideObj.title || "").trim();
 
-      // 1. 優先比對內建高精準度知識庫
       for (const [key, kb] of Object.entries(AI_SPOT_KNOWLEDGE_BASE)) {
         if (rawTitle.toLowerCase().includes(key.toLowerCase()) || guideObj.title.toLowerCase().includes(key.toLowerCase())) {
           if (!guideObj.hours || guideObj.hours.startsWith("預計")) guideObj.hours = kb.hours;
@@ -3487,7 +3483,6 @@
         }
       }
 
-      // 2. 線上查詢中文/英文維基百科並轉譯為結構化 AI 摘要
       const cleanQuery = cleanParenText(guideObj.title)
         .replace(/^(欣賞|體驗|搭乘|逛|參觀)\s*/, "")
         .split(/[·➔]/)[0]
@@ -3505,7 +3500,6 @@
         }
       } catch (e) {}
 
-      // 3. 智慧保底結構化摘要
       guideObj.desc = `✨ 【景點亮點】${guideObj.title}\n${fallbackIti?.transit ? "🚇 【交通動線】" + fallbackIti.transit + "\n" : ""}${fallbackIti?.note ? "💡 【遊玩重點】" + fallbackIti.note : "點右上角『🔍 G查詢』或長按卡片可隨時補充最新旅遊攻略。"}`;
     }
 
@@ -3587,7 +3581,11 @@
 
     async function geocodeSpotKeyless(spotName, countryName) {
       try {
-        const clean = spotName.replace(/^[0-9\/:\s]+/, "").split(/[➔*（(]/)[0].trim();
+        const clean = spotName
+          .replace(/^[0-9\/:\s]+/, "")
+          .replace(/^(上午|下午|晚上|中午|早晨)\s*/, "")
+          .split(/[➔*（(，,。]/)[0]
+          .trim();
         const q = `${clean} ${countryName}`;
         const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
         if (r.ok) {
@@ -3598,16 +3596,16 @@
       return null;
     }
 
-    async function optimizeCurrentDayRouteWithAi() {
+    async function optimizeCurrentDayRouteWithAi(btnEl) {
       const t = getTrip();
       const c = getCountry();
       const dayNum = state.activeDay;
       const dayItems = (t.itinerary || []).filter(i => Number(i.day) === dayNum);
       if (dayItems.length < 2) return alert(`Day ${dayNum} 至少要有 2 個行程點才能進行順路排序喔！`);
 
-      const btn = event.target;
-      const oldTxt = btn.textContent;
-      btn.textContent = "⏳ AI 正在查詢各景點座標並計算最順路線...";
+      const btn = btnEl || document.getElementById("btnOptimizeCurrentDay");
+      const oldTxt = btn ? btn.textContent : "";
+      if (btn) btn.textContent = "⏳ AI 正在查詢各景點座標並計算最順路線...";
 
       for (const it of dayItems) {
         const coords = await geocodeSpotKeyless(it.title, c.name);
@@ -3640,7 +3638,7 @@
       const otherDays = (t.itinerary || []).filter(i => Number(i.day) !== dayNum);
       t.itinerary = [...otherDays, ...sorted];
 
-      btn.textContent = oldTxt;
+      if (btn) btn.textContent = oldTxt || "⚡ 依座標最佳化當日順序 & 估算站間交通時間";
       closeModalDirect("aiParserModal");
       commitChange(`🪄 AI 完成 Day ${dayNum} 順路排序`);
     }
@@ -3649,25 +3647,25 @@
       const raw = document.getElementById("aiRawTextInp").value.trim();
       if (!raw) return alert("請先輸入想去的景點名稱！");
 
-      // 若貼上文字內含多個時間點或整段行程描述，自動改走「智慧貼文解析」保留時間順序！
-      if (/\d{1,2}:\d{2}|上午|下午|晚上|午餐|晚餐/.test(raw)) {
-        return parsePastedScheduleTextToDay();
-      }
-
       const t = getTrip();
       const c = getCountry();
       const btn = document.getElementById("btnRunAiRoute");
-      btn.textContent = "⏳ AI 正在計算座標與順路車程...";
+      const oldBtnTxt = btn.textContent;
+      btn.textContent = "⏳ AI 正在查詢座標與順路車程...";
 
-      const lines = raw.split(/\n+/).map(l => l.trim()).filter(Boolean);
+      const lines = raw
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .split(/\r?\n+/)
+        .map(l => l.trim())
+        .filter(Boolean);
+
       const tempSpots = [];
-
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        let line = lines[i].replace(/^[-•*▪▸\d+.)、]+\s*/, "").trim();
         const coords = await geocodeSpotKeyless(line, c.name);
         tempSpots.push({
-          title: line,
-          cat: /買|逛|商場|Outlet|超市|藥妝/.test(line) ? "購物" : "景點",
+          title: cleanParenText(line),
+          cat: /買|逛|商場|Outlet|超市|藥妝/i.test(line) ? "購物" : "景點",
           lat: coords?.lat,
           lon: coords?.lon
         });
@@ -3687,7 +3685,7 @@
           });
           const next = remain.splice(bestIdx, 1)[0];
           if (bestKm < 150) {
-            next.transit = formatTransitEstimate(last.title, next.title, bestKm);
+            next.transit = formatTransitEstimate(last.title.slice(0, 10), next.title.slice(0, 10), bestKm);
           }
           ordered.push(next);
         } else {
@@ -3713,7 +3711,7 @@
 
       sortDayItineraryByTime(t, state.activeDay);
       document.getElementById("aiRawTextInp").value = "";
-      btn.textContent = "🚀 無時間景點 AI 座標順路排序";
+      btn.textContent = oldBtnTxt;
       closeModalDirect("aiParserModal");
       commitChange(`🪄 AI 順路規劃 ${ordered.length} 個行程點`);
     }
@@ -3902,7 +3900,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 14. 📊 分帳記帳系統 ====================
+    // ==================== 14. 📊 分帳記帳系統（完美支援「我先代墊、旅伴請客 ➔ 算對方欠款 ＋ 記入我享受的機票/交通分類花費」） ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -3995,6 +3993,7 @@
       document.getElementById("expImgInput").value = "";
       document.getElementById("expDateInput").value = new Date().toISOString().slice(0, 10);
       document.getElementById("expModeSelect").value = "split";
+      toggleTreatHostSelector();
       document.getElementById("btnSubmitExp").textContent = "💾 儲存帳務";
       document.getElementById("btnCancelExp").classList.add("hidden");
       updateCalcPreview();
@@ -4083,28 +4082,52 @@
         const share = twd / bens.length;
         if (e.payer && pStats[e.payer]) pStats[e.payer].paid += twd;
 
+        // 🥂 模式 A：「代墊請客」(例如機票由凱先刷卡代墊，但由淨請客買單)
         if (e.mode === "treat") {
           const hostName = e.host || e.payer;
+          // 1. 算欠款：先付者(凱) +twd，請客買單者(淨) -twd ➔ 結算時淨會還凱全額 twd！
           if (e.payer !== "公費" && pStats[e.payer]) pStats[e.payer].net += twd;
-          if (hostName !== "公費" && pStats[hostName]) {
-            pStats[hostName].net -= twd;
-            pStats[hostName].ownSpend += twd;
-            pStats[hostName].cats[cKey] += twd;
-            pStats[hostName].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🥂 請客·${e.payer}代墊`, shareTWD: twd, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
-          }
+          if (hostName !== "公費" && pStats[hostName]) pStats[hostName].net -= twd;
+
+          // 2. 算每個人的分類消費價值（勾選「🎁 含受贈/請客價值」時，凱也能看到自己享受的那份機票錢！）
           bens.forEach(b => {
-            if (!pStats[b] || b === hostName) return;
-            pStats[b].giftRec += share;
-            if (includeGift) pStats[b].cats[cKey] += share;
-            pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🎁 ${hostName}請客`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true });
+            if (!pStats[b]) return;
+            if (b === hostName) {
+              pStats[b].ownSpend += share;
+              pStats[b].cats[cKey] += share;
+              pStats[b].items.push({
+                id: e.id, date: e.date || "", title: e.title, cat: cKey,
+                role: e.payer !== hostName ? `🥂 請客(${e.payer}先墊)` : `🥂 請客自享`,
+                shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false
+              });
+            } else {
+              pStats[b].giftRec += share;
+              if (includeGift) pStats[b].cats[cKey] += share;
+              pStats[b].items.push({
+                id: e.id, date: e.date || "", title: e.title, cat: cKey,
+                role: b === e.payer ? `🎁 ${hostName}請客·我先墊` : `🎁 ${hostName}請客`,
+                shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true
+              });
+            }
           });
+          // 若請客買單者自己不在分攤名單內，也在他的帳單明細留一筆請客支出紀錄供核對
+          if (hostName && pStats[hostName] && !bens.includes(hostName)) {
+            pStats[hostName].ownSpend += twd;
+            if (!includeGift) pStats[hostName].cats[cKey] += twd;
+            pStats[hostName].items.push({
+              id: e.id, date: e.date || "", title: e.title, cat: cKey,
+              role: `🥂 請客(${e.payer}代墊)`,
+              shareTWD: twd, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false
+            });
+          }
         } else if (e.mode === "gift") {
+          // 🎁 模式 B：「直接請客」(付款人自己掏錢請大家，不產生欠款，但受贈者勾選含受贈可看到該分類花費)
           bens.forEach(b => {
             if (!pStats[b]) return;
             if (b !== e.payer) {
               pStats[b].giftRec += share;
               if (includeGift) pStats[b].cats[cKey] += share;
-              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🎁 ${e.payer}贈`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true });
+              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🎁 ${e.payer}請客`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true });
             } else {
               pStats[b].ownSpend += share;
               pStats[b].cats[cKey] += share;
@@ -4112,6 +4135,7 @@
             }
           });
         } else {
+          // 🤝 模式 C：「一般分攤」或「個人自付」
           if (e.payer !== "公費" && pStats[e.payer]) pStats[e.payer].net += twd;
           bens.forEach(b => {
             if (!pStats[b]) return;
@@ -4122,6 +4146,7 @@
           });
         }
       });
+
       const activeTarget = (state.activeChartTarget && pStats[state.activeChartTarget]) ? state.activeChartTarget : "ALL";
 
       const pillsBox = document.getElementById("chartTargetPills");
@@ -4214,12 +4239,17 @@
               </select>
               <select class="ex-ed-mode px-2 py-1 rounded-lg border bg-white">
                 <option value="split" ${expObj.mode === "split" ? "selected" : ""}>🤝 一般分攤</option>
-                <option value="gift" ${expObj.mode === "gift" ? "selected" : ""}>🎁 贈予/請客</option>
                 <option value="treat" ${expObj.mode === "treat" ? "selected" : ""}>🥂 代墊請客</option>
+                <option value="gift" ${expObj.mode === "gift" ? "selected" : ""}>🎁 直接請客</option>
                 <option value="self" ${expObj.mode === "self" ? "selected" : ""}>👤 個人自付</option>
               </select>
             </div>
-            <input type="text" class="ex-ed-bens w-full px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="分攤人：凱, 淨" />
+            <div class="grid grid-cols-2 gap-1">
+              <select class="ex-ed-host px-2 py-1 rounded-lg border bg-[#fdf0ec] text-[#c85a32] font-bold">
+                ${allPeople.map(p => `<option value="${p}" ${p === (expObj.host || expObj.payer) ? "selected" : ""}>🥂 ${p} 請客買單</option>`).join("")}
+              </select>
+              <input type="text" class="ex-ed-bens px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="享受到的人：凱,淨" />
+            </div>
             <input type="text" class="ex-ed-note w-full px-2 py-1 rounded-lg border bg-white" value="${expObj.note || ""}" placeholder="📝 備註" />
             <div class="flex gap-1.5 pt-1">
               <button type="button" class="btn-save-ex flex-1 py-1.5 rounded-lg btn-gradient-sage font-bold">✓ 儲存修改</button>
@@ -4235,6 +4265,7 @@
           expObj.cat = rowEl.querySelector(".ex-ed-cat").value;
           expObj.payer = rowEl.querySelector(".ex-ed-payer").value;
           expObj.mode = rowEl.querySelector(".ex-ed-mode").value;
+          expObj.host = expObj.mode === "treat" ? rowEl.querySelector(".ex-ed-host").value : "";
           const bArr = rowEl.querySelector(".ex-ed-bens").value.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
           expObj.beneficiaries = bArr.length ? bArr : [expObj.payer];
           expObj.note = rowEl.querySelector(".ex-ed-note").value.trim();
@@ -4250,6 +4281,9 @@
           const twd = isPersonalView ? Math.round(entry.shareTWD) : Math.round(origExp.currency === "TWD" ? origExp.amount : origExp.amount * rate);
           const expImgSrc = resolveImageSrc(origExp.img);
           const cleanETitle = cleanParenText(origExp.title);
+          const roleText = isPersonalView
+            ? entry.role
+            : (origExp.mode === "treat" ? `${origExp.payer}先墊·${origExp.host}請客` : `${origExp.payer}先付`);
           const row = document.createElement("div");
           row.className = "gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center justify-between gap-2 whitespace-nowrap";
           row.innerHTML = `
@@ -4257,7 +4291,7 @@
               ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
               <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${(origExp.cat || "消費").slice(0, 2)}</span>
               <span class="font-bold text-xs text-[#2b302c] truncate">${cleanETitle}</span>
-              <span class="sub-pill shrink-0">${isPersonalView ? entry.role : origExp.payer}</span>
+              <span class="sub-pill shrink-0">${roleText}</span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${expImgSrc ? `<button onclick="event.stopPropagation(); openImageLightbox('${origExp.img.replace(/'/g, "")}', '${cleanETitle.replace(/'/g, "")}')" class="text-[10px] text-[#c85a32]">📸</button>` : ""}
@@ -4283,7 +4317,7 @@
       } else {
         const s = pStats[activeTarget];
         const visibleItems = s.items.filter(it => includeGift || !it.isGiftRec);
-        embeddedTitle.innerHTML = `📋 ${activeTarget} 的明細 <span class="sub-pill ml-1">代墊 NT$${Math.round(s.paid).toLocaleString()}</span>`;
+        embeddedTitle.innerHTML = `📋 ${activeTarget} 的明細 <span class="sub-pill ml-1">實墊 NT$${Math.round(s.paid).toLocaleString()} · 受贈 NT$${Math.round(s.giftRec).toLocaleString()}</span>`;
         renderExpRowList(visibleItems, true);
       }
 
@@ -4299,7 +4333,7 @@
         const pay = Math.min(d.amt, cr.amt);
         transfers.push(`
           <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#fbf8f3] border whitespace-nowrap">
-            <span class="flex items-center gap-1">${getCompanionAvatarHtml(d.p)}<strong>${d.p}</strong> ➔ 給 ${getCompanionAvatarHtml(cr.p)}<strong>${cr.p}</strong></span>
+            <span class="flex items-center gap-1">${getCompanionAvatarHtml(d.p)}<strong>${d.p}</strong> ➔ 還給 ${getCompanionAvatarHtml(cr.p)}<strong>${cr.p}</strong></span>
             <span class="font-bold text-[#c85a32] en-font">NT$ ${Math.round(pay).toLocaleString()}</span>
           </div>
         `);
@@ -4965,8 +4999,8 @@
         window.addEventListener("mousemove", e => move(e.clientX, e.clientY));
         window.addEventListener("mouseup", () => { if (drag) { drag = false; saveAppState(false); } });
         el.addEventListener("touchstart", () => { drag = true; }, { passive: true });
-        window.addEventListener("touchmove", e => { if (drag && e.touches[0]) move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-        window.addEventListener("touchend", () => { if (drag) { drag = false; saveAppState(false); } });
+        el.addEventListener("touchmove", e => { if (drag && e.touches[0]) move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+        el.addEventListener("touchend", () => { if (drag) { drag = false; saveAppState(false); } });
         layer.appendChild(el);
       });
     }
@@ -5022,49 +5056,65 @@
       }
     }
 
-    // ==================== 18. Gist 分格同步 ====================
+    // ==================== 18. ☁️ Gist 完整多國多旅程雙重同步引擎（確保泰國行與所有新旅程跨裝置 100% 同步） ====================
     async function pushToGist() {
       const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
       const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
       const status = document.getElementById("gistStatusText");
       if (!token || !gistId) return alert("請填寫 GitHub Token 與 Gist ID！");
-      if (countAllItems(state) === 0) return alert("🛡️ 本地為空，禁止覆蓋雲端！");
+      if (countAllItems(state) === 0 && Object.keys(state.countries).length <= 2) return alert("🛡️ 本地尚無行程資料，避免覆蓋雲端！");
 
       localStorage.setItem("GIST_TOKEN", token);
       localStorage.setItem("GIST_ID", gistId);
-      status.textContent = "⏳ 正在分格同步至 Gist...";
+      status.textContent = "⏳ 正在將所有國家與泰國行同步至雲端 Gist...";
 
       try {
-        const filesPayload = { "travel_images.json": { content: JSON.stringify(imageVault) } };
-        const fileMap = { JP: "japan_data.json", KR: "korea_data.json", TH: "thailand_data.json", CN: "china_data.json" };
+        const filesPayload = {
+          "travel_images.json": { content: JSON.stringify(imageVault) },
+          "wandernote_full_state.json": { content: JSON.stringify(state, null, 2) }
+        };
+        const fileMap = { JP: "japan_data.json", KR: "korea_data.json", TH: "thailand_data.json", CN: "china_data.json", VN: "vietnam_data.json" };
         const countryList = [];
 
         Object.values(state.countries).forEach(c => {
-          const trip = Object.values(state.trips).find(t => t.countryId === c.id);
-          const fName = fileMap[c.id] || `${c.id.toLowerCase()}_data.json`;
+          const allTripsInC = Object.values(state.trips).filter(t => t.countryId === c.id);
+          const primaryTrip = allTripsInC.find(t => t.id === state.activeTripId) || allTripsInC[0];
+          const baseKey = c.id.split("_")[0];
+          const fName = fileMap[c.id] || fileMap[baseKey] || `${c.id.toLowerCase()}_data.json`;
+
           countryList.push({
             id: c.id, name: c.name, flag: c.flag, currency: c.currency,
             rate: c.rate, lang: c.lang, speech: c.speech,
-            fileName: fName, title: trip ? trip.title : `${c.name}之旅`
+            fileName: fName, title: primaryTrip ? primaryTrip.title : `${c.name}之旅`
           });
-          if (trip) {
+
+          if (primaryTrip) {
             filesPayload[fName] = {
               content: JSON.stringify({
-                version: "84.0",
+                version: "85.0",
+                id: primaryTrip.id,
                 countryId: c.id,
-                title: trip.title,
-                subRegions: trip.subRegions || [],
-                visas: [...(c.visas || []), ...(trip.customVisas || [])],
-                transits: [...(c.transits || []), ...(trip.customTransits || [])],
-                flightSegments: trip.flightSegments || [],
-                itinerary: trip.itinerary || [],
-                meals: trip.meals || [],
-                guides: trip.guides || [],
-                mustEat: trip.mustEat || [],
-                shopping: trip.shopping || [],
-                expenses: trip.expenses || [],
-                memos: trip.memos || [],
-                stickers: trip.stickers || []
+                countryName: c.name,
+                flag: c.flag,
+                currency: c.currency,
+                rate: c.rate,
+                lang: c.lang,
+                speech: c.speech,
+                title: primaryTrip.title,
+                companions: primaryTrip.companions || [],
+                subRegions: primaryTrip.subRegions || [],
+                visas: [...(c.visas || []), ...(primaryTrip.customVisas || [])],
+                transits: [...(c.transits || []), ...(primaryTrip.customTransits || [])],
+                flightSegments: primaryTrip.flightSegments || [],
+                itinerary: primaryTrip.itinerary || [],
+                meals: primaryTrip.meals || [],
+                guides: primaryTrip.guides || [],
+                mustEat: primaryTrip.mustEat || [],
+                shopping: primaryTrip.shopping || [],
+                expenses: primaryTrip.expenses || [],
+                memos: primaryTrip.memos || [],
+                stickers: primaryTrip.stickers || [],
+                allTripsInCountry: allTripsInC
               }, null, 2)
             };
           }
@@ -5072,8 +5122,9 @@
 
         filesPayload["global_trip_list.json"] = {
           content: JSON.stringify({
-            version: "84.0",
+            version: "85.0",
             activeCountryId: state.activeCountryId,
+            activeTripId: state.activeTripId,
             companions: state.companions || [],
             countryList
           }, null, 2)
@@ -5085,9 +5136,9 @@
           body: JSON.stringify({ description: "WanderNote Sync", files: filesPayload })
         });
         if (!res.ok) throw new Error();
-        status.textContent = `✅ 雲端同步成功！ ${new Date().toLocaleTimeString()}`;
+        status.textContent = `✅ 雲端上傳成功！包含 ${countryList.map(x => x.name).join("、")} (${new Date().toLocaleTimeString()})`;
       } catch (e) {
-        status.textContent = "❌ 上傳失敗，請確認 Token 與 Gist ID。";
+        status.textContent = "❌ 上傳失敗，請確認 Token 權限 (需勾選 gist) 與 Gist ID。";
       }
     }
 
@@ -5099,7 +5150,7 @@
       localStorage.setItem("GIST_ID", gistId);
       if (token) localStorage.setItem("GIST_TOKEN", token);
 
-      status.textContent = "⏳ 正在讀取雲端所有國家與旅程格子...";
+      status.textContent = "⏳ 正在從雲端讀取所有國家與旅程...";
       try {
         const headers = token ? { Authorization: `token ${token}` } : {};
         const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
@@ -5109,14 +5160,41 @@
         undoStack.push(JSON.stringify(state));
         saveAppState(true, "下載前備份");
 
-        if (data.files["travel_images.json"]?.content) {
-          imageVault = { ...imageVault, ...JSON.parse(data.files["travel_images.json"].content) };
-          saveImageVault();
+        const readFileContent = async (fObj) => {
+          if (!fObj) return null;
+          if (fObj.truncated && fObj.raw_url) {
+            const r = await fetch(fObj.raw_url);
+            return await r.text();
+          }
+          return fObj.content;
+        };
+
+        if (data.files["travel_images.json"]) {
+          const imgTxt = await readFileContent(data.files["travel_images.json"]);
+          if (imgTxt) {
+            imageVault = { ...imageVault, ...JSON.parse(imgTxt) };
+            saveImageVault();
+          }
         }
 
-        if (data.files["global_trip_list.json"]?.content) {
+        let loadedCount = 0;
+
+        // 1. 優先讀取完整多國多旅程狀態檔 wandernote_full_state.json
+        if (data.files["wandernote_full_state.json"]) {
           try {
-            const g = JSON.parse(data.files["global_trip_list.json"].content);
+            const fullTxt = await readFileContent(data.files["wandernote_full_state.json"]);
+            const fullParsed = JSON.parse(fullTxt);
+            if (convertAndMergeAnyLegacyData(fullParsed, true, "wandernote_full_state.json")) {
+              loadedCount++;
+            }
+          } catch (e) {}
+        }
+
+        // 2. 同步讀取 global_trip_list.json 與各國獨立檔案（相容所有舊版與分國檔案）
+        if (data.files["global_trip_list.json"]) {
+          try {
+            const gTxt = await readFileContent(data.files["global_trip_list.json"]);
+            const g = JSON.parse(gTxt);
             if (Array.isArray(g.countryList)) {
               g.countryList.forEach(cCfg => {
                 if (!state.countries[cCfg.id]) {
@@ -5132,15 +5210,10 @@
           } catch (e) {}
         }
 
-        let loadedCount = 0;
         for (const fileObj of Object.values(data.files || {})) {
-          if (fileObj.filename === "travel_images.json") continue;
+          if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
           try {
-            let contentTxt = fileObj.content;
-            if (fileObj.truncated && fileObj.raw_url) {
-              const r = await fetch(fileObj.raw_url);
-              contentTxt = await r.text();
-            }
+            const contentTxt = await readFileContent(fileObj);
             const parsed = JSON.parse(contentTxt);
             if (convertAndMergeAnyLegacyData(parsed, false, fileObj.filename)) loadedCount++;
           } catch (err) {}
@@ -5148,21 +5221,24 @@
 
         ensureKoreaTripNotEmpty();
 
-        if (data.files["global_trip_list.json"]?.content) {
+        if (data.files["global_trip_list.json"]) {
           try {
-            const g = JSON.parse(data.files["global_trip_list.json"].content);
+            const gTxt = await readFileContent(data.files["global_trip_list.json"]);
+            const g = JSON.parse(gTxt);
             if (g.activeCountryId && state.countries[g.activeCountryId]) state.activeCountryId = g.activeCountryId;
+            if (g.activeTripId && state.trips[g.activeTripId]) state.activeTripId = g.activeTripId;
           } catch (e) {}
         }
+
         getTrip();
         state.activeDay = 1;
         saveAppState(false);
         updateUndoRedoUI();
         renderAll();
-        status.textContent = `✅ 已同步載入 ${loadedCount} 個檔案格子！`;
-        setTimeout(() => closeModalDirect("cloudSyncModal"), 800);
+        status.textContent = `✅ 雲端下載完成！共載入 ${Object.keys(state.countries).length} 個國家、${Object.keys(state.trips).length} 趟旅程`;
+        setTimeout(() => closeModalDirect("cloudSyncModal"), 900);
       } catch (e) {
-        status.textContent = "❌ 下載失敗，請確認 Gist ID。";
+        status.textContent = "❌ 下載失敗，請確認 Gist ID 是否正確。";
       }
     }
 
