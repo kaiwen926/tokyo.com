@@ -204,6 +204,11 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+    /* 美化歷史快照滾輪軸 */
+    .snap-scroll::-webkit-scrollbar { width: 5px; }
+    .snap-scroll::-webkit-scrollbar-track { background: #f5efe6; border-radius: 999px; }
+    .snap-scroll::-webkit-scrollbar-thumb { background: #c5dbd3; border-radius: 999px; }
+
     .calc-key {
       background: #fffcf7; border: 1.5px solid #e9e0d1; border-radius: 14px;
       padding: 8px 0; font-weight: 700; font-size: 1rem; text-align: center;
@@ -401,18 +406,19 @@
       <div id="daysContentWrapper" class="space-y-3"></div>
     </section>
 
-    <!-- ==================== TAB 2: 景點深度導覽（全面升級自動抓圖＋圖片自由調整＋景點介紹） ==================== -->
+    <!-- ==================== TAB 2: 景點深度導覽（嚴選重點地標＋一鍵清理非重點） ==================== -->
     <section id="tabPanel-guide" class="tab-panel hidden space-y-3">
       <div class="journal-card p-3 sm:p-4">
         <div class="washi-tape green"></div>
-        <div class="flex items-center justify-between gap-2 mb-3 whitespace-nowrap">
+        <div class="flex items-center justify-between gap-1.5 mb-3 whitespace-nowrap">
           <div class="flex items-center gap-1.5 min-w-0">
-            <h2 class="font-bold text-sm text-[#2b302c]">🧭 景點深度導覽</h2>
-            <span class="sub-pill">自動抓圖 · 景點介紹</span>
+            <h2 class="font-bold text-sm text-[#2b302c]">🧭 重點景點導覽</h2>
+            <span class="sub-pill hidden sm:inline-flex">僅收錄重點地標</span>
           </div>
           <div class="flex gap-1 shrink-0">
-            <button onclick="refreshAllGuidesSummaryAndPhoto()" id="btnRefreshAllGuides" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]" title="一鍵補齊所有景點介紹與實景圖片">🔄 補齊圖文</button>
-            <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]" title="從行程擷取景點並自動抓圖">📥 擷取景點</button>
+            <button onclick="cleanUpNonHighlightGuides()" class="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600 border" title="自動移除換匯、搭車、純吃飯等非重點導覽卡">🧹 精簡</button>
+            <button onclick="refreshAllGuidesSummaryAndPhoto()" id="btnRefreshAllGuides" class="text-xs font-bold px-2 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]" title="一鍵補齊所有景點介紹與實景圖片">🔄 補齊圖文</button>
+            <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]" title="僅從行程擷取重點地標">📥 抓重點</button>
             <button onclick="openGuideModal()" class="text-xs font-bold px-2.5 py-1 rounded-full btn-gradient-sage">+ 新增</button>
           </div>
         </div>
@@ -433,9 +439,9 @@
             <span id="rateBadgeText" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">匯率</span>
             <button onclick="refreshCountryRate(true)" class="w-6 h-6 rounded-full border bg-white text-[10px] text-[#52796f]"><i class="fa-solid fa-arrows-rotate"></i></button>
           </div>
-          <label class="flex items-center gap-1 text-xs font-bold text-[#6b21a8] cursor-pointer" title="勾選後可看自己整趟旅程包含別人請客的機票/交通/美食總花費價值">
+          <label class="flex items-center gap-1 text-xs font-bold text-[#6b21a8] cursor-pointer">
             <input id="chkIncludeGiftTotal" type="checkbox" checked onchange="renderExpenseSection()" class="w-3.5 h-3.5 accent-[#6b21a8]" />
-            <span>🎁 含受贈/請客價值</span>
+            <span>🎁 含受贈</span>
           </label>
         </div>
 
@@ -547,7 +553,7 @@
           </div>
 
           <div class="flex items-center gap-1.5 drag-scroll-x no-scrollbar whitespace-nowrap py-0.5">
-            <span class="text-[11px] font-bold text-[#7a827d] shrink-0">🎯 誰享受到 (計入個人花費)：</span>
+            <span class="text-[11px] font-bold text-[#7a827d] shrink-0">🎯 分攤：</span>
             <div id="expBenCheckboxes" class="flex items-center gap-1.5"></div>
           </div>
 
@@ -985,7 +991,7 @@
     </div>
   </div>
 
-  <!-- 4. 導覽視窗（支援自動抓圖、切換圖片、調整高度與構圖、自動撰寫景點介紹） -->
+  <!-- 4. 導覽視窗 -->
   <div id="guideModal" onclick="autoSaveAndCloseModal('guideModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -1063,7 +1069,7 @@
     </div>
   </div>
 
-  <!-- 6. ☁️ 雲端 Gist 同步視窗 -->
+  <!-- 6. ☁️ 雲端 Gist 同步視窗（歷史快照擴充為 15 筆滾輪視窗） -->
   <div id="cloudSyncModal" onclick="closeModalDirect('cloudSyncModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-3">
       <div class="flex items-center justify-between">
@@ -1083,18 +1089,19 @@
 
       <div class="border-t border-dashed border-[#e8dfd3] pt-2.5">
         <div onclick="toggleDrawer('snapshotHistoryDrawer', event)" class="flex items-center justify-between cursor-pointer whitespace-nowrap">
-          <span class="font-bold text-xs text-[#7a827d]">🕒 本地歷史還原 & 備份匯入</span>
+          <span class="font-bold text-xs text-[#7a827d]">🕒 本地歷史還原 (保留最近 15 筆 · 可往下滑) & 備份匯入</span>
           <span class="text-xs text-[#52796f]">▾</span>
         </div>
-        <div id="snapshotHistoryDrawer" class="drawer-panel pt-2 space-y-2">
+        <div id="snapshotHistoryDrawer" class="drawer-panel open pt-2 space-y-2">
           <div class="flex gap-1.5">
-            <button onclick="exportBackupJson()" class="flex-1 text-[11px] font-bold py-1.5 rounded-xl bg-gray-100">💾 匯出備份</button>
-            <label class="flex-1 text-center text-[11px] font-bold py-1.5 rounded-xl bg-gray-100 cursor-pointer">
+            <button onclick="exportBackupJson()" class="flex-1 text-[11px] font-bold py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200">💾 匯出備份</button>
+            <label class="flex-1 text-center text-[11px] font-bold py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 cursor-pointer">
               📂 匯入 JSON
               <input type="file" accept=".json" class="hidden" onchange="importBackupJson(event)" />
             </label>
           </div>
-          <div id="snapshotsListBox" class="space-y-1 max-h-36 overflow-y-auto"></div>
+          <!-- 滾輪容器：預設顯示約 5 筆高度，往下滑動可看滿 15 筆 -->
+          <div id="snapshotsListBox" class="snap-scroll space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
         </div>
       </div>
     </div>
@@ -1804,7 +1811,7 @@
 
     function createInitialState() {
       return {
-        version: "86.0",
+        version: "87.0",
         activeCountryId: "KR",
         activeTripId: "trip_kr_1",
         activeDay: 1,
@@ -2031,6 +2038,7 @@
       renderAll();
     }
 
+    // 🕒 儲存本地歷史快照（保留最近 15 筆供滾輪上下滑動檢視）
     function saveAppState(makeSnap = false, label = "自動儲存") {
       if (!state || !state.trips || Object.keys(state.trips).length === 0) return;
       localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
@@ -2044,7 +2052,7 @@
             count: countAllItems(state),
             payload: JSON.stringify(state)
           });
-          localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list.slice(0, 5)));
+          localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list.slice(0, 15)));
         } catch (e) {}
       }
     }
@@ -2500,7 +2508,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數、每日行程 ====================
+    // ==================== 12. 航班、天數、每日行程（導航改回小巧 📍 圖示） ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2853,7 +2861,6 @@
     function renderItineraryAndMeals() {
       const trip = getTrip();
       const maxDay = getMaxDays(trip);
-      const mapBadge = getMapProviderBadge();
       const daysToShow = state.dayDisplayMode === "all"
         ? Array.from({ length: maxDay }, (_, i) => i + 1)
         : [state.activeDay];
@@ -2894,7 +2901,7 @@
                   <span class="text-[11px] font-bold text-[#4f7768] shrink-0">🏨 住宿</span>
                   <span class="text-xs font-bold text-[#2b302c] truncate">${cleanParenText(hotelItem.hotel)}</span>
                 </div>
-                <a href="${hotelNavUrl}" target="_blank" class="text-[11px] font-bold text-[#e07a5f] shrink-0 hover:underline">${mapBadge}</a>
+                <a href="${hotelNavUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-[#fbf8f3] border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
               </div>
             ` : ""}
           </div>
@@ -2916,15 +2923,15 @@
             const renderItiNormal = () => {
               itemEl.innerHTML = `
                 <div class="flex items-center justify-between gap-1.5 whitespace-nowrap">
-                  <div class="flex items-center gap-1.5 min-w-0">
+                  <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="iti-drag-handle cursor-grab active:cursor-grabbing px-1.5 py-0.5 -ml-1 rounded text-[#8c948f] hover:text-[#52796f] select-none shrink-0" title="按住上下拖曳調整順序" style="touch-action: none;">
                       <i class="fa-solid fa-grip-vertical text-xs"></i>
                     </span>
                     ${item.time ? `<span class="px-1.5 py-0.5 rounded-md bg-[#4f7768] text-white text-[10px] font-bold en-font shrink-0">${item.time}</span>` : ""}
                     <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
-                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點此查看景點介紹">${displayTitle} 🧭</button>
+                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點此查看景點介紹">${displayTitle}</button>
                   </div>
-                  <a href="${itemNavUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[10px] font-bold text-[#4f7768] shrink-0 hover:bg-[#e8f0ed]">${mapBadge}</a>
+                  <a href="${itemNavUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-white border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
                 </div>
                 ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] leading-snug whitespace-pre-line">🚇 ${cleanParenText(item.transit)}</div>` : ""}
                 ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50 whitespace-pre-line">💡 ${cleanParenText(item.note)}</div>` : ""}
@@ -3203,7 +3210,7 @@
       commitChange(`儲存餐飲：${title}`);
     }
 
-    // ==================== 13. 🧭 導覽圖鑑：自動抓圖、圖片自由調整 & 景點介紹生成引擎 ====================
+    // ==================== 13. 🧭 導覽圖鑑：嚴格重點地標過濾器、自動抓圖 & 景點介紹生成 ====================
     const FAMOUS_TEMPLATES = {
       JP: [
         {
@@ -3244,37 +3251,30 @@
       ]
     };
 
-    // 內建熱門景點高畫質實景照片與「【景點介紹】」知識庫（含象神參拜、匯狂夜市、空盛桑快船等）
     const AI_SPOT_KNOWLEDGE_BASE = {
       "象神": {
-        hours: "24 小時開放（越晚越熱鬧，20:00 - 01:00 香火最鼎盛）",
-        price: "免費參拜（現場供品花串、線香蠟燭每份約 20 - 50 泰銖）",
+        hours: "24 小時開放（20:00 - 01:00 香火最鼎盛）",
+        price: "免費參拜（供品花串每份約 20 - 50 泰銖）",
         img: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】曼谷匯狂路口象神廟（Huai Khwang Shrine）位於 MRT Huai Khwang 站 4 號出口旁，是曼谷市區香火最鼎盛的 24 小時印度教神廟，主祀掌管智慧、開運、事業與正偏財的象頭神（Ganesha），同場亦供奉拉胡天神與四面佛。\n🙏 【參拜秘訣】象神最喜愛紅糖水、牛奶、香蕉與萬壽菊花環；參拜完畢後，別忘了走到象神座騎「小老鼠」雕像旁，必須「一手摸著老鼠頭、另一手摀住老鼠另一側耳朵」，在牠耳邊輕聲說出願望，請小老鼠代為向象神傳話避免漏財！"
+        desc: "✨ 【景點介紹】曼谷匯狂路口象神廟（Huai Khwang Shrine）位於 MRT Huai Khwang 站 4 號出口旁，是曼谷市區香火最鼎盛的 24 小時印度教神廟，主祀掌管智慧、開運、事業與財運的象頭神（Ganesha），同場亦供奉拉胡天神與四面佛。\n🙏 【參拜秘訣】象神喜愛紅糖水、牛奶、香蕉與萬壽菊花環；參拜後別忘了走到象神座騎「小老鼠」雕像旁，一手摸老鼠頭、另一手摀住牠另一側耳朵，在耳邊輕聲說出心願請牠代為傳話！"
       },
       "匯狂夜市": {
-        hours: "18:00 - 凌晨 04:00（約 20:30 後攤位最齊全）",
-        price: "免費逛街（小吃約 40 - 150 泰銖）",
+        hours: "18:00 - 凌晨 04:00",
+        price: "免費逛街",
         img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】匯狂夜市（Huai Khwang Night Market）緊鄰 MRT 匯狂站 4 號出口與匯狂象神廟旁，沿著 Pracha Songkhro 路綿延近一公里，是曼谷在地人最愛的宵夜天堂，少有觀光團客，充滿道地泰式街頭煙火氣。\n🍢 【必吃與必逛】1. 巨無霸泰式生醃海鮮、炭烤大頭蝦與火山排骨；2. 泰北陶鍋小火鍋（Jim Jum）與現切芒果糯米飯；3. 整條街林立平價泰式按摩、美甲店與開到凌晨的熱炒海產攤，非常適合參拜完象神後一路散步吃宵夜！"
+        desc: "✨ 【景點介紹】匯狂夜市（Huai Khwang Night Market）緊鄰 MRT 匯狂站 4 號出口與象神廟旁，沿著 Pracha Songkhro 路綿延近一公里，是曼谷在地人最愛的宵夜天堂，充滿道地泰式街頭煙火氣。\n🍢 【必吃亮點】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋（Jim Jum）與現切芒果糯米飯，周邊還有多間開到凌晨的平價泰式按摩店。"
       },
       "輝煌夜市": {
         hours: "18:00 - 凌晨 04:00",
         price: "免費逛街",
         img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】輝煌夜市（即匯狂夜市 Huai Khwang Night Market），位於 MRT Huai Khwang 站 4 號出口，出站即可先參拜靈驗的路口象神廟，再順著長街大啖泰式熱炒、炭烤海鮮、泰式東北小火鍋與芒果糯米飯，營業至凌晨四點。"
+        desc: "✨ 【景點介紹】輝煌夜市（即匯狂夜市 Huai Khwang Night Market），位於 MRT Huai Khwang 站 4 號出口，出站即可先參拜靈驗的路口象神廟，再順著長街大啖泰式熱炒、炭烤海鮮、泰式東北小火鍋與芒果糯米飯。"
       },
       "空盛桑": {
         hours: "05:30 - 20:30 (平日) / 06:00 - 19:00 (週末)",
-        price: "約 12 - 22 泰銖 (依距離向船舷售票員買票)",
-        img: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】空盛桑運河快船（Khlong Saen Saep Express Boat）是曼谷最道地、完全不塞車的水上交通動脈。因行經運河速度飛快、水花四濺且兩側設有藍色防濺帆布，被旅人暱稱為「曼谷髒髒船」。\n🌟 【體驗亮點】穿梭於曼谷市中心摩天大樓與傳統水岸社區之間，從 Asok 碼頭搭到 Pratunam 水門碼頭僅需約 12 分鐘，比地面計程車快上數倍。\n💡 【搭乘攻略】船靠岸停留時間極短，請先拉緊船頂繩索再跨步上船；上船後戴頭盔的售票員會走在船舷外收費，直接告訴他「Pratunam（水門）」即可。"
-      },
-      "Pratunam": {
-        hours: "05:30 - 20:30",
         price: "約 12 - 22 泰銖",
-        img: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】水門碼頭（Pratunam Pier）是空盛桑運河快船東西線交會的中央樞紐站，出碼頭步行 3 至 5 分鐘即可抵達 Superrich 綠標橘標換匯總店、紅大哥水門雞飯、白金時尚購物中心與 Central World。\n📷 【拍攝機位】站在水門碼頭天橋上俯拍運河快船交會與拉帆布瞬間，極具曼谷街頭生命力。"
+        img: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=900&q=80",
+        desc: "✨ 【景點介紹】空盛桑運河快船（Khlong Saen Saep Express Boat）是曼谷最道地、完全不塞車的水上交通動脈，兩側設有藍色防濺帆布。\n🌟 【體驗亮點】穿梭於曼谷市中心高樓與傳統水岸社區之間，從 Asok 碼頭搭到 Pratunam 水門碼頭僅需約 12 分鐘。\n💡 【搭乘攻略】船靠岸停留時間極短，請先拉緊船頂繩索再跨步上船；上船後售票員會走在船舷外收費，直接告知「Pratunam」即可。"
       },
       "Central World": {
         hours: "10:00 - 22:00",
@@ -3286,25 +3286,19 @@
         hours: "10:00 - 22:00",
         price: "免費參觀",
         img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】曼谷市中心指標性購物巨艦 Central World，戶外廣場冬季限定巨型聖誕樹與燈飾展是曼谷年底最熱門的打卡地標，商場 7 樓美食街與 1 樓泰國香氛選品店極好逛。"
-      },
-      "紅大哥水門雞飯": {
-        hours: "06:00 - 14:00、15:00 - 22:00",
-        price: "約 60 - 150 泰銖",
-        img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】創立於 1960 年的曼谷傳奇海南雞飯名店（Go-Ang Pratunam），因店員全員身穿桃粉紅色 Polo 衫而被稱為「粉紅水門雞飯」，連續多年榮獲米其林必比登推介。\n🍽️ 【必點招牌】油亮滑嫩的雞肉搭配以雞油高湯炊煮的泰國香米，沾上靈魂黑豆豉薑蒜辣醬，再配一碗苦瓜排骨清湯。"
+        desc: "✨ 【景點介紹】曼谷市中心指標性購物巨艦 Central World，戶外廣場冬季限定巨型聖誕樹與燈飾展是曼谷年底最熱門的打卡地標。"
       },
       "ICONSIAM": {
         hours: "10:00 - 22:00 (水舞秀約 18:30 / 20:00)",
         price: "免費入場",
         img: "https://images.unsplash.com/photo-1583396618422-597b2755de83?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】耗資 540 億泰銖打造的昭披耶河畔頂級地標「暹羅天地 ICONSIAM」，將整座泰式傳統水上市場「SookSiam」直接搬進 G 樓冷氣室內，匯集全泰 77 府道地小吃與手工藝。\n📷 【必看亮點】1. G樓室內水上市場船夫與泰式木屋；2. 6樓瀑布餐廳與星巴克露台俯瞰湄南河；3. 河濱廣場長達 400 公尺的東南亞最長聲光水舞燈光秀。"
+        desc: "✨ 【景點介紹】昭披耶河畔頂級地標「暹羅天地 ICONSIAM」，將整座泰式傳統水上市場「SookSiam」直接搬進 G 樓冷氣室內，匯集全泰 77 府道地小吃。\n📷 【必看亮點】1. G樓室內水上市場船夫與泰式木屋；2. 6樓瀑布餐廳與星巴克露台俯瞰湄南河；3. 河濱廣場長達 400 公尺的東南亞最長聲光水舞燈光秀。"
       },
       "超級銀河號": {
-        hours: "20:00 - 22:00 (建議 19:00 前於 ICONSIAM 4 號碼頭換票報到)",
+        hours: "20:00 - 22:00 (19:00 前於 ICONSIAM 4 號碼頭換票)",
         price: "依預訂票券",
         img: "https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】曼谷最新世代三層豪華雙體遊輪（Super Galaxy Cruise），頂層擁有 360 度全露天無遮擋甲板視野。\n🌃 【航程亮點】自 ICONSIAM 啟航，沿途飽覽鄭王廟（黎明寺）、大皇宮、拉瑪八世大橋與河畔摩天輪璀璨夜景，船上供應澎湃泰式與國際海鮮 Buffet、現場樂團演唱，年底更可直擊湄南河岸燈光節與水燈節煙火。"
+        desc: "✨ 【景點介紹】曼谷最新世代三層豪華雙體遊輪（Super Galaxy Cruise），頂層擁有 360 度全露天無遮擋甲板視野。\n🌃 【航程亮點】自 ICONSIAM 啟航，沿途飽覽鄭王廟（黎明寺）、大皇宮、拉瑪八世大橋與河畔摩天輪璀璨夜景，船上供應泰式與國際海鮮 Buffet、現場樂團演唱與河岸煙火。"
       },
       "Super Galaxy": {
         hours: "20:00 - 22:00",
@@ -3316,51 +3310,82 @@
         hours: "08:00 - 18:00",
         price: "門票 200 泰銖",
         img: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】鄭王廟（Wat Arun，又稱黎明寺）矗立於昭披耶河西岸，以高達 82 公尺、鑲嵌數百萬片彩色中國瓷器與貝殼的純白主佛塔聞名，被譽為「泰國艾菲爾鐵塔」。\n📷 【必拍攻略】可在廟外租借精緻泰服（約 150-300 泰銖），於主塔階梯仰拍；傍晚時分更推薦到對岸河景餐廳欣賞夕陽將佛塔染成金紅色的絕景。"
+        desc: "✨ 【景點介紹】鄭王廟（Wat Arun，又稱黎明寺）矗立於昭披耶河西岸，以高達 82 公尺、鑲嵌數百萬片彩色瓷器與貝殼的純白主佛塔聞名，被譽為「泰國艾菲爾鐵塔」。\n📷 【必拍攻略】可在廟外租借泰服於主塔階梯仰拍；傍晚更推薦到對岸河景餐廳欣賞夕陽將佛塔染成金紅色的絕景。"
       },
       "大皇宮": {
         hours: "08:30 - 15:30",
         price: "門票 500 泰銖 (含玉佛寺)",
         img: "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】曼谷大皇宮（Grand Palace）建於 1782 年拉瑪一世時期，匯集泰國建築、繪畫與金箔鑲嵌工藝之巔，宮內的玉佛寺供奉著由整塊翡翠雕琢而成的國寶「玉佛」。\n💡 【參觀叮嚀】服裝規定嚴格，男女皆須穿著有袖上衣與過膝長裙或長褲（不可穿緊身破洞褲）。"
+        desc: "✨ 【景點介紹】曼谷大皇宮（Grand Palace）建於 1782 年拉瑪一世時期，匯集泰國建築、繪畫與金箔鑲嵌工藝之巔，宮內的玉佛寺供奉著國寶「翡翠玉佛」。\n💡 【參觀叮嚀】服裝規定嚴格，男女皆須穿著有袖上衣與過膝長裙或長褲。"
       },
       "四面佛": {
         hours: "06:00 - 22:00",
-        price: "免費參拜（花圈蠟燭套組約 50 - 100 泰銖）",
+        price: "免費參拜",
         img: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】位於曼谷 BTS Chit Lom 站愛侶灣君悅飯店轉角的四面佛（Erawan Shrine），供奉大梵天王，是全泰國香火最旺盛的祈福聖地。\n🙏 【參拜順序】由入口正面開始「順時針」依序參拜四個面向：第一面求事業學業、第二面求感情姻緣、第三面求正偏財富、第四面求健康平安。"
+        desc: "✨ 【景點介紹】位於曼谷 BTS Chit Lom 站轉角的四面佛（Erawan Shrine），供奉大梵天王，是全泰國香火最旺盛的祈福聖地。\n🙏 【參拜順序】由入口正面開始「順時針」依序參拜四個面向：第一面求事業、第二面求感情、第三面求財富、第四面求健康平安。"
       },
       "喬德夜市": {
         hours: "16:00 - 24:00",
         price: "免費入場",
         img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】喬德夜市（Jodd Fairs）以整潔純白帳篷與文青潮流攤位聞名，匯集火山排骨、水果西施冰沙、生醃海鮮、手打檸檬茶與泰國設計師服飾，環境舒適好逛。"
+        desc: "✨ 【景點介紹】喬德夜市（Jodd Fairs）以整潔純白帳篷與文青潮流攤位聞名，匯集火山排骨、水果西施冰沙、生醃海鮮與泰國設計師服飾。"
       },
       "恰圖恰": {
-        hours: "週六日 09:00 - 18:00 (部分區域至22:00)",
+        hours: "週六日 09:00 - 18:00",
         price: "免費入場",
         img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】恰圖恰週末市集（Chatuchak Weekend Market）是世界最大的戶外市集之一，擁有超過 15,000 個攤位、分為 27 個區域，從泰國棉麻服飾、香氛精油、藤編包、陶藝餐具到椰子冰淇淋應有盡有。"
+        desc: "✨ 【景點介紹】恰圖恰週末市集（Chatuchak Weekend Market）是世界最大的戶外市集之一，擁有超過 15,000 個攤位，從棉麻服飾、香氛精油、藤編包到椰子冰淇淋應有盡有。"
       }
     };
 
+    // 🛡️ 嚴格白名單過濾器：只有真正的「重點地標/古蹟/夜市/大型體驗秀」才會自動進入導覽列！
     function isSpecialLandmarkSpot(iti) {
       if (!iti || !iti.title) return false;
-      const t = iti.title;
+      const t = iti.title.trim();
       const c = iti.cat || "";
 
+      // 1. 優先排除：純交通、純換匯、純吃飯、純買藥妝/伴手禮、住宿、按摩、休息
+      if (["交通", "換匯", "住宿", "按摩SPA", "咖啡廳", "美食", "購物"].includes(c)) {
+        // 但若購物/美食裡明確包含大型地標（如 ICONSIAM、Central World、夜市、水門市場），仍允許收錄該地標
+        if (!/ICONSIAM|Central\s*World|中央世界|夜市|水上市場|恰圖恰|星空圖書館|晴空塔|淺草寺/i.test(t)) {
+          return false;
+        }
+      }
+
+      // 2. 排除一般日常動作句子（除非同時含重點地標詞）
+      if (/Superrich|Tofu|藥妝|便利商店|7-11|Big\s*C|樂天超市|退房|入住|Check\s*in|Check\s*out|機場接送|前往機場|回飯店|自由活動|休息/i.test(t) &&
+          !/ICONSIAM|Central\s*World|中央世界/i.test(t)) {
+        return false;
+      }
+
+      // 3. 命中內建重點知識庫地標 ➔ 收錄
       if (Object.keys(AI_SPOT_KNOWLEDGE_BASE).some(k => t.toLowerCase().includes(k.toLowerCase()))) {
-        if (/Superrich|Tofu|藥妝/i.test(t) && !/Central World|ICONSIAM/i.test(t)) return false;
         return true;
       }
 
-      if (["交通", "換匯", "住宿", "按摩SPA", "咖啡廳"].includes(c)) return false;
-      if (/^(步行|搭乘|前往|轉乘|退房|入住|換匯|採買)/.test(t) && !/遊船|快船|銀河號|ICONSIAM|Central|寺|宮|塔|山|湖|神|夜市|市場/.test(t)) return false;
-      if (/藥妝|超市|便利商店|換錢|Superrich|Tofu/i.test(t) && !/Central World|ICONSIAM/i.test(t)) return false;
+      // 4. 嚴格地標關鍵字白名單：必須包含這些地標特徵詞，或明確屬於「寺廟古蹟 / 夜景/秀 / 打卡機位」才收錄
+      if (["寺廟古蹟", "夜景/秀", "打卡機位"].includes(c)) return true;
 
-      if (["景點", "夜景/秀", "寺廟古蹟", "打卡機位", "體驗"].includes(c)) return true;
+      const landmarkKeywords = /寺|廟|宮|神社|大佛|象神|四面佛|古鎮|古城|老街|夜市|水上市場|市集|遊船|遊輪|快船|銀河號|Cruise|水舞|燈光秀|煙火|鐵道|晴空塔|東京鐵塔|展望台|觀景台|博物館|美術館|圖書館|樂園|迪士尼|環球影城|滑雪場|纜車|雪山|雲場池|藍月谷|ICONSIAM|Central\s*World|teamLab/i;
+      if (landmarkKeywords.test(t)) return true;
 
       return false;
+    }
+
+    // 🧹 一鍵清理導覽頁中「非重點」的多餘卡片（保留重點地標）
+    function cleanUpNonHighlightGuides() {
+      const t = getTrip();
+      if (!t.guides || t.guides.length === 0) return alert("目前導覽列表是空的喔！");
+      const beforeCount = t.guides.length;
+      const kept = t.guides.filter(g => isSpecialLandmarkSpot({ title: g.title, cat: "景點" }));
+      const removedCount = beforeCount - kept.length;
+      if (removedCount === 0) {
+        return alert("✨ 目前導覽內已經全部都是精選重點地標囉！");
+      }
+      if (confirm(`🧹 找到 ${removedCount} 個非重點行程項目，確定只保留 ${kept.length} 個重點景點導覽嗎？`)) {
+        t.guides = kept;
+        commitChange(`精簡導覽：移除 ${removedCount} 個非重點項目`);
+      }
     }
 
     function extractCoreLandmarkName(rawTitle) {
@@ -3371,7 +3396,6 @@
           if (k === "ICONSIAM") return "ICONSIAM 暹羅天地";
           if (k === "超級銀河號" || k === "Super Galaxy") return "超級銀河號 Super Galaxy Cruise";
           if (k === "空盛桑") return "空盛桑運河快船";
-          if (k === "紅大哥水門雞飯") return "紅大哥水門雞飯";
           if (k === "象神") return "匯狂路口象神廟 (象神參拜)";
           if (k === "匯狂夜市" || k === "輝煌夜市") return "匯狂夜市 Huai Khwang Night Market";
           return s;
@@ -3384,14 +3408,12 @@
         .trim() || s;
     }
 
-    // 🖼️ 多重來源自動抓取景點真實圖片（維基百科中文/英文/泰文 + Wikimedia Commons 全域圖片搜尋 + 智慧風景圖庫）
     async function fetchSpotImageFromWeb(spotTitle, countryName = "", offset = 0) {
       const cleanName = cleanParenText(spotTitle || "")
         .replace(/^(匯狂路口|體驗在地|欣賞|參觀|前往)\s*/, "")
         .split(/[·➔(（]/)[0]
         .trim();
 
-      // 1. 若 offset === 0，先檢查內建知識庫是否有精選高畫質圖
       if (offset === 0) {
         for (const [k, kb] of Object.entries(AI_SPOT_KNOWLEDGE_BASE)) {
           if (spotTitle.toLowerCase().includes(k.toLowerCase()) && kb.img) {
@@ -3400,7 +3422,6 @@
         }
       }
 
-      // 2. 搜尋 Wikimedia Commons 真實景點照片庫（可依 offset 切換不同張真實照片）
       try {
         let searchQ = `${cleanName} ${countryName}`.trim();
         const tRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(searchQ)}`);
@@ -3424,7 +3445,6 @@
         }
       } catch (e) {}
 
-      // 3. 嘗試中文與英文 Wikipedia Summary 縮圖
       try {
         const wRes = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`);
         if (wRes.ok) {
@@ -3435,12 +3455,10 @@
         }
       } catch (e) {}
 
-      // 4. 線上即時視覺引擎產生該地標專屬實景圖（永不空白）
       const seed = (cleanName.length * 17 + offset * 31) % 999;
       return `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanName + " " + countryName + " travel landmark photography high quality realistic")}?width=800&height=520&nologo=true&seed=${seed}`;
     }
 
-    // 📖 自動為導覽卡片生成「【景點介紹】」與自動抓取圖片（不顯示 AI 字樣）
     async function populateGuideWithAiSummary(guideObj, fallbackIti = null, forceRefresh = false) {
       const c = getCountry();
       const rawTitle = (fallbackIti?.rawLine || guideObj.title || "").trim();
@@ -3449,7 +3467,6 @@
         .split(/[·➔]/)[0]
         .trim();
 
-      // A. 自動抓取景點圖片（若尚無圖片或強制更新）
       if (!guideObj.img || forceRefresh) {
         const webImg = await fetchSpotImageFromWeb(rawTitle || cleanTitle, c.name || "", 0);
         if (webImg) guideObj.img = webImg;
@@ -3457,7 +3474,6 @@
       if (!guideObj.imgHeight) guideObj.imgHeight = 170;
       if (guideObj.imgPosY === undefined) guideObj.imgPosY = 50;
 
-      // B. 優先比對內建高精準度景點知識庫
       for (const [key, kb] of Object.entries(AI_SPOT_KNOWLEDGE_BASE)) {
         if (rawTitle.toLowerCase().includes(key.toLowerCase()) || guideObj.title.toLowerCase().includes(key.toLowerCase())) {
           if (!guideObj.hours || guideObj.hours.startsWith("預計") || guideObj.hours === "依現場公告") guideObj.hours = kb.hours;
@@ -3468,7 +3484,6 @@
         }
       }
 
-      // C. 查詢中文維基百科摘要
       try {
         const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanTitle)}`);
         if (res.ok) {
@@ -3483,7 +3498,6 @@
         }
       } catch (e) {}
 
-      // D. 調用線上免金鑰智慧模型即時撰寫 Google 搜尋摘要風格的「景點介紹」（繁體中文）
       try {
         const promptTxt = `請用繁體中文為旅遊景點「${c.name || ""} ${cleanTitle}」撰寫約110字的精煉旅遊導覽，格式必須包含兩段：\n✨ 【景點介紹】（介紹該景點或夜市/神廟的特色與背景）\n🌟 【必看亮點】（列出必看、必吃、必拍或參拜攻略）。不要出現AI字樣。`;
         const aiRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptTxt)}`);
@@ -3496,7 +3510,6 @@
         }
       } catch (e) {}
 
-      // E. 最終結構化景點介紹保底
       guideObj.desc = `✨ 【景點介紹】${cleanTitle} 是 ${c.name || "當地"} 極具代表性的熱門造訪地點，結合在地文化風情與特色體驗。\n${fallbackIti?.transit ? "🚇 【交通方式】" + fallbackIti.transit + "\n" : ""}🌟 【遊玩重點】${fallbackIti?.note || "建議搭配周邊商圈順遊，現場體驗在地氛圍與拍照留念。"}`;
     }
 
@@ -3621,6 +3634,7 @@
         t.itinerary.push(newIti);
         addedCount++;
 
+        // 僅在通過嚴格重點地標篩選時才加入導覽佇列
         if (isSpecialLandmarkSpot({ title: line, cat, subRegion: defaultRegion, time: timeStr, note })) {
           newSpotsForGuide.push({ ...newIti, rawLine: line });
         }
@@ -3651,7 +3665,7 @@
 
       document.getElementById("aiRawTextInp").value = "";
       closeModalDirect("aiParserModal");
-      commitChange(`🪄 智慧帶入 D${dayNum} 共 ${addedCount} 個行程點`);
+      commitChange(`🪄 智慧帶入 D${dayNum} 共 ${addedCount} 個行程點（嚴選 ${newSpotsForGuide.length} 個重點地標入導覽）`);
     }
 
     function openGoogleSearchForGuide(spotName) {
@@ -3985,10 +3999,9 @@
           }
         }
       }
-      commitChange(`擷取 ${count} 個重點景點至導覽`);
+      commitChange(`擷取 ${count} 個重點地標至導覽`);
     }
 
-    // 🔄 一鍵補齊目前所有導覽卡片的「景點介紹」與「實景圖片」（把舊的空白圖或「點右上角G查詢」一次全部升級！）
     async function refreshAllGuidesSummaryAndPhoto() {
       const t = getTrip();
       const list = t.guides || [];
@@ -3996,7 +4009,7 @@
 
       const btn = document.getElementById("btnRefreshAllGuides");
       const oldTxt = btn ? btn.textContent : "";
-      if (btn) btn.textContent = "⏳ 正在抓圖與生成介紹...";
+      if (btn) btn.textContent = "⏳ 補齊中...";
 
       for (const g of list) {
         const needsDesc = isPlaceholderGuideDesc(g.desc);
@@ -4066,12 +4079,11 @@
 
     function renderGuidesSection() {
       const t = getTrip();
-      const mapBadge = getMapProviderBadge();
       const box = document.getElementById("guideCardsContainer");
       box.innerHTML = "";
       const list = t.guides || [];
       if (list.length === 0) {
-        box.innerHTML = `<div class="col-span-2 text-center py-6 text-xs text-[#7a827d]">點右上角「📥 擷取景點」自動篩選地標並抓取景點照片與介紹</div>`;
+        box.innerHTML = `<div class="col-span-2 text-center py-6 text-xs text-[#7a827d]">點右上角「📥 抓重點」自動篩選重點地標並抓取照片與介紹</div>`;
         return;
       }
       list.forEach(g => {
@@ -4087,7 +4099,6 @@
         const adjustDrawerId = `gdImgAdj_${g.id}`;
         const customUrlInpId = `gdCustomUrl_${g.id}`;
 
-        // 若發現舊資料是「點右上角 G查詢」或沒圖片，背景自動補齊！
         if ((isPlaceholderGuideDesc(g.desc) || !gdSrc) && !g._autoFetching) {
           g._autoFetching = true;
           populateGuideWithAiSummary(g, { title: g.title }, false).then(() => {
@@ -4109,7 +4120,6 @@
 
         card.innerHTML = `
           <div>
-            <!-- 🖼️ 景點圖片區（含一鍵換圖、調整高度與上下構圖面板） -->
             <div class="relative mb-2.5 group">
               ${gdSrc
                 ? `<img id="gdImgEl_${g.id}" src="${gdSrc}" onclick="event.stopPropagation(); openImageLightbox('${(g.img || "").replace(/'/g, "")}', '${cleanGTitle.replace(/'/g, "")}')" class="polaroid-img w-full transition-all" style="height:${imgH}px; object-fit:${imgFit}; object-position:50% ${imgY}%;" />`
@@ -4123,7 +4133,6 @@
                 <button type="button" onclick="toggleDrawer('${adjustDrawerId}', event)" class="px-2 py-0.5 rounded-full bg-[#fdf0ec] border border-[#f4c2b2] text-[10px] font-bold text-[#c85a32]">📐 調圖/換照</button>
               </div>
 
-              <!-- 📐 圖片高度、構圖與自訂照片調整抽屜 -->
               <div id="${adjustDrawerId}" class="drawer-panel img-adjust-panel mt-1.5" onclick="event.stopPropagation()">
                 <div class="p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] space-y-2 text-[11px]">
                   <div class="grid grid-cols-2 gap-2 font-bold text-[#52796f]">
@@ -4148,7 +4157,6 @@
               </div>
             </div>
 
-            <!-- 標題與「🔄 更新介紹」按鈕 -->
             <div class="flex items-center justify-between gap-1.5 mb-1.5 whitespace-nowrap">
               <div class="flex items-center gap-1.5 min-w-0">
                 ${g.region ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] shrink-0">${cleanParenText(g.region)}</span>` : ""}
@@ -4167,7 +4175,7 @@
 
           <div class="mt-2.5 pt-2 border-t border-[#efe7dc] flex items-center justify-between text-xs whitespace-nowrap">
             <div class="flex items-center gap-2">
-              <a href="${gdNavUrl}" target="_blank" onclick="event.stopPropagation()" class="font-bold text-[#52796f] hover:underline">${mapBadge} ↗</a>
+              <a href="${gdNavUrl}" target="_blank" onclick="event.stopPropagation()" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-[#fbf8f3] border border-[#dcd2c4] flex items-center justify-center text-xs hover:bg-[#e8f0ed]">📍</a>
               <button type="button" onclick="event.stopPropagation(); openGoogleImageSearchForSpot('${cleanGTitle.replace(/'/g, "")}')" class="font-bold text-[#3d5a52] hover:underline">🖼️ 搜圖</button>
               <button type="button" onclick="event.stopPropagation(); openGoogleSearchForGuide('${cleanGTitle.replace(/'/g, "")}')" class="font-bold text-[#c85a32] hover:underline">🔍 Google深查</button>
             </div>
@@ -4584,7 +4592,7 @@
               <select class="ex-ed-host px-2 py-1 rounded-lg border bg-[#fdf0ec] text-[#c85a32] font-bold">
                 ${allPeople.map(p => `<option value="${p}" ${p === (expObj.host || expObj.payer) ? "selected" : ""}>🥂 ${p} 請客買單</option>`).join("")}
               </select>
-              <input type="text" class="ex-ed-bens px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="享受到的人：凱,淨" />
+              <input type="text" class="ex-ed-bens px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="分攤人：凱,淨" />
             </div>
             <input type="text" class="ex-ed-note w-full px-2 py-1 rounded-lg border bg-white" value="${expObj.note || ""}" placeholder="📝 備註" />
             <div class="flex gap-1.5 pt-1">
@@ -4694,7 +4702,6 @@
     function renderListsSection() {
       const t = getTrip();
       const c = getCountry();
-      const mapBadge = getMapProviderBadge();
 
       const usedShopCats = [...new Set((t.shopping || []).map(s => s.cat).filter(Boolean))];
       const usedFoodCats = [...new Set((t.mustEat || []).map(f => f.cat).filter(Boolean))];
@@ -4899,7 +4906,7 @@
                   <div class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">${cleanFName}</div>
                   ${f.note ? `<div class="text-[11px] text-[#7a827d] truncate">${cleanParenText(f.note)}</div>` : ""}
                 </div>
-                <a href="${mapUrl}" target="_blank" class="px-2 py-0.5 rounded-full bg-white border text-[11px] font-bold text-[#52796f] shrink-0">${mapBadge}</a>
+                <a href="${mapUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-white border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
               </div>
             `;
             attachRowGestures(row, {
@@ -5392,7 +5399,7 @@
       }
     }
 
-    // ==================== 18. ☁️ Gist 完整多國多旅程雙重同步引擎 ====================
+    // ==================== 18. ☁️ Gist 完整多國多旅程雙重同步 & 15 筆歷史快照滾輪清單 ====================
     async function pushToGist() {
       const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
       const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
@@ -5427,7 +5434,7 @@
           if (primaryTrip) {
             filesPayload[fName] = {
               content: JSON.stringify({
-                version: "86.0",
+                version: "87.0",
                 id: primaryTrip.id,
                 countryId: c.id,
                 countryName: c.name,
@@ -5458,7 +5465,7 @@
 
         filesPayload["global_trip_list.json"] = {
           content: JSON.stringify({
-            version: "86.0",
+            version: "87.0",
             activeCountryId: state.activeCountryId,
             activeTripId: state.activeTripId,
             companions: state.companions || [],
@@ -5576,15 +5583,20 @@
       }
     }
 
+    // 🕒 渲染最近 15 筆歷史快照（支援上下滾輪滑動檢視）
     function renderSnapshotsList() {
       const box = document.getElementById("snapshotsListBox");
-      const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]").slice(0, 5);
+      const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]").slice(0, 15);
       box.innerHTML = list.length === 0
-        ? `<div class="text-xs text-gray-400">尚無快照</div>`
-        : list.map(s => `
-            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#fbf8f3] border text-xs whitespace-nowrap">
-              <span class="truncate">${s.label} · ${s.time}</span>
-              <button onclick="restoreSnap('${s.id}')" class="px-2 py-0.5 rounded-full btn-gradient-rose text-white text-[11px] font-bold shrink-0">還原</button>
+        ? `<div class="text-xs text-gray-400 py-2 text-center">尚無歷史快照紀錄</div>`
+        : list.map((s, idx) => `
+            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] text-xs whitespace-nowrap">
+              <div class="flex items-center gap-1.5 min-w-0 pr-2">
+                <span class="sub-pill en-font shrink-0">#${idx + 1}</span>
+                <span class="truncate font-medium text-[#2b302c]">${s.label}</span>
+                <span class="text-[10px] text-[#7a827d] en-font shrink-0">${s.time}</span>
+              </div>
+              <button onclick="restoreSnap('${s.id}')" class="px-2.5 py-0.5 rounded-full btn-gradient-rose text-white text-[11px] font-bold shrink-0">還原</button>
             </div>
           `).join("");
     }
@@ -5592,7 +5604,7 @@
     function restoreSnap(id) {
       const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]");
       const found = list.find(x => x.id === id);
-      if (found && confirm(`確定還原至「${found.time}」的版本？`)) {
+      if (found && confirm(`確定還原至「${found.time} · ${found.label}」的版本？`)) {
         undoStack.push(JSON.stringify(state));
         state = JSON.parse(found.payload);
         saveAppState(false);
