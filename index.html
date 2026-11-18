@@ -2181,32 +2181,6 @@
       return state.countries[state.activeCountryId];
     }
 
-    function getTrip() {
-      let t = state.trips[state.activeTripId];
-      if (!t || !isSameCountryId(t.countryId, state.activeCountryId)) {
-        const found = Object.values(state.trips).find(x => isSameCountryId(x.countryId, state.activeCountryId));
-        if (found) {
-          state.activeTripId = found.id;
-          t = found;
-        } else {
-          const c = getCountry();
-          const id = "trip_" + Date.now();
-          t = {
-            id, countryId: state.activeCountryId, title: `${c.name}旅行手札`,
-            subRegions: [c.name], flightSegments: [], itinerary: [], meals: [], guides: [],
-            expenses: [], shopping: [], mustEat: [], memos: [], stickers: [],
-            customLinks: [], customVisas: [], customTransits: [], customPhrases: []
-          };
-          state.trips[id] = t;
-          state.activeTripId = id;
-        }
-      }
-      if (!t.flightSegments) t.flightSegments = [];
-      if (!t.meals) t.meals = [];
-      if (!t.mustEat) t.mustEat = [];
-      return t;
-    }
-
     // ==================== 9. Lightbox & 彈窗控制 ====================
     function openImageLightbox(rawRef, caption = "📸 照片預覽") {
       const src = resolveImageSrc(rawRef);
@@ -2590,6 +2564,7 @@
         });
         tripBox.appendChild(pill);
       });
+      }
     function addTripUnderCountry() {
       const c = getCountry();
       const title = prompt(`在「${c.name}」新增旅程名稱：`);
