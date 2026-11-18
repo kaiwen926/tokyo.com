@@ -1191,35 +1191,85 @@
     }
 
     // 國家 ID 通用比對（修復泰國 TH / th / TH_xxx 旅程無法顯示與點擊切換的問題）
+    // 強化版：同時比對代碼與國家中文名稱（解決 TH / 泰國 / 曼谷 不一致問題）
     function isSameCountryId(idA, idB) {
       if (!idA || !idB) return false;
-      const a = String(idA).toUpperCase();
-      const b = String(idB).toUpperCase();
-      if (a === b) return true;
-      return a.split("_")[0] === b.split("_")[0];
+      const a = String(idA).trim().toUpperCase();
+      const b = String(idB).trim().toUpperCase();
+      if (a === b || a.split("_")[0] === b.split("_")[0]) return true;
+
+      const aliasGroups = [
+        ["TH", "THAILAND", "泰國", "曼谷", "清邁", "芭達雅"],
+        ["CN", "CHINA", "中國", "中國大陸", "大陸", "雲南", "昆明", "大理", "麗江", "上海"],
+        ["JP", "JAPAN", "日本", "東京", "輕井澤", "大阪", "北海道", "沖繩"],
+        ["KR", "KOREA", "韓國", "首爾", "釜山", "濟州"]
+      ];
+      return aliasGroups.some(grp => grp.some(k => a.includes(k)) && grp.some(k => b.includes(k)));
     }
 
-    (function injectNativeTouchScrollStyle() {
-      const st = document.createElement("style");
-      st.textContent = `
-        #flagBarContainer, #dayPillsBar, #subRegionButtons, #chartTargetPills, #shopOwnerFilterPills, #packingCategoryPills, #phraseCategoryBar {
-          display: flex !important;
-          flex-wrap: nowrap !important;
-          overflow-x: auto !important;
-          overflow-y: hidden !important;
-          -webkit-overflow-scrolling: touch !important;
-          touch-action: pan-x !important;
-          padding-top: 6px !important;
-          padding-bottom: 8px !important;
-          gap: 8px !important;
+    function getTrip() {
+      const c = getCountry();
+      let t = state.trips[state.activeTripId];
+
+      // 找出該國家底下所有的旅程（同時比對 countryId 與旅程標題是否含該國關鍵字）
+      const matchingTrips = Object.values(state.trips).filter(x =>
+        isSameCountryId(x.countryId, state.activeCountryId) ||
+        isSameCountryId(x.countryId, c.name) ||
+        (c.name && (x.title || "").includes(c.name)) ||
+        (state.activeCountryId.startsWith("TH") && /泰國|曼谷|清邁/.test(x.title || ""))
+      );
+
+      // 如果有超過 1 個旅程，且其中一個是系統自動生出的 0 行程空白手札，自動清除空白幽靈手札
+      if (matchingTrips.length > 1) {
+        const hasRealDataTrip = matchingTrips.some(x => (x.itinerary?.length || 0) + (x.flightSegments?.length || 0) + (x.expenses?.length || 0) > 0);
+        if (hasRealDataTrip) {
+          matchingTrips.forEach(x => {
+            const count = (x.itinerary?.length || 0) + (x.flightSegments?.length || 0) + (x.expenses?.length || 0) + (x.shopping?.length || 0);
+            if (count === 0 && /旅行手札$|之旅$/.test(x.title || "")) {
+              delete state.trips[x.id];
+            }
+          });
         }
-        #flagBarContainer > *, #dayPillsBar > *, #subRegionButtons > *, #chartTargetPills > *, #shopOwnerFilterPills > *, #packingCategoryPills > *, #phraseCategoryBar > * {
-          flex-shrink: 0 !important;
-          touch-action: pan-x !important;
+      }
+
+      // 重新取得清理後的該國旅程清單，並按「資料豐富度」排序（有行程的排第一！）
+      const validTrips = Object.values(state.trips)
+        .filter(x =>
+          isSameCountryId(x.countryId, state.activeCountryId) ||
+          isSameCountryId(x.countryId, c.name) ||
+          (state.activeCountryId.startsWith("TH") && /泰國|曼谷|清邁/.test(x.title || ""))
+        )
+        .sort((a, b) => {
+          const scoreA = (a.itinerary?.length || 0) * 10 + (a.flightSegments?.length || 0) * 5 + (a.expenses?.length || 0);
+          const scoreB = (b.itinerary?.length || 0) * 10 + (b.flightSegments?.length || 0) * 5 + (b.expenses?.length || 0);
+          return scoreB - scoreA;
+        });
+
+      // 如果當前 activeTripId 不屬於這個國家，或者當前是空白手札但其實有另一個有資料的手札，就自動切過去！
+      const currentScore = t ? ((t.itinerary?.length || 0) + (t.flightSegments?.length || 0)) : -1;
+      if (!t || !validTrips.includes(t) || (currentScore === 0 && validTrips.length > 0 && (validTrips[0].itinerary?.length || 0) > 0)) {
+        if (validTrips.length > 0) {
+          t = validTrips[0];
+          state.activeTripId = t.id;
+          t.countryId = state.activeCountryId; // 自動修正歸屬國代碼
+        } else {
+          const id = "trip_" + Date.now();
+          t = {
+            id, countryId: state.activeCountryId, title: `${c.name}旅行手札`,
+            subRegions: [c.name], flightSegments: [], itinerary: [], meals: [], guides: [],
+            expenses: [], shopping: [], mustEat: [], memos: [], stickers: [],
+            customLinks: [], customVisas: [], customTransits: [], customPhrases: []
+          };
+          state.trips[id] = t;
+          state.activeTripId = id;
         }
-      `;
-      document.head.appendChild(st);
-    })();
+      }
+
+      if (!t.flightSegments) t.flightSegments = [];
+      if (!t.meals) t.meals = [];
+      if (!t.mustEat) t.mustEat = [];
+      return t;
+    }
 
     // ==================== 1. 獨立雲端圖庫引擎 ====================
     let imageVault = {};
@@ -2494,11 +2544,16 @@
 
       const tripBox = document.getElementById("tripPillsContainer");
       tripBox.innerHTML = "";
-      // 修正：改用 isSameCountryId 模糊比對，確保泰國 (TH / th / TH_xxx) 所有旅程都能正常列出並點擊
+
       const tripsInC = Object.entries(state.trips)
-        .filter(([, x]) => isSameCountryId(x.countryId, state.activeCountryId))
+        .filter(([, x]) =>
+          isSameCountryId(x.countryId, state.activeCountryId) ||
+          isSameCountryId(x.countryId, c.name) ||
+          (state.activeCountryId.startsWith("TH") && /泰國|曼谷|清邁/.test(x.title || ""))
+        )
         .map(([tid, x]) => {
           if (!x.id) x.id = tid;
+          x.countryId = state.activeCountryId; // 強制統一歸屬 ID
           return x;
         });
 
@@ -2506,20 +2561,25 @@
         const pill = document.createElement("button");
         pill.type = "button";
         const active = tr.id === t.id;
+        const itemCount = (tr.itinerary?.length || 0);
         pill.className = `flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border text-xs font-bold cursor-pointer text-left transition ${
           active ? "btn-gradient-rose border-transparent shadow-2xs" : "bg-white text-[#4a524d] border-[#dcd2c4]"
         }`;
-        pill.innerHTML = `<span class="wrap-text-safe">📒 ${tr.title}</span>`;
-        pill.onclick = (e) => {
+        pill.innerHTML = `<span class="wrap-text-safe">📒 ${tr.title}</span><span class="text-[10px] opacity-80 en-font">(${itemCount})</span>`;
+
+        // 手機與電腦雙相容點擊切換函數
+        const switchTripNow = (e) => {
           e.stopPropagation();
           state.activeTripId = tr.id;
-          state.activeCountryId = Object.keys(state.countries).find(k => isSameCountryId(k, tr.countryId)) || state.activeCountryId;
           state.activeSubRegion = "ALL";
           state.activeDay = 1;
           saveAppState(false);
           renderAll();
           document.getElementById("anywhereDoorDrawer")?.classList.remove("open");
         };
+
+        pill.onclick = switchTripNow;
+
         attachLongPress(pill, () => {
           if (tripsInC.length <= 1) return alert("每個國家至少保留一趟旅程！");
           if (confirm(`確定刪除旅程「${tr.title}」嗎？`)) {
@@ -2530,8 +2590,6 @@
         });
         tripBox.appendChild(pill);
       });
-    }
-
     function addTripUnderCountry() {
       const c = getCountry();
       const title = prompt(`在「${c.name}」新增旅程名稱：`);
@@ -5631,13 +5689,15 @@
           }
         }
 
-        let loadedCount = 0;
+       let loadedCount = 0;
+        let hasFullState = false;
 
         if (data.files["wandernote_full_state.json"]) {
           try {
             const fullTxt = await readFileContent(data.files["wandernote_full_state.json"]);
             const fullParsed = JSON.parse(fullTxt);
             if (convertAndMergeAnyLegacyData(fullParsed, true, "wandernote_full_state.json")) {
+              hasFullState = true;
               loadedCount++;
             }
           } catch (e) {}
@@ -5662,15 +5722,17 @@
           } catch (e) {}
         }
 
-        for (const fileObj of Object.values(data.files || {})) {
-          if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
-          try {
-            const contentTxt = await readFileContent(fileObj);
-            const parsed = JSON.parse(contentTxt);
-            if (convertAndMergeAnyLegacyData(parsed, false, fileObj.filename)) loadedCount++;
-          } catch (err) {}
+        // 只有在沒有 wandernote_full_state.json 時，才從單國 json 讀取，避免舊單國檔蓋掉完整行程
+        if (!hasFullState) {
+          for (const fileObj of Object.values(data.files || {})) {
+            if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
+            try {
+              const contentTxt = await readFileContent(fileObj);
+              const parsed = JSON.parse(contentTxt);
+              if (convertAndMergeAnyLegacyData(parsed, false, fileObj.filename)) loadedCount++;
+            } catch (err) {}
+          }
         }
-
         ensureKoreaTripNotEmpty();
 
         if (data.files["global_trip_list.json"]) {
