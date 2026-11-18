@@ -22,7 +22,7 @@
       --muted: #7a827d;
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
     input, textarea, select { user-select: text; -webkit-user-select: text; touch-action: pan-y; }
 
     body {
@@ -1127,12 +1127,14 @@
               <input type="file" accept=".json" class="hidden" onchange="importBackupJson(event)" />
             </label>
           </div>
-          <!-- 滾輪容器：固定高度、內部可上下滾動檢視最多 50 筆 -->
+         <!-- 滾輪容器：固定高度、內部可上下滾動檢視最多 50 筆 -->
           <div id="snapshotsListBox" class="snap-scroll space-y-1.5 h-56 overflow-y-auto pr-1"></div>
         </div>
       </div>
     </div>
-    <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
+  </div> <!-- ✅ 補回這行，正確關閉 cloudSyncModal 視窗 -->
+
+  <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
   <script>
     const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V83_DATA";
     const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V83_IMAGES";
@@ -3128,8 +3130,8 @@
         });
       });
     }
-  </div>
-  function extractMapPlaceName(url) {
+
+    function extractMapPlaceName(url) {
       if (!url || !url.trim()) return;
       const v = url.trim();
       let name = "";
