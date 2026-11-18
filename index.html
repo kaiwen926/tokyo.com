@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>旅行任意門</title>
+  <title>WanderNote · 隨行旅誌</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +46,7 @@
       border-radius: 22px;
       box-shadow: 0 8px 24px -8px rgba(92, 77, 60, 0.07);
       position: relative;
+      width: 100%;
     }
 
     .washi-tape {
@@ -79,6 +80,7 @@
       border-radius: 20px;
       position: relative;
       overflow: hidden;
+      width: 100%;
     }
     .ticket-card::before {
       content: "";
@@ -99,6 +101,7 @@
     .gesture-box {
       transition: transform 0.18s ease, background-color 0.2s ease, box-shadow 0.2s ease;
       touch-action: pan-y;
+      width: 100%;
     }
     .gesture-box.pressing {
       transform: scale(0.98);
@@ -108,6 +111,14 @@
     .gesture-box.swiping-del {
       background-color: #fee2e2 !important;
       border-color: #f87171 !important;
+    }
+
+    /* 固定卡片寬度＋長文字自動往下換行不省略 */
+    .wrap-text-safe {
+      white-space: normal !important;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      line-height: 1.4;
     }
 
     .inline-full-editor {
@@ -204,10 +215,14 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* 美化歷史快照滾輪軸 */
-    .snap-scroll::-webkit-scrollbar { width: 5px; }
+    /* 美化 50 筆歷史快照滾輪軸 */
+    .snap-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: #c5dbd3 #f5efe6;
+    }
+    .snap-scroll::-webkit-scrollbar { width: 6px; }
     .snap-scroll::-webkit-scrollbar-track { background: #f5efe6; border-radius: 999px; }
-    .snap-scroll::-webkit-scrollbar-thumb { background: #c5dbd3; border-radius: 999px; }
+    .snap-scroll::-webkit-scrollbar-thumb { background: #9db8ae; border-radius: 999px; }
 
     .calc-key {
       background: #fffcf7; border: 1.5px solid #e9e0d1; border-radius: 14px;
@@ -235,8 +250,8 @@
     <div class="relative max-w-3xl w-full bg-[#fffdf9] rounded-3xl p-3 shadow-2xl border-2 border-[#e7dfd3]" onclick="event.stopPropagation()">
       <div class="washi-tape"></div>
       <div class="flex items-center justify-between pb-2 mb-2 border-b border-[#eee6da]">
-        <span id="lightboxCaption" class="font-bold text-sm text-[#2b302c] truncate pr-3">📸 照片預覽</span>
-        <button onclick="closeImageLightbox()" class="w-7 h-7 rounded-full bg-[#f5efe6] text-[#5c5346] font-bold flex items-center justify-center">✕</button>
+        <span id="lightboxCaption" class="font-bold text-sm text-[#2b302c] wrap-text-safe pr-3">📸 照片預覽</span>
+        <button onclick="closeImageLightbox()" class="w-7 h-7 rounded-full bg-[#f5efe6] text-[#5c5346] font-bold flex items-center justify-center shrink-0">✕</button>
       </div>
       <div class="max-h-[75vh] overflow-auto flex items-center justify-center bg-[#faf6f0] rounded-2xl p-1.5">
         <img id="lightboxImg" src="" alt="Preview" class="max-h-[70vh] w-auto object-contain rounded-xl" />
@@ -254,7 +269,7 @@
 
   <!-- 📱 右下角懸浮「天數跳轉 ＋ 地區篩選」快捷圓鈕 -->
   <div id="dayFabWrapper" class="fixed right-3 bottom-20 z-40 flex flex-col items-end">
-    <div id="dayFabMenu" class="hidden mb-2 p-3 bg-white/95 backdrop-blur-md rounded-3xl border-2 border-[#e5dacb] shadow-2xl max-h-80 overflow-y-auto w-52 space-y-2">
+    <div id="dayFabMenu" class="hidden mb-2 p-3 bg-white/95 backdrop-blur-md rounded-3xl border-2 border-[#e5dacb] shadow-2xl max-h-80 overflow-y-auto w-56 space-y-2">
       <div>
         <div class="text-[11px] font-bold text-[#52796f] px-1 pb-1 border-b border-[#f0e8dc]">📍 地區篩選</div>
         <div id="fabRegionList" class="flex flex-wrap gap-1 pt-1.5"></div>
@@ -275,10 +290,10 @@
 
   <!-- 🌸 頂部自適應滿版導覽列 -->
   <header class="sticky top-0 z-40 bg-[#fbf8f3]/92 backdrop-blur-md border-b border-[#e8dfd3] px-2.5 sm:px-5 py-2">
-    <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-1.5 whitespace-nowrap">
-      <button onclick="toggleDrawer('anywhereDoorDrawer', event)" class="flex items-center gap-1.5 bg-white border-2 border-[#e6dcd0] pl-2.5 pr-3 py-1 rounded-full shadow-2xs min-w-0">
+    <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-1.5">
+      <button onclick="toggleDrawer('anywhereDoorDrawer', event)" class="flex items-center gap-1.5 bg-white border-2 border-[#e6dcd0] pl-2.5 pr-3 py-1 rounded-full shadow-2xs min-w-0 text-left">
         <span id="topFlagEmoji" class="text-lg sm:text-xl shrink-0">🇯🇵</span>
-        <span id="topTripName" class="font-bold text-xs sm:text-sm text-[#2b302c] truncate max-w-[120px] sm:max-w-xs">東京＆輕井澤</span>
+        <span id="topTripName" class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe leading-tight">東京＆輕井澤</span>
         <i class="fa-solid fa-caret-down text-[10px] text-[#7a827d] shrink-0"></i>
       </button>
 
@@ -289,19 +304,19 @@
         <button id="btnRedo" onclick="redoAction()" disabled class="w-7 h-7 rounded-full bg-white border border-[#e2d9cc] text-xs text-[#4a524d] disabled:opacity-35 flex items-center justify-center">
           <i class="fa-solid fa-rotate-right"></i>
         </button>
-        <button onclick="openModal('memberModal')" class="px-2.5 py-1 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-xs font-bold text-[#9c6644]">
+        <button onclick="openModal('memberModal')" class="px-2.5 py-1 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-xs font-bold text-[#9c6644] whitespace-nowrap">
           🧸 <span class="hidden sm:inline">旅伴</span>
         </button>
-        <button onclick="toggleDrawer('stickerDrawer', event)" class="px-2.5 py-1 rounded-full bg-[#fdf0ec] border border-[#f4c2b2] text-xs font-bold text-[#c85a32]">
+        <button onclick="toggleDrawer('stickerDrawer', event)" class="px-2.5 py-1 rounded-full bg-[#fdf0ec] border border-[#f4c2b2] text-xs font-bold text-[#c85a32] whitespace-nowrap">
           🎀 <span class="hidden sm:inline">貼圖</span>
         </button>
-        <button onclick="openModal('cloudSyncModal')" class="px-2.5 py-1 rounded-full btn-gradient-sage text-xs font-bold flex items-center gap-1">
+        <button onclick="openModal('cloudSyncModal')" class="px-2.5 py-1 rounded-full btn-gradient-sage text-xs font-bold flex items-center gap-1 whitespace-nowrap">
           <i class="fa-solid fa-cloud"></i> 同步
         </button>
       </div>
     </div>
 
-    <!-- 🚪 任意門抽屜 -->
+    <!-- 🚪 任意門抽屜（已修復泰國與所有國家旅程點擊切換） -->
     <div id="anywhereDoorDrawer" class="drawer-panel w-full max-w-6xl mx-auto" onclick="event.stopPropagation()">
       <div class="mt-2 p-3 bg-white rounded-3xl border-2 border-[#e6dcd0] shadow-xl space-y-2.5">
         <div>
@@ -317,10 +332,10 @@
             <span class="text-xs font-bold text-[#e07a5f]">🧳 選擇旅程</span>
             <div class="flex gap-1">
               <button onclick="addTripUnderCountry()" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">+ 新旅程</button>
-              <button onclick="renameActiveTrip()" class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">改名</button>
+              <button onclick="renameActiveTrip()" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">改名</button>
             </div>
           </div>
-          <div id="tripPillsContainer" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar pb-1"></div>
+          <div id="tripPillsContainer" class="flex flex-wrap items-center gap-1.5 pb-1"></div>
         </div>
       </div>
     </div>
@@ -406,7 +421,7 @@
       <div id="daysContentWrapper" class="space-y-3"></div>
     </section>
 
-    <!-- ==================== TAB 2: 景點深度導覽（嚴選重點地標＋一鍵清理非重點） ==================== -->
+    <!-- ==================== TAB 2: 景點深度導覽 ==================== -->
     <section id="tabPanel-guide" class="tab-panel hidden space-y-3">
       <div class="journal-card p-3 sm:p-4">
         <div class="washi-tape green"></div>
@@ -450,7 +465,7 @@
         <div class="flex items-center gap-3 p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
           <div id="expenseDonutChart" onclick="toggleChartDetailList()" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full shrink-0 flex items-center justify-center shadow-inner cursor-pointer hover:scale-105 transition" style="background: conic-gradient(#52796f 0% 100%);">
             <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-white flex flex-col items-center justify-center text-center shadow-xs px-1">
-              <span id="donutCenterLabel" class="text-[9px] text-[#7a827d] truncate max-w-[56px]">全體總計</span>
+              <span id="donutCenterLabel" class="text-[9px] text-[#7a827d] wrap-text-safe">全體總計</span>
               <span id="donutTotalCenter" class="text-[11px] font-bold text-[#2b302c] en-font">NT$0</span>
               <span class="text-[8px] font-bold text-[#e07a5f]">點我看明細▾</span>
             </div>
@@ -721,8 +736,8 @@
             </div>
             <div id="aiTransResultBox" class="hidden p-2.5 rounded-xl bg-white border border-[#dcd2c4] flex items-center justify-between gap-2">
               <div class="min-w-0 flex-1">
-                <div id="aiTransOrigText" class="text-[11px] text-[#7a827d] truncate"></div>
-                <div id="aiTransTargetText" class="font-bold text-sm sm:text-base text-[#2b302c] mt-0.5"></div>
+                <div id="aiTransOrigText" class="text-[11px] text-[#7a827d] wrap-text-safe"></div>
+                <div id="aiTransTargetText" class="font-bold text-sm sm:text-base text-[#2b302c] mt-0.5 wrap-text-safe"></div>
               </div>
               <button id="aiTransSpeakBtn" class="px-3 py-1.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] font-bold text-xs shrink-0">🔊 朗讀</button>
             </div>
@@ -790,15 +805,27 @@
 
   <!-- ==================== MODALS 彈出視窗區 ==================== -->
 
-  <!-- 🪄 左下角專屬：智慧行程解析 & 順路排程視窗 -->
+  <!-- 🪄 左下角專屬：智慧行程解析 & 順路排程視窗（支援選擇目標天數 / 多日自動分配 / 順路優化） -->
   <div id="aiParserModal" onclick="closeModalDirect('aiParserModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-3">
       <div class="flex items-center justify-between border-b pb-2">
         <div class="flex items-center gap-1.5">
           <span class="px-2 py-0.5 rounded-lg btn-gradient-ai text-white text-xs font-bold">🪄 智慧排程</span>
-          <h3 class="font-bold text-sm text-[#2b302c]">貼文解析 & 順路排序</h3>
+          <h3 class="font-bold text-sm text-[#2b302c]">天數指定 · 貼文解析 · 順路優化</h3>
         </div>
         <button onclick="closeModalDirect('aiParserModal')" class="text-gray-400 text-base">✕</button>
+      </div>
+
+      <!-- 📅 目標天數選擇器 -->
+      <div class="p-2.5 rounded-2xl bg-[#fef9ef] border border-[#f2cc8f] flex flex-wrap items-center justify-between gap-2">
+        <span class="font-bold text-xs text-[#9c6644]">📅 匯入 / 優化目標天數：</span>
+        <div class="flex items-center gap-1.5">
+          <select id="aiTargetDaySelect" onchange="onAiTargetDayChanged()" class="text-xs font-bold px-2.5 py-1 rounded-xl border border-[#e6dcd0] bg-white text-[#2b302c]"></select>
+          <label class="inline-flex items-center gap-1 text-[11px] font-bold text-[#52796f] cursor-pointer bg-white px-2 py-1 rounded-xl border border-[#e6dcd0]" title="若貼上文字內含 Day 1 / Day 2 標題，自動分配到對應天數">
+            <input type="checkbox" id="chkAutoDetectMultiDay" checked class="accent-[#52796f]" />
+            <span>辨識多日</span>
+          </label>
+        </div>
       </div>
 
       <div class="p-3 rounded-2xl bg-[#fbf8f3] border-2 border-[#b56576]/40 space-y-2">
@@ -806,29 +833,29 @@
           <span class="font-bold text-xs text-[#2b302c]">✍️ 1. 貼上行程文字或景點清單</span>
           <span id="aiSortDayLabel" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">DAY 1</span>
         </div>
-        <textarea id="aiRawTextInp" rows="6" placeholder="直接貼上整段行程文字，例如：&#10;上午 從飯店步行至 Asok Pier，體驗在地 空盛桑運河快船 前往 Pratunam Pier。&#10;11:00 碼頭附近 Superrich 換匯，逛 Central World 拍巨型聖誕樹。&#10;13:00 午餐：紅大哥水門雞飯，享用粉紅雞飯。&#10;18:30 欣賞 ICONSIAM 聖誕節水舞燈光秀..." class="w-full text-xs p-2.5 rounded-xl border bg-white leading-relaxed"></textarea>
+        <textarea id="aiRawTextInp" rows="6" placeholder="可直接貼上單日或多日行程文字，例如：&#10;Day 1&#10;上午 從飯店步行至 Asok Pier，體驗空盛桑運河快船前往 Pratunam Pier&#10;11:00 Superrich 換匯，逛 Central World 拍巨型聖誕樹&#10;13:00 午餐：紅大哥水門雞飯&#10;18:30 欣賞 ICONSIAM 水舞燈光秀&#10;Day 2&#10;10:00 鄭王廟泰服體驗..." class="w-full text-xs p-2.5 rounded-xl border bg-white leading-relaxed"></textarea>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
           <button type="button" onclick="parsePastedScheduleTextToDay()" id="btnParseScheduleText" class="py-2 px-3 rounded-full btn-gradient-ai font-bold text-xs shadow-sm">
-            📥 智慧解析貼上文字 (保留時間順序)
+            📥 智慧解析貼文 (保留時間順序)
           </button>
           <button type="button" onclick="runKeylessAiSmartRoutePlanner()" id="btnRunAiRoute" class="py-2 px-3 rounded-full btn-gradient-sage font-bold text-xs shadow-sm">
-            🚀 景點座標順路排序
+            🚀 景點自動順路排序 + 排時間
           </button>
         </div>
       </div>
 
       <div class="p-3 rounded-2xl bg-[#e8f0ed] border border-[#c5dbd3] space-y-2">
         <div class="flex items-center justify-between whitespace-nowrap">
-          <span class="font-bold text-xs text-[#3d5a52]">🧭 2. 當日現有行程最佳化</span>
-          <button type="button" onclick="manualSortDayByTime(state.activeDay); closeModalDirect('aiParserModal');" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-[#3d5a52] border">🕒 依時間重排</button>
+          <span class="font-bold text-xs text-[#3d5a52]">🧭 2. 選定天數現有行程最佳化</span>
+          <button type="button" onclick="manualSortDayByTime(getSelectedAiTargetDay()); closeModalDirect('aiParserModal');" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white text-[#3d5a52] border">🕒 依時間重排</button>
         </div>
         <button type="button" id="btnOptimizeCurrentDay" onclick="optimizeCurrentDayRouteWithAi(this)" class="w-full py-2 rounded-xl btn-gradient-sage font-bold text-xs shadow-2xs">
-          ⚡ 依座標最佳化當日順序 & 估算站間交通時間
+          ⚡ 依地理座標順路重排 & 估算站間交通時間
         </button>
       </div>
 
       <div class="p-3 rounded-2xl bg-[#fef9ef] border border-[#f2cc8f] space-y-2">
-        <div class="font-bold text-xs text-[#9c6644]">🌟 3. 一鍵載入當地著名經典順路一日遊</div>
+        <div class="font-bold text-xs text-[#9c6644]">🌟 3. 一鍵載入當地經典順路一日遊</div>
         <div id="aiFamousTemplatesBox" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
       </div>
     </div>
@@ -1069,7 +1096,7 @@
     </div>
   </div>
 
-  <!-- 6. ☁️ 雲端 Gist 同步視窗（歷史快照擴充為 15 筆滾輪視窗） -->
+  <!-- 6. ☁️ 雲端 Gist 同步視窗（歷史快照擴充為 50 筆滾輪視窗） -->
   <div id="cloudSyncModal" onclick="closeModalDirect('cloudSyncModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-3">
       <div class="flex items-center justify-between">
@@ -1089,7 +1116,7 @@
 
       <div class="border-t border-dashed border-[#e8dfd3] pt-2.5">
         <div onclick="toggleDrawer('snapshotHistoryDrawer', event)" class="flex items-center justify-between cursor-pointer whitespace-nowrap">
-          <span class="font-bold text-xs text-[#7a827d]">🕒 本地歷史還原 (保留最近 15 筆 · 可往下滑) & 備份匯入</span>
+          <span class="font-bold text-xs text-[#7a827d]">🕒 本地歷史還原 (保留最近 50 筆 · 上下滾動)</span>
           <span class="text-xs text-[#52796f]">▾</span>
         </div>
         <div id="snapshotHistoryDrawer" class="drawer-panel open pt-2 space-y-2">
@@ -1100,13 +1127,12 @@
               <input type="file" accept=".json" class="hidden" onchange="importBackupJson(event)" />
             </label>
           </div>
-          <!-- 滾輪容器：預設顯示約 5 筆高度，往下滑動可看滿 15 筆 -->
-          <div id="snapshotsListBox" class="snap-scroll space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+          <!-- 滾輪容器：固定高度、內部可上下滾動檢視最多 50 筆 -->
+          <div id="snapshotsListBox" class="snap-scroll space-y-1.5 h-56 overflow-y-auto pr-1"></div>
         </div>
       </div>
     </div>
-  </div>
-  <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
+    <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
   <script>
     const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V83_DATA";
     const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V83_IMAGES";
@@ -1162,10 +1188,19 @@
       });
     }
 
+    // 國家 ID 通用比對（修復泰國 TH / th / TH_xxx 旅程無法顯示與點擊切換的問題）
+    function isSameCountryId(idA, idB) {
+      if (!idA || !idB) return false;
+      const a = String(idA).toUpperCase();
+      const b = String(idB).toUpperCase();
+      if (a === b) return true;
+      return a.split("_")[0] === b.split("_")[0];
+    }
+
     (function injectNativeTouchScrollStyle() {
       const st = document.createElement("style");
       st.textContent = `
-        #flagBarContainer, #tripPillsContainer, #dayPillsBar, #subRegionButtons, #chartTargetPills, #shopOwnerFilterPills, #packingCategoryPills, #phraseCategoryBar {
+        #flagBarContainer, #dayPillsBar, #subRegionButtons, #chartTargetPills, #shopOwnerFilterPills, #packingCategoryPills, #phraseCategoryBar {
           display: flex !important;
           flex-wrap: nowrap !important;
           overflow-x: auto !important;
@@ -1176,7 +1211,7 @@
           padding-bottom: 8px !important;
           gap: 8px !important;
         }
-        #flagBarContainer > *, #tripPillsContainer > *, #dayPillsBar > *, #subRegionButtons > *, #chartTargetPills > *, #shopOwnerFilterPills > *, #packingCategoryPills > *, #phraseCategoryBar > * {
+        #flagBarContainer > *, #dayPillsBar > *, #subRegionButtons > *, #chartTargetPills > *, #shopOwnerFilterPills > *, #packingCategoryPills > *, #phraseCategoryBar > * {
           flex-shrink: 0 !important;
           touch-action: pan-x !important;
         }
@@ -1811,7 +1846,7 @@
 
     function createInitialState() {
       return {
-        version: "87.0",
+        version: "88.0",
         activeCountryId: "KR",
         activeTripId: "trip_kr_1",
         activeDay: 1,
@@ -1897,6 +1932,7 @@
           state.countries[k] = {
             ...state.countries[k],
             ...v,
+            id: k,
             quickLinks: buildCountryQuickLinks(k.split("_")[0], v.name || k, ""),
             phrases: (v.phrases && v.phrases.length >= 4) ? v.phrases : buildExpandedPhrases(v.lang || "en")
           };
@@ -1917,17 +1953,18 @@
 
       if (rawJson.countryId) {
         const cid = rawJson.countryId.toUpperCase();
-        if (!state.countries[cid]) {
+        const existingCountryKey = Object.keys(state.countries).find(k => isSameCountryId(k, cid)) || cid;
+        if (!state.countries[existingCountryKey]) {
           const hit = GLOBAL_COUNTRY_LOOKUP[rawJson.countryName || cid] || { flag: "🌍", currency: "USD", defaultRate: 1, lang: "en", speech: "en-US" };
-          state.countries[cid] = {
-            id: cid,
+          state.countries[existingCountryKey] = {
+            id: existingCountryKey,
             name: rawJson.countryName || cid,
             flag: rawJson.flag || hit.flag,
             currency: rawJson.currency || hit.currency,
             rate: rawJson.rate || hit.defaultRate,
             lang: rawJson.lang || hit.lang,
             speech: rawJson.speech || hit.speech,
-            quickLinks: buildCountryQuickLinks(cid.split("_")[0], rawJson.countryName || cid, ""),
+            quickLinks: buildCountryQuickLinks(existingCountryKey.split("_")[0], rawJson.countryName || cid, ""),
             visas: [], transits: [],
             phrases: buildExpandedPhrases(rawJson.lang || hit.lang)
           };
@@ -1935,16 +1972,16 @@
 
         if (Array.isArray(rawJson.allTripsInCountry) && rawJson.allTripsInCountry.length > 0) {
           rawJson.allTripsInCountry.forEach(tObj => {
-            const tid = tObj.id || ("trip_" + cid.toLowerCase() + "_1");
+            const tid = tObj.id || ("trip_" + existingCountryKey.toLowerCase() + "_1");
             tObj.expenses = (tObj.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
             tObj.guides = (tObj.guides || []).map(g => ({ ...g, desc: normalizeGuideDescText(g.desc) }));
-            state.trips[tid] = { ...tObj, id: tid, countryId: cid };
+            state.trips[tid] = { ...tObj, id: tid, countryId: existingCountryKey };
           });
           return true;
         }
 
         if (Array.isArray(rawJson.flightSegments) || Array.isArray(rawJson.itinerary)) {
-          const tid = rawJson.id || ("trip_" + cid.toLowerCase() + "_1");
+          const tid = rawJson.id || ("trip_" + existingCountryKey.toLowerCase() + "_1");
           const normExpenses = (rawJson.expenses || []).map(e => ({ ...e, cat: normalizeCatName(e.cat) }));
           const normGuides = (rawJson.guides || []).map(g => ({ ...g, desc: normalizeGuideDescText(g.desc) }));
           const incomingCount = (rawJson.itinerary?.length || 0) + (rawJson.flightSegments?.length || 0) + (rawJson.expenses?.length || 0) + (rawJson.shopping?.length || 0) + (rawJson.mustEat?.length || 0) + (rawJson.memos?.length || 0);
@@ -1952,7 +1989,7 @@
             return true;
           }
           state.trips[tid] = {
-            id: tid, countryId: cid, title: rawJson.title || `${cid} 之旅`,
+            id: tid, countryId: existingCountryKey, title: rawJson.title || `${cid} 之旅`,
             companions: rawJson.companions || [],
             subRegions: rawJson.subRegions || [], flightSegments: rawJson.flightSegments || [],
             itinerary: rawJson.itinerary || [], meals: rawJson.meals || [], guides: normGuides,
@@ -1969,7 +2006,7 @@
     }
 
     function ensureKoreaTripNotEmpty() {
-      const krTrip = Object.values(state.trips || {}).find(t => t.countryId === "KR");
+      const krTrip = Object.values(state.trips || {}).find(t => isSameCountryId(t.countryId, "KR"));
       if (!krTrip || ((krTrip.itinerary?.length || 0) === 0 && (krTrip.flightSegments?.length || 0) === 0)) {
         state.trips["trip_kr_1"] = buildDefaultKoreaTrip();
       }
@@ -1984,7 +2021,11 @@
           if (parsed && parsed.trips && Object.keys(parsed.trips).length > 0) {
             state = parsed;
             if (!state.companions) state.companions = [];
-            Object.values(state.trips).forEach(t => {
+            Object.entries(state.countries || {}).forEach(([k, v]) => {
+              if (!v.id) v.id = k;
+            });
+            Object.entries(state.trips).forEach(([tid, t]) => {
+              if (!t.id) t.id = tid;
               (t.guides || []).forEach(g => { g.desc = normalizeGuideDescText(g.desc); });
             });
           }
@@ -2038,7 +2079,7 @@
       renderAll();
     }
 
-    // 🕒 儲存本地歷史快照（保留最近 15 筆供滾輪上下滑動檢視）
+    // 🕒 儲存本地歷史快照（保留最近 50 筆供滾輪上下滑動檢視）
     function saveAppState(makeSnap = false, label = "自動儲存") {
       if (!state || !state.trips || Object.keys(state.trips).length === 0) return;
       localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
@@ -2052,7 +2093,7 @@
             count: countAllItems(state),
             payload: JSON.stringify(state)
           });
-          localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list.slice(0, 15)));
+          localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list.slice(0, 50)));
         } catch (e) {}
       }
     }
@@ -2082,15 +2123,16 @@
 
     function getCountry() {
       if (!state.countries[state.activeCountryId]) {
-        state.activeCountryId = Object.keys(state.countries)[0] || "JP";
+        const matchKey = Object.keys(state.countries).find(k => isSameCountryId(k, state.activeCountryId));
+        state.activeCountryId = matchKey || Object.keys(state.countries)[0] || "JP";
       }
       return state.countries[state.activeCountryId];
     }
 
     function getTrip() {
       let t = state.trips[state.activeTripId];
-      if (!t || t.countryId !== state.activeCountryId) {
-        const found = Object.values(state.trips).find(x => x.countryId === state.activeCountryId);
+      if (!t || !isSameCountryId(t.countryId, state.activeCountryId)) {
+        const found = Object.values(state.trips).find(x => isSameCountryId(x.countryId, state.activeCountryId));
         if (found) {
           state.activeTripId = found.id;
           t = found;
@@ -2326,7 +2368,7 @@
       toggleTreatHostSelector();
     }
 
-    // ==================== 11. 任意門：國家與旅程切換 ====================
+    // ==================== 11. 任意門：國家與旅程切換（完整修復泰國點擊切換） ====================
     async function autoAddCountryByName() {
       const rawName = prompt("🌍 請輸入任何國家或城市名稱：\n✨ 系統會自動抓出國旗、外幣、即時匯率、當地專屬工具與雙語字卡！");
       if (!rawName || !rawName.trim()) return;
@@ -2420,7 +2462,7 @@
       Object.entries(state.countries).forEach(([cid, cObj]) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        const active = cid === state.activeCountryId;
+        const active = isSameCountryId(cid, state.activeCountryId);
         btn.className = `shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full border cursor-pointer whitespace-nowrap transition ${
           active ? "btn-gradient-sage border-transparent font-bold shadow-2xs" : "bg-[#fbf8f3] text-[#2b302c] border-[#dcd2c4]"
         }`;
@@ -2439,7 +2481,7 @@
           if (Object.keys(state.countries).length <= 1) return alert("至少需保留一個國家！");
           if (confirm(`確定刪除「${cObj.flag} ${cObj.name}」國家門嗎？`)) {
             delete state.countries[cid];
-            Object.keys(state.trips).forEach(tid => { if (state.trips[tid].countryId === cid) delete state.trips[tid]; });
+            Object.keys(state.trips).forEach(tid => { if (isSameCountryId(state.trips[tid].countryId, cid)) delete state.trips[tid]; });
             state.activeCountryId = Object.keys(state.countries)[0];
             getTrip();
             commitChange(`刪除國家：${cObj.name}`);
@@ -2450,18 +2492,26 @@
 
       const tripBox = document.getElementById("tripPillsContainer");
       tripBox.innerHTML = "";
-      const tripsInC = Object.values(state.trips).filter(x => x.countryId === state.activeCountryId);
+      // 修正：改用 isSameCountryId 模糊比對，確保泰國 (TH / th / TH_xxx) 所有旅程都能正常列出並點擊
+      const tripsInC = Object.entries(state.trips)
+        .filter(([, x]) => isSameCountryId(x.countryId, state.activeCountryId))
+        .map(([tid, x]) => {
+          if (!x.id) x.id = tid;
+          return x;
+        });
+
       tripsInC.forEach(tr => {
         const pill = document.createElement("button");
         pill.type = "button";
         const active = tr.id === t.id;
-        pill.className = `shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full border text-xs font-bold cursor-pointer whitespace-nowrap transition ${
+        pill.className = `flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border text-xs font-bold cursor-pointer text-left transition ${
           active ? "btn-gradient-rose border-transparent shadow-2xs" : "bg-white text-[#4a524d] border-[#dcd2c4]"
         }`;
-        pill.innerHTML = `<span>📒 ${tr.title}</span>`;
+        pill.innerHTML = `<span class="wrap-text-safe">📒 ${tr.title}</span>`;
         pill.onclick = (e) => {
           e.stopPropagation();
           state.activeTripId = tr.id;
+          state.activeCountryId = Object.keys(state.countries).find(k => isSameCountryId(k, tr.countryId)) || state.activeCountryId;
           state.activeSubRegion = "ALL";
           state.activeDay = 1;
           saveAppState(false);
@@ -2508,7 +2558,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數、每日行程（導航改回小巧 📍 圖示） ====================
+    // ==================== 12. 航班、天數、每日行程 ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2530,34 +2580,34 @@
 
         const renderFlightNormal = () => {
           card.innerHTML = `
-            <div class="flex items-center justify-between gap-2 whitespace-nowrap">
-              <div class="flex items-center gap-1.5 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0 flex-1">
                 ${f.link
                   ? `<a href="${f.link}" target="_blank" class="px-2 py-0.5 rounded-full bg-[#e8f1ed] text-[#3b5a4e] text-[11px] font-bold hover:underline shrink-0">第${idx + 1}段 🔗</a>`
                   : `<span class="px-2 py-0.5 rounded-full bg-[#e8f1ed] text-[#3b5a4e] text-[11px] font-bold shrink-0">第${idx + 1}段</span>`
                 }
-                <span class="font-bold text-xs text-[#4f7768] truncate">${cleanFlightNo}</span>
+                <span class="font-bold text-xs text-[#4f7768] wrap-text-safe">${cleanFlightNo}</span>
               </div>
               <span class="text-[11px] font-bold text-[#78807b] en-font shrink-0">${f.date || ""}</span>
             </div>
 
-            <div class="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#fbf8f3] border border-[#ece3d5] whitespace-nowrap">
-              <div class="text-left">
-                <div class="text-sm font-bold text-[#2b302c] en-font">${cleanParenText(f.from || "出發")}</div>
+            <div class="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#fbf8f3] border border-[#ece3d5] gap-2">
+              <div class="text-left min-w-0 flex-1">
+                <div class="text-sm font-bold text-[#2b302c] en-font wrap-text-safe">${cleanParenText(f.from || "出發")}</div>
                 <div class="text-[10px] font-bold text-[#52796f] en-font">${f.time || "--:--"} 起飛</div>
               </div>
 
-              <button type="button" onclick="event.stopPropagation(); ${imgSrc ? `openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')` : `alert('長按此航班卡片即可編輯並上傳機票圖片！')`}" class="flex items-center gap-1 px-2.5 py-1 rounded-full ${imgSrc ? "bg-[#fdf0ec] text-[#df765b]" : "text-[#8c948f]"}">
+              <button type="button" onclick="event.stopPropagation(); ${imgSrc ? `openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')` : `alert('長按此航班卡片即可編輯並上傳機票圖片！')`}" class="flex items-center gap-1 px-2.5 py-1 rounded-full shrink-0 ${imgSrc ? "bg-[#fdf0ec] text-[#df765b]" : "text-[#8c948f]"}">
                 <i class="fa-solid fa-plane text-xs"></i>
                 <span class="text-[10px] font-bold">${imgSrc ? "機票" : "無圖"}</span>
               </button>
 
-              <div class="text-right">
-                <div class="text-sm font-bold text-[#2b302c] en-font">${cleanToName}</div>
+              <div class="text-right min-w-0 flex-1">
+                <div class="text-sm font-bold text-[#2b302c] en-font wrap-text-safe">${cleanToName}</div>
                 <div class="text-[10px] font-bold text-[#e07a5f] en-font">${displayArrTime ? `${displayArrTime} 抵達` : (f.note || "--:--")}</div>
               </div>
             </div>
-            ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] truncate px-1">📝 ${f.note}</div>` : ""}
+            ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] wrap-text-safe px-1">📝 ${f.note}</div>` : ""}
           `;
         };
 
@@ -2706,9 +2756,9 @@
           </button>
         `;
         fabHtml += `
-          <button onclick="jumpToDay(${d})" class="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold hover:bg-[#fdf0ec] flex items-center justify-between whitespace-nowrap ${state.activeDay === d ? "bg-[#fdf0ec] text-[#e07a5f]" : "text-[#2b302c]"}">
-            <span class="en-font">DAY ${d}</span>
-            <span class="text-[11px] text-[#7a827d] truncate max-w-[100px]">${subHint}</span>
+          <button onclick="jumpToDay(${d})" class="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-bold hover:bg-[#fdf0ec] flex items-center justify-between gap-2 ${state.activeDay === d ? "bg-[#fdf0ec] text-[#e07a5f]" : "text-[#2b302c]"}">
+            <span class="en-font shrink-0">DAY ${d}</span>
+            <span class="text-[11px] text-[#7a827d] wrap-text-safe text-right">${subHint}</span>
           </button>
         `;
       }
@@ -2879,14 +2929,15 @@
 
         const dayCard = document.createElement("div");
         dayCard.className = "journal-card p-3 sm:p-4 space-y-2.5";
+        // 右上角時鐘按鈕只顯示 🕒（拿掉「依時間」三個字），標題自動換行不截斷
         dayCard.innerHTML = `
-          <div class="flex items-center justify-between gap-1.5 border-b border-dashed border-[#e8dfd3] pb-2 whitespace-nowrap">
-            <div class="flex items-center gap-1.5 min-w-0">
+          <div class="flex items-start justify-between gap-2 border-b border-dashed border-[#e8dfd3] pb-2">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
               <span class="px-2.5 py-0.5 rounded-xl btn-gradient-sage text-white font-bold text-xs en-font shrink-0">DAY ${dayNum}</span>
-              <h3 class="font-bold text-sm text-[#2b302c] truncate">${cleanParenText(dayItis[0]?.subRegion || `第 ${dayNum} 天`)}</h3>
+              <h3 class="font-bold text-sm text-[#2b302c] wrap-text-safe">${cleanParenText(dayItis[0]?.subRegion || `第 ${dayNum} 天`)}</h3>
             </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button onclick="manualSortDayByTime(${dayNum})" title="依時間順序排列" class="text-[11px] font-bold px-2 py-1 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-[#9c6644]">🕒 依時間</button>
+            <div class="flex items-center gap-1 shrink-0 whitespace-nowrap">
+              <button onclick="manualSortDayByTime(${dayNum})" title="依時間順序排列" class="w-7 h-7 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-[#9c6644] text-xs flex items-center justify-center">🕒</button>
               <button onclick="openItineraryModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f1ed] text-[#3b5a4e]">+ 行程</button>
               <button onclick="openMealModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32]">+ 餐飲</button>
             </div>
@@ -2896,10 +2947,10 @@
             <div class="day-meals-grid grid grid-cols-3 gap-1.5"></div>
             <div class="day-extra-meals flex flex-wrap gap-1"></div>
             ${hotelItem ? `
-              <div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e6dcd0] flex items-center justify-between gap-2 whitespace-nowrap">
-                <div class="flex items-center gap-1.5 min-w-0">
+              <div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e6dcd0] flex items-center justify-between gap-2">
+                <div class="flex items-start gap-1.5 min-w-0 flex-1">
                   <span class="text-[11px] font-bold text-[#4f7768] shrink-0">🏨 住宿</span>
-                  <span class="text-xs font-bold text-[#2b302c] truncate">${cleanParenText(hotelItem.hotel)}</span>
+                  <span class="text-xs font-bold text-[#2b302c] wrap-text-safe">${cleanParenText(hotelItem.hotel)}</span>
                 </div>
                 <a href="${hotelNavUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-[#fbf8f3] border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
               </div>
@@ -2910,7 +2961,7 @@
 
         const itiListBox = dayCard.querySelector(".day-iti-list");
         if (!dayItis.length) {
-          itiListBox.innerHTML = `<div class="text-center py-2 text-xs text-[#78807b]">尚無行程 · 可點左下角「🪄 智慧排程」貼上行程文字自動帶入</div>`;
+          itiListBox.innerHTML = `<div class="text-center py-2 text-xs text-[#78807b]">尚無行程 · 可點左下角「🪄 智慧排程」匯入行程</div>`;
         } else {
           dayItis.forEach(item => {
             const itiImgSrc = resolveImageSrc(item.img);
@@ -2922,19 +2973,21 @@
 
             const renderItiNormal = () => {
               itemEl.innerHTML = `
-                <div class="flex items-center justify-between gap-1.5 whitespace-nowrap">
-                  <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                    <span class="iti-drag-handle cursor-grab active:cursor-grabbing px-1.5 py-0.5 -ml-1 rounded text-[#8c948f] hover:text-[#52796f] select-none shrink-0" title="按住上下拖曳調整順序" style="touch-action: none;">
+                <div class="flex items-start justify-between gap-1.5">
+                  <div class="flex items-start gap-1.5 min-w-0 flex-1">
+                    <span class="iti-drag-handle cursor-grab active:cursor-grabbing px-1.5 py-0.5 -ml-1 rounded text-[#8c948f] hover:text-[#52796f] select-none shrink-0 mt-0.5" title="按住上下拖曳調整順序" style="touch-action: none;">
                       <i class="fa-solid fa-grip-vertical text-xs"></i>
                     </span>
-                    ${item.time ? `<span class="px-1.5 py-0.5 rounded-md bg-[#4f7768] text-white text-[10px] font-bold en-font shrink-0">${item.time}</span>` : ""}
-                    <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
-                    <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 truncate text-left" title="點此查看景點介紹">${displayTitle}</button>
+                    <div class="min-w-0 flex-1 flex flex-wrap items-center gap-1.5">
+                      ${item.time ? `<span class="px-1.5 py-0.5 rounded-md bg-[#4f7768] text-white text-[10px] font-bold en-font shrink-0">${item.time}</span>` : ""}
+                      <span class="px-1.5 py-0.5 rounded-md bg-white border text-[10px] font-bold text-[#4f7768] shrink-0">${item.cat || "景點"}</span>
+                      <button type="button" class="spot-jump-link font-bold text-xs sm:text-sm text-[#2b302c] hover:text-[#e07a5f] underline decoration-dotted underline-offset-4 wrap-text-safe text-left" title="點此查看景點介紹">${displayTitle}</button>
+                    </div>
                   </div>
                   <a href="${itemNavUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-white border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
                 </div>
-                ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] leading-snug whitespace-pre-line">🚇 ${cleanParenText(item.transit)}</div>` : ""}
-                ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50 whitespace-pre-line">💡 ${cleanParenText(item.note)}</div>` : ""}
+                ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] wrap-text-safe">🚇 ${cleanParenText(item.transit)}</div>` : ""}
+                ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50 wrap-text-safe">💡 ${cleanParenText(item.note)}</div>` : ""}
                 ${itiImgSrc ? `<img src="${itiImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(item.img || "").replace(/'/g, "")}', '${displayTitle.replace(/'/g, "")}')" class="polaroid-img h-24 sm:h-32 w-auto object-cover" />` : ""}
               `;
               const jumpBtn = itemEl.querySelector(".spot-jump-link");
@@ -3028,9 +3081,9 @@
         ].forEach(slot => {
           const slotEl = document.createElement("div");
           if (!slot.obj) {
-            slotEl.className = "p-2 rounded-xl bg-white/80 border border-dashed border-[#dcd2c4] flex items-center justify-between gap-1 cursor-pointer hover:border-[#e07a5f] whitespace-nowrap min-w-0";
+            slotEl.className = "p-2 rounded-xl bg-white/80 border border-dashed border-[#dcd2c4] flex items-center justify-between gap-1 cursor-pointer hover:border-[#e07a5f] min-w-0";
             slotEl.onclick = () => openMealModal(dayNum, null, slot.label);
-            slotEl.innerHTML = `<span class="text-[11px] font-bold text-[#78807b] shrink-0">${slot.icon}${slot.label}</span><span class="text-[10px] text-[#b0b7b3] truncate">自理+</span>`;
+            slotEl.innerHTML = `<span class="text-[11px] font-bold text-[#78807b] shrink-0">${slot.icon}${slot.label}</span><span class="text-[10px] text-[#b0b7b3]">自理+</span>`;
           } else {
             const mObj = slot.obj;
             const mealNavUrl = buildSmartMapUrl(mObj.title, mObj.link);
@@ -3045,12 +3098,12 @@
               }
             });
             slotEl.innerHTML = `
-              <div class="flex items-center justify-between gap-1 whitespace-nowrap">
+              <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold text-[#c85a32] shrink-0">${slot.icon}${mObj.type || slot.label}</span>
-                <a href="${mealNavUrl}" target="_blank" class="text-[10px] font-bold text-[#4f7768]" title="開啟當地地圖">📍</a>
+                <a href="${mealNavUrl}" target="_blank" class="text-[10px] font-bold text-[#4f7768] shrink-0" title="開啟當地地圖">📍</a>
               </div>
-              <div class="font-bold text-xs text-[#2b302c] truncate" onclick="jumpToGuideBySpotTitle('${mObj.title.replace(/'/g, "")}', {id:'${mObj.id}', title:'${mObj.title.replace(/'/g, "")}', note:'${(mObj.note || "").replace(/'/g, "")}'})">${cleanParenText(mObj.title)}</div>
-              ${mObj.note ? `<div class="text-[10px] text-[#78807b] truncate">${cleanParenText(mObj.note)}</div>` : ""}
+              <div class="font-bold text-xs text-[#2b302c] wrap-text-safe" onclick="jumpToGuideBySpotTitle('${mObj.title.replace(/'/g, "")}', {id:'${mObj.id}', title:'${mObj.title.replace(/'/g, "")}', note:'${(mObj.note || "").replace(/'/g, "")}'})">${cleanParenText(mObj.title)}</div>
+              ${mObj.note ? `<div class="text-[10px] text-[#78807b] wrap-text-safe">${cleanParenText(mObj.note)}</div>` : ""}
             `;
           }
           mealsGrid.appendChild(slotEl);
@@ -3060,7 +3113,7 @@
         extraMeals.forEach(em => {
           const emNavUrl = buildSmartMapUrl(em.title, em.link);
           const pill = document.createElement("div");
-          pill.className = "gesture-box px-2.5 py-0.5 rounded-full bg-white border text-[11px] flex items-center gap-1 cursor-pointer";
+          pill.className = "gesture-box px-2.5 py-1 rounded-2xl bg-white border text-[11px] flex items-center gap-1 cursor-pointer w-auto";
           attachRowGestures(pill, {
             onLongPressEdit: () => openMealModal(dayNum, em.id),
             onSwipeDelete: () => {
@@ -3070,12 +3123,13 @@
               }
             }
           });
-          pill.innerHTML = `<span class="font-bold text-[#c85a32]">🍰 ${cleanParenText(em.title)}</span><a href="${emNavUrl}" target="_blank">📍</a>`;
+          pill.innerHTML = `<span class="font-bold text-[#c85a32] wrap-text-safe">🍰 ${cleanParenText(em.title)}</span><a href="${emNavUrl}" target="_blank" class="shrink-0">📍</a>`;
           extraBox.appendChild(pill);
         });
       });
     }
-    function extractMapPlaceName(url) {
+  </div>
+  function extractMapPlaceName(url) {
       if (!url || !url.trim()) return;
       const v = url.trim();
       let name = "";
@@ -3210,7 +3264,7 @@
       commitChange(`儲存餐飲：${title}`);
     }
 
-    // ==================== 13. 🧭 導覽圖鑑：嚴格重點地標過濾器、自動抓圖 & 景點介紹生成 ====================
+    // ==================== 13. 🧭 導覽圖鑑 & 🪄 智慧排程（支援選擇任意目標天數＋多日辨識＋順路優化） ====================
     const FAMOUS_TEMPLATES = {
       JP: [
         {
@@ -3338,32 +3392,26 @@
       }
     };
 
-    // 🛡️ 嚴格白名單過濾器：只有真正的「重點地標/古蹟/夜市/大型體驗秀」才會自動進入導覽列！
     function isSpecialLandmarkSpot(iti) {
       if (!iti || !iti.title) return false;
       const t = iti.title.trim();
       const c = iti.cat || "";
 
-      // 1. 優先排除：純交通、純換匯、純吃飯、純買藥妝/伴手禮、住宿、按摩、休息
       if (["交通", "換匯", "住宿", "按摩SPA", "咖啡廳", "美食", "購物"].includes(c)) {
-        // 但若購物/美食裡明確包含大型地標（如 ICONSIAM、Central World、夜市、水門市場），仍允許收錄該地標
         if (!/ICONSIAM|Central\s*World|中央世界|夜市|水上市場|恰圖恰|星空圖書館|晴空塔|淺草寺/i.test(t)) {
           return false;
         }
       }
 
-      // 2. 排除一般日常動作句子（除非同時含重點地標詞）
       if (/Superrich|Tofu|藥妝|便利商店|7-11|Big\s*C|樂天超市|退房|入住|Check\s*in|Check\s*out|機場接送|前往機場|回飯店|自由活動|休息/i.test(t) &&
           !/ICONSIAM|Central\s*World|中央世界/i.test(t)) {
         return false;
       }
 
-      // 3. 命中內建重點知識庫地標 ➔ 收錄
       if (Object.keys(AI_SPOT_KNOWLEDGE_BASE).some(k => t.toLowerCase().includes(k.toLowerCase()))) {
         return true;
       }
 
-      // 4. 嚴格地標關鍵字白名單：必須包含這些地標特徵詞，或明確屬於「寺廟古蹟 / 夜景/秀 / 打卡機位」才收錄
       if (["寺廟古蹟", "夜景/秀", "打卡機位"].includes(c)) return true;
 
       const landmarkKeywords = /寺|廟|宮|神社|大佛|象神|四面佛|古鎮|古城|老街|夜市|水上市場|市集|遊船|遊輪|快船|銀河號|Cruise|水舞|燈光秀|煙火|鐵道|晴空塔|東京鐵塔|展望台|觀景台|博物館|美術館|圖書館|樂園|迪士尼|環球影城|滑雪場|纜車|雪山|雲場池|藍月谷|ICONSIAM|Central\s*World|teamLab/i;
@@ -3372,7 +3420,6 @@
       return false;
     }
 
-    // 🧹 一鍵清理導覽頁中「非重點」的多餘卡片（保留重點地標）
     function cleanUpNonHighlightGuides() {
       const t = getTrip();
       if (!t.guides || t.guides.length === 0) return alert("目前導覽列表是空的喔！");
@@ -3396,7 +3443,7 @@
           if (k === "ICONSIAM") return "ICONSIAM 暹羅天地";
           if (k === "超級銀河號" || k === "Super Galaxy") return "超級銀河號 Super Galaxy Cruise";
           if (k === "空盛桑") return "空盛桑運河快船";
-          if (k === "象神") return "匯狂路口象神廟 (象神參拜)";
+          if (k === "象神") return "匯狂路口象神廟";
           if (k === "匯狂夜市" || k === "輝煌夜市") return "匯狂夜市 Huai Khwang Night Market";
           return s;
         }
@@ -3513,13 +3560,40 @@
       guideObj.desc = `✨ 【景點介紹】${cleanTitle} 是 ${c.name || "當地"} 極具代表性的熱門造訪地點，結合在地文化風情與特色體驗。\n${fallbackIti?.transit ? "🚇 【交通方式】" + fallbackIti.transit + "\n" : ""}🌟 【遊玩重點】${fallbackIti?.note || "建議搭配周邊商圈順遊，現場體驗在地氛圍與拍照留念。"}`;
     }
 
+    function getSelectedAiTargetDay() {
+      const sel = document.getElementById("aiTargetDaySelect");
+      return sel ? (parseInt(sel.value, 10) || state.activeDay || 1) : (state.activeDay || 1);
+    }
+
+    function onAiTargetDayChanged() {
+      const dayNum = getSelectedAiTargetDay();
+      state.activeDay = dayNum;
+      const lbl = document.getElementById("aiSortDayLabel");
+      if (lbl) lbl.textContent = `DAY ${dayNum}`;
+    }
+
+    function populateAiDaySelector() {
+      const t = getTrip();
+      const maxDay = getMaxDays(t);
+      const sel = document.getElementById("aiTargetDaySelect");
+      if (!sel) return;
+      const opts = [];
+      for (let d = 1; d <= maxDay; d++) {
+        opts.push(`<option value="${d}" ${d === state.activeDay ? "selected" : ""}>匯入至 DAY ${d}</option>`);
+      }
+      opts.push(`<option value="${maxDay + 1}">➕ 新增並匯入至 DAY ${maxDay + 1}</option>`);
+      sel.innerHTML = opts.join("");
+      onAiTargetDayChanged();
+    }
+
     async function parsePastedScheduleTextToDay() {
       const raw = document.getElementById("aiRawTextInp").value.trim();
       if (!raw) return alert("請先在文字框貼上行程內容！");
 
       const t = getTrip();
       const c = getCountry();
-      const dayNum = state.activeDay || 1;
+      let currentDayNum = getSelectedAiTargetDay();
+      const autoMultiDay = document.getElementById("chkAutoDetectMultiDay")?.checked !== false;
       const defaultRegion = state.activeSubRegion !== "ALL" ? state.activeSubRegion : (t.subRegions?.[0] || c.name);
 
       const lines = raw
@@ -3536,18 +3610,34 @@
       };
 
       let addedCount = 0;
+      const touchedDays = new Set([currentDayNum]);
       const newSpotsForGuide = [];
 
       for (let idx = 0; idx < lines.length; idx++) {
-        let line = lines[idx].replace(/^[-•*▪▸\d+.)、]+\s*/, "").trim();
-        let timeStr = "";
+        let line = lines[idx];
 
-        const timeMatch = line.match(/^(\d{1,2}:\d{2})\s*(?:[-~～]\s*\d{1,2}:\d{2})?\s*(.*)/);
+        if (autoMultiDay) {
+          const dayHeaderMatch = line.match(/^(?:Day|DAY|D)\s*(\d+)\s*[:：\-—]?\s*(.*)$/i) ||
+                                 line.match(/^第\s*(\d+)\s*[天日]\s*[:：\-—]?\s*(.*)$/);
+          if (dayHeaderMatch) {
+            currentDayNum = parseInt(dayHeaderMatch[1], 10) || currentDayNum;
+            touchedDays.add(currentDayNum);
+            const restText = (dayHeaderMatch[2] || "").trim();
+            if (!restText || restText.length <= 12) continue;
+            line = restText;
+          }
+        }
+
+        line = line.replace(/^[-•*▪▸\d+.)、]+\s*/, "").trim();
+        if (!line) continue;
+
+        let timeStr = "";
+        const timeMatch = line.match(/^(\d{1,2}:\d{2})\s*(?:[-~～至]\s*\d{1,2}:\d{2})?\s*(.*)/);
         if (timeMatch) {
           timeStr = timeMatch[1].padStart(5, "0");
           line = timeMatch[2].trim();
         } else {
-          const pMatch = line.match(/^(清晨|早上|上午|中午|下午|傍晚|晚上|宵夜)\s*(.*)/);
+          const pMatch = line.match(/^(清晨|早上|上午|中午|下午|傍晚|晚上|宵夜)\s*[:：]?\s*(.*)/);
           if (pMatch) {
             timeStr = periodFallbackTime[pMatch[1]] || "09:30";
             line = pMatch[2].trim();
@@ -3603,11 +3693,11 @@
         if (mealMatch) {
           const mType = mealMatch[1];
           const mTitle = cleanParenText(mealMatch[2].trim());
-          const existsMeal = (t.meals || []).some(m => Number(m.day) === Number(dayNum) && m.type === mType);
+          const existsMeal = (t.meals || []).some(m => Number(m.day) === Number(currentDayNum) && m.type === mType);
           if (!existsMeal && mTitle) {
             t.meals.push({
               id: "ml_ai_" + Date.now() + "_" + idx,
-              day: dayNum,
+              day: currentDayNum,
               type: mType,
               title: mTitle,
               link: "",
@@ -3619,7 +3709,7 @@
 
         const newIti = {
           id: "iti_paste_" + Date.now() + "_" + idx,
-          day: dayNum,
+          day: currentDayNum,
           time: timeStr,
           subRegion: defaultRegion,
           title: cleanParenText(title),
@@ -3632,15 +3722,16 @@
         };
 
         t.itinerary.push(newIti);
+        touchedDays.add(currentDayNum);
         addedCount++;
 
-        // 僅在通過嚴格重點地標篩選時才加入導覽佇列
         if (isSpecialLandmarkSpot({ title: line, cat, subRegion: defaultRegion, time: timeStr, note })) {
           newSpotsForGuide.push({ ...newIti, rawLine: line });
         }
       }
 
-      sortDayItineraryByTime(t, dayNum);
+      touchedDays.forEach(d => sortDayItineraryByTime(t, d));
+      state.activeDay = Array.from(touchedDays)[0] || currentDayNum;
 
       for (const sp of newSpotsForGuide) {
         const coreTitle = extractCoreLandmarkName(sp.rawLine || sp.title);
@@ -3665,7 +3756,7 @@
 
       document.getElementById("aiRawTextInp").value = "";
       closeModalDirect("aiParserModal");
-      commitChange(`🪄 智慧帶入 D${dayNum} 共 ${addedCount} 個行程點（嚴選 ${newSpotsForGuide.length} 個重點地標入導覽）`);
+      commitChange(`🪄 智慧帶入共 ${addedCount} 個行程點`);
     }
 
     function openGoogleSearchForGuide(spotName) {
@@ -3682,9 +3773,9 @@
 
     function openAiPlannerModal() {
       const c = getCountry();
-      document.getElementById("aiSortDayLabel").textContent = `DAY ${state.activeDay}`;
+      populateAiDaySelector();
       const tplBox = document.getElementById("aiFamousTemplatesBox");
-      const baseKey = c.id.split("_")[0];
+      const baseKey = c.id.split("_")[0].toUpperCase();
       const list = FAMOUS_TEMPLATES[baseKey] || [
         {
           name: `🌟 ${c.name}市中心經典順路一日遊`,
@@ -3699,7 +3790,7 @@
 
       tplBox.innerHTML = list.map((tpl, idx) => `
         <button onclick="applyAiFamousTemplate(${idx})" class="p-2.5 rounded-xl bg-white border border-[#f2cc8f] text-left hover:bg-[#fdf0ec] transition">
-          <div class="font-bold text-xs text-[#2b302c] truncate">${tpl.name}</div>
+          <div class="font-bold text-xs text-[#2b302c] wrap-text-safe">${tpl.name}</div>
           <div class="text-[10px] text-[#7a827d] mt-0.5">${tpl.items.length} 個順路站點 · 含交通時間</div>
         </button>
       `).join("");
@@ -3709,7 +3800,8 @@
     function applyAiFamousTemplate(idx) {
       const c = getCountry();
       const t = getTrip();
-      const baseKey = c.id.split("_")[0];
+      const targetDay = getSelectedAiTargetDay();
+      const baseKey = c.id.split("_")[0].toUpperCase();
       const list = FAMOUS_TEMPLATES[baseKey] || [];
       const tpl = list[idx];
       if (!tpl) return;
@@ -3717,7 +3809,7 @@
       tpl.items.forEach((it, i) => {
         const newIti = {
           id: "iti_ai_" + Date.now() + "_" + i,
-          day: state.activeDay,
+          day: targetDay,
           time: it.time,
           subRegion: tpl.region,
           title: it.title,
@@ -3728,9 +3820,10 @@
         t.itinerary.push(newIti);
         if (isSpecialLandmarkSpot(newIti)) autoSyncGuideSpot(t, newIti);
       });
-      sortDayItineraryByTime(t, state.activeDay);
+      state.activeDay = targetDay;
+      sortDayItineraryByTime(t, targetDay);
       closeModalDirect("aiParserModal");
-      commitChange(`載入經典行程：${tpl.name}`);
+      commitChange(`載入經典行程至 D${targetDay}：${tpl.name}`);
     }
 
     function calcHaversineKm(lat1, lon1, lat2, lon2) {
@@ -3770,13 +3863,13 @@
     async function optimizeCurrentDayRouteWithAi(btnEl) {
       const t = getTrip();
       const c = getCountry();
-      const dayNum = state.activeDay;
+      const dayNum = getSelectedAiTargetDay();
       const dayItems = (t.itinerary || []).filter(i => Number(i.day) === dayNum);
       if (dayItems.length < 2) return alert(`Day ${dayNum} 至少要有 2 個行程點才能進行順路排序喔！`);
 
       const btn = btnEl || document.getElementById("btnOptimizeCurrentDay");
       const oldTxt = btn ? btn.textContent : "";
-      if (btn) btn.textContent = "⏳ 正在查詢各景點座標並計算最順路線...";
+      if (btn) btn.textContent = `⏳ 正在計算 Day ${dayNum} 各景點座標與最順路線...`;
 
       for (const it of dayItems) {
         const coords = await geocodeSpotKeyless(it.title, c.name);
@@ -3797,7 +3890,7 @@
           });
           const nextItem = pool.splice(bestIdx, 1)[0];
           if (bestDist < 150 && !nextItem.transit) {
-            nextItem.transit = formatTransitEstimate(last.title.slice(0, 10), nextItem.title.slice(0, 10), bestDist);
+            nextItem.transit = formatTransitEstimate(last.title.slice(0, 12), nextItem.title.slice(0, 12), bestDist);
           }
           sorted.push(nextItem);
         } else {
@@ -3805,11 +3898,18 @@
         }
       }
 
-      sorted.forEach(x => { delete x._lat; delete x._lon; });
+      sorted.forEach((x, idx) => {
+        delete x._lat; delete x._lon;
+        if (!x.time) {
+          x.time = `${String(Math.min(21, 9 + idx * 2)).padStart(2, "0")}:30`;
+        }
+      });
+
       const otherDays = (t.itinerary || []).filter(i => Number(i.day) !== dayNum);
       t.itinerary = [...otherDays, ...sorted];
+      state.activeDay = dayNum;
 
-      if (btn) btn.textContent = oldTxt || "⚡ 依座標最佳化當日順序 & 估算站間交通時間";
+      if (btn) btn.textContent = oldTxt || "⚡ 依地理座標順路重排 & 估算站間交通時間";
       closeModalDirect("aiParserModal");
       commitChange(`🪄 完成 Day ${dayNum} 順路排序`);
     }
@@ -3820,9 +3920,10 @@
 
       const t = getTrip();
       const c = getCountry();
+      const targetDay = getSelectedAiTargetDay();
       const btn = document.getElementById("btnRunAiRoute");
       const oldBtnTxt = btn.textContent;
-      btn.textContent = "⏳ 正在查詢座標與順路車程...";
+      btn.textContent = `⏳ 正在查詢座標並排入 Day ${targetDay}...`;
 
       const lines = raw
         .replace(/[\u200B-\u200D\uFEFF]/g, "")
@@ -3833,13 +3934,19 @@
       const tempSpots = [];
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i].replace(/^[-•*▪▸\d+.)、]+\s*/, "").trim();
+        if (/^(?:Day|DAY|D)\s*\d+$/i.test(line)) continue;
         const coords = await geocodeSpotKeyless(line, c.name);
         tempSpots.push({
           title: cleanParenText(line),
-          cat: /買|逛|商場|Outlet|超市|藥妝/i.test(line) ? "購物" : "景點",
+          cat: /買|逛|商場|Outlet|超市|藥妝/i.test(line) ? "購物" : (/夜市|雞飯|餐廳|美食/i.test(line) ? "美食" : "景點"),
           lat: coords?.lat,
           lon: coords?.lon
         });
+      }
+
+      if (tempSpots.length === 0) {
+        btn.textContent = oldBtnTxt;
+        return;
       }
 
       const ordered = [tempSpots[0]];
@@ -3856,7 +3963,7 @@
           });
           const next = remain.splice(bestIdx, 1)[0];
           if (bestKm < 150) {
-            next.transit = formatTransitEstimate(last.title.slice(0, 10), next.title.slice(0, 10), bestKm);
+            next.transit = formatTransitEstimate(last.title.slice(0, 12), next.title.slice(0, 12), bestKm);
           }
           ordered.push(next);
         } else {
@@ -3865,10 +3972,10 @@
       }
 
       ordered.forEach((sp, idx) => {
-        const autoTime = `${String(9 + idx * 2).padStart(2, "0")}:30`;
+        const autoTime = `${String(Math.min(21, 9 + idx * 2)).padStart(2, "0")}:30`;
         const newIti = {
           id: "iti_ai_" + Date.now() + "_" + idx,
-          day: state.activeDay,
+          day: targetDay,
           time: autoTime,
           subRegion: t.subRegions?.[0] || c.name,
           title: sp.title,
@@ -3880,11 +3987,12 @@
         if (isSpecialLandmarkSpot(newIti)) autoSyncGuideSpot(t, newIti);
       });
 
-      sortDayItineraryByTime(t, state.activeDay);
+      state.activeDay = targetDay;
+      sortDayItineraryByTime(t, targetDay);
       document.getElementById("aiRawTextInp").value = "";
       btn.textContent = oldBtnTxt;
       closeModalDirect("aiParserModal");
-      commitChange(`🪄 順路規劃 ${ordered.length} 個行程點`);
+      commitChange(`🪄 順路規劃 ${ordered.length} 個行程點至 D${targetDay}`);
     }
 
     async function autoFetchWikiGuide() {
@@ -4123,9 +4231,9 @@
             <div class="relative mb-2.5 group">
               ${gdSrc
                 ? `<img id="gdImgEl_${g.id}" src="${gdSrc}" onclick="event.stopPropagation(); openImageLightbox('${(g.img || "").replace(/'/g, "")}', '${cleanGTitle.replace(/'/g, "")}')" class="polaroid-img w-full transition-all" style="height:${imgH}px; object-fit:${imgFit}; object-position:50% ${imgY}%;" />`
-                : `<div onclick="event.stopPropagation(); cycleGuideCardPhoto('${g.id}', this)" class="w-full h-36 rounded-2xl bg-[#fbf8f3] border-2 border-dashed border-[#dcd2c4] flex flex-col items-center justify-center text-xs text-[#7a827d] gap-1 cursor-pointer hover:border-[#52796f]">
+                : `<div onclick="event.stopPropagation(); cycleGuideCardPhoto('${g.id}', this)" class="w-full h-36 rounded-2xl bg-[#fbf8f3] border-2 border-dashed border-[#dcd2c4] flex flex-col items-center justify-center text-xs text-[#7a827d] gap-1 p-2 text-center cursor-pointer hover:border-[#52796f]">
                      <i class="fa-solid fa-camera text-base text-[#52796f]"></i>
-                     <span>點此自動抓取「${cleanGTitle}」實景圖</span>
+                     <span class="wrap-text-safe">點此自動抓取「${cleanGTitle}」實景圖</span>
                    </div>`
               }
               <div class="flex items-center justify-end gap-1 mt-1" onclick="event.stopPropagation()">
@@ -4157,20 +4265,20 @@
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-1.5 mb-1.5 whitespace-nowrap">
-              <div class="flex items-center gap-1.5 min-w-0">
+            <div class="flex items-start justify-between gap-1.5 mb-1.5">
+              <div class="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
                 ${g.region ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] shrink-0">${cleanParenText(g.region)}</span>` : ""}
-                <h3 class="font-bold text-sm text-[#2b302c] truncate">${cleanGTitle}</h3>
+                <h3 class="font-bold text-sm text-[#2b302c] wrap-text-safe">${cleanGTitle}</h3>
               </div>
               <button type="button" onclick="event.stopPropagation(); refreshSingleGuideAiSummary('${g.id}', this)" class="px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52] border border-[#c5dbd3] text-[10px] font-bold shrink-0">🔄 更新介紹</button>
             </div>
 
             <div class="flex flex-wrap gap-1.5 text-[11px] font-bold mb-1.5">
-              ${g.hours ? `<span class="px-2 py-0.5 rounded-full bg-[#fbf8f3] border text-[#7a827d]">🕒 ${cleanParenText(g.hours)}</span>` : ""}
-              ${g.price ? `<span class="px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32]">🎫 ${cleanParenText(g.price)}</span>` : ""}
+              ${g.hours ? `<span class="px-2 py-0.5 rounded-full bg-[#fbf8f3] border text-[#7a827d] wrap-text-safe">🕒 ${cleanParenText(g.hours)}</span>` : ""}
+              ${g.price ? `<span class="px-2 py-0.5 rounded-full bg-[#fdf0ec] text-[#c85a32] wrap-text-safe">🎫 ${cleanParenText(g.price)}</span>` : ""}
             </div>
 
-            <p class="text-xs text-[#4a524d] leading-relaxed whitespace-pre-line">${normalizeGuideDescText(g.desc || "")}</p>
+            <p class="text-xs text-[#4a524d] leading-relaxed whitespace-pre-line wrap-text-safe">${normalizeGuideDescText(g.desc || "")}</p>
           </div>
 
           <div class="mt-2.5 pt-2 border-t border-[#efe7dc] flex items-center justify-between text-xs whitespace-nowrap">
@@ -4629,12 +4737,12 @@
             ? entry.role
             : (origExp.mode === "treat" ? `${origExp.payer}先墊·${origExp.host}請客` : `${origExp.payer}先付`);
           const row = document.createElement("div");
-          row.className = "gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center justify-between gap-2 whitespace-nowrap";
+          row.className = "gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-start justify-between gap-2";
           row.innerHTML = `
-            <div class="flex items-center gap-1.5 min-w-0">
+            <div class="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
               ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
               <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${(origExp.cat || "消費").slice(0, 2)}</span>
-              <span class="font-bold text-xs text-[#2b302c] truncate">${cleanETitle}</span>
+              <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanETitle}</span>
               <span class="sub-pill shrink-0">${roleText}</span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
@@ -4689,7 +4797,7 @@
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
 
-    // ==================== 15. 🛍️ 清單中心 ====================
+    // ==================== 15. 🛍️ 清單中心（所有格子寬度固定，文字自動換行不出現 ...） ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
         document.getElementById("listBox-" + k).classList.toggle("hidden", k !== tabKey);
@@ -4750,12 +4858,12 @@
           const wrap = document.createElement("div");
           wrap.className = "rounded-2xl border border-[#e6dcd0] bg-[#fbf8f3] overflow-hidden";
           wrap.innerHTML = `
-            <div onclick="toggleDrawer('${dId}', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#f5efe6] to-[#fbf8f3] flex items-center justify-between cursor-pointer whitespace-nowrap">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-xs sm:text-sm text-[#2b302c]">🏪 ${catName}</span>
-                <span class="sub-pill en-font">${doneCnt}/${items.length}</span>
+            <div onclick="toggleDrawer('${dId}', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#f5efe6] to-[#fbf8f3] flex items-center justify-between cursor-pointer">
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <span class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe">🏪 ${catName}</span>
+                <span class="sub-pill en-font shrink-0">${doneCnt}/${items.length}</span>
               </div>
-              <span class="text-xs text-[#7a827d]">▾</span>
+              <span class="text-xs text-[#7a827d] shrink-0">▾</span>
             </div>
             <div id="${dId}" class="drawer-panel open p-2.5 grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white"></div>
           `;
@@ -4763,22 +4871,22 @@
           const body = wrap.querySelector(`#${dId}`);
           items.forEach(s => {
             const card = document.createElement("div");
-            card.className = "gesture-box p-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex flex-col justify-between gap-1.5";
+            card.className = "gesture-box p-2.5 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex flex-col justify-between gap-1.5";
             const sImgSrc = resolveImageSrc(s.img);
             const cleanSTitle = cleanParenText(s.title || s.name || "");
 
             const renderShopNormal = () => {
               card.innerHTML = `
                 <div>
-                  <div class="flex items-center justify-between gap-1">
-                    <label class="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer">
-                      <input type="checkbox" ${s.done ? "checked" : ""} onchange="toggleShopDone('${s.id}')" class="w-3.5 h-3.5 accent-[#52796f] shrink-0" />
-                      <span class="font-bold text-xs truncate ${s.done ? "line-through text-gray-400" : "text-[#2b302c]"}">${cleanSTitle}</span>
+                  <div class="flex items-start justify-between gap-1">
+                    <label class="flex items-start gap-1.5 min-w-0 flex-1 cursor-pointer">
+                      <input type="checkbox" ${s.done ? "checked" : ""} onchange="toggleShopDone('${s.id}')" class="w-3.5 h-3.5 mt-0.5 accent-[#52796f] shrink-0" />
+                      <span class="font-bold text-xs wrap-text-safe ${s.done ? "line-through text-gray-400" : "text-[#2b302c]"}">${cleanSTitle}</span>
                     </label>
                     ${s.owner ? `<span class="sub-pill shrink-0">${s.owner}</span>` : ""}
                   </div>
-                  ${s.price ? `<div class="text-[10px] font-bold text-[#c85a32] en-font mt-0.5">💰 ${Number(s.price).toLocaleString()} ${c.currency}</div>` : ""}
-                  ${s.note ? `<div class="text-[10px] text-[#7a827d]">${cleanParenText(s.note)}</div>` : ""}
+                  ${s.price ? `<div class="text-[10px] font-bold text-[#c85a32] en-font mt-1">💰 ${Number(s.price).toLocaleString()} ${c.currency}</div>` : ""}
+                  ${s.note ? `<div class="text-[10px] text-[#7a827d] wrap-text-safe mt-0.5">${cleanParenText(s.note)}</div>` : ""}
                 </div>
                 ${sImgSrc ? `<img src="${sImgSrc}" onclick="openImageLightbox('${s.img.replace(/'/g, "")}', '${cleanSTitle.replace(/'/g, "")}')" class="polaroid-img w-full h-24 object-cover mt-1" />` : ""}
               `;
@@ -4857,12 +4965,12 @@
           const wrap = document.createElement("div");
           wrap.className = "rounded-2xl border border-[#e6dcd0] bg-[#fbf8f3] overflow-hidden";
           wrap.innerHTML = `
-            <div onclick="toggleDrawer('${dId}', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#fdf0ec] to-[#fbf8f3] flex items-center justify-between cursor-pointer whitespace-nowrap">
-              <div class="flex items-center gap-2">
-                <span class="font-bold text-xs sm:text-sm text-[#2b302c]">🍴 ${catName}</span>
-                <span class="sub-pill en-font">${items.length}</span>
+            <div onclick="toggleDrawer('${dId}', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#fdf0ec] to-[#fbf8f3] flex items-center justify-between cursor-pointer">
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <span class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe">🍴 ${catName}</span>
+                <span class="sub-pill en-font shrink-0">${items.length}</span>
               </div>
-              <span class="text-xs text-[#7a827d]">▾</span>
+              <span class="text-xs text-[#7a827d] shrink-0">▾</span>
             </div>
             <div id="${dId}" class="drawer-panel open p-2.5 space-y-1.5 bg-white"></div>
           `;
@@ -4901,10 +5009,10 @@
             };
 
             row.innerHTML = `
-              <div class="flex items-center justify-between gap-2">
+              <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0 flex-1">
-                  <div class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">${cleanFName}</div>
-                  ${f.note ? `<div class="text-[11px] text-[#7a827d] truncate">${cleanParenText(f.note)}</div>` : ""}
+                  <div class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe">${cleanFName}</div>
+                  ${f.note ? `<div class="text-[11px] text-[#7a827d] wrap-text-safe mt-0.5">${cleanParenText(f.note)}</div>` : ""}
                 </div>
                 <a href="${mapUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-white border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
               </div>
@@ -4964,11 +5072,11 @@
         };
 
         row.innerHTML = `
-          <div class="flex items-center gap-2">
-            <input type="checkbox" ${pk.done ? "checked" : ""} onchange="toggleLocalPackDone('${pk.id}')" class="w-4 h-4 accent-[#52796f] shrink-0 cursor-pointer" />
+          <div class="flex items-start gap-2">
+            <input type="checkbox" ${pk.done ? "checked" : ""} onchange="toggleLocalPackDone('${pk.id}')" class="w-4 h-4 mt-0.5 accent-[#52796f] shrink-0 cursor-pointer" />
             <div class="min-w-0 flex-1">
-              <div class="font-bold text-xs truncate ${pk.done ? "line-through text-gray-400" : "text-[#2b302c]"}">${cleanPkTitle}</div>
-              ${pk.note ? `<div class="text-[10px] text-[#7a827d] truncate">${cleanParenText(pk.note)}</div>` : ""}
+              <div class="font-bold text-xs wrap-text-safe ${pk.done ? "line-through text-gray-400" : "text-[#2b302c]"}">${cleanPkTitle}</div>
+              ${pk.note ? `<div class="text-[10px] text-[#7a827d] wrap-text-safe mt-0.5">${cleanParenText(pk.note)}</div>` : ""}
             </div>
           </div>
         `;
@@ -5021,8 +5129,8 @@
         };
 
         div.innerHTML = `
-          <div class="font-bold text-xs sm:text-sm text-[#2b302c]">📌 ${cleanParenText(m.title)}</div>
-          ${bodyHtml ? `<div class="text-xs text-[#7a827d] whitespace-pre-line">${bodyHtml}</div>` : ""}
+          <div class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe">📌 ${cleanParenText(m.title)}</div>
+          ${bodyHtml ? `<div class="text-xs text-[#7a827d] whitespace-pre-line wrap-text-safe">${bodyHtml}</div>` : ""}
           ${mImgSrc ? `<img src="${mImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(m.img || "").replace(/'/g, "")}', '${cleanParenText(m.title).replace(/'/g, "")}')" class="polaroid-img h-28 sm:h-36 w-auto object-cover mt-1" />` : ""}
         `;
         attachRowGestures(div, {
@@ -5129,9 +5237,9 @@
       const links = [...(c.quickLinks || []), ...(t.customLinks || [])];
       const qGrid = document.getElementById("quickLinksGrid");
       qGrid.innerHTML = links.map(lk => `
-        <a href="${lk.url}" target="_blank" class="p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center gap-2 text-xs font-bold text-[#2b302c] whitespace-nowrap truncate hover:border-[#52796f] transition">
-          <i class="fa-solid ${lk.icon || "fa-compass"} text-[#52796f]"></i>
-          <span class="truncate">${cleanParenText(lk.title)}</span>
+        <a href="${lk.url}" target="_blank" class="p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center gap-2 text-xs font-bold text-[#2b302c] hover:border-[#52796f] transition">
+          <i class="fa-solid ${lk.icon || "fa-compass"} text-[#52796f] shrink-0"></i>
+          <span class="wrap-text-safe">${cleanParenText(lk.title)}</span>
         </a>
       `).join("");
 
@@ -5147,12 +5255,12 @@
       const pBox = document.getElementById("phraseCardsContainer");
       pBox.innerHTML = allPhrases.map(p => `
         <div onclick="speakOut('${encodeURIComponent(p.local)}', '${c.speech || "en-US"}')" class="p-3 rounded-2xl border bg-[#fbf8f3] border-[#e6dcd0] cursor-pointer hover:border-[#52796f] transition">
-          <div class="flex items-center justify-between text-[11px] font-bold text-[#52796f] mb-0.5">
-            <span>${cleanParenText(p.zh)}</span>
-            <span>🔊</span>
+          <div class="flex items-start justify-between gap-2 text-[11px] font-bold text-[#52796f] mb-0.5">
+            <span class="wrap-text-safe">${cleanParenText(p.zh)}</span>
+            <span class="shrink-0">🔊</span>
           </div>
-          <div class="font-bold text-sm text-[#2b302c]">${cleanParenText(p.local)}</div>
-          ${p.romaji ? `<div class="text-[10px] text-[#e07a5f] mt-0.5">${cleanParenText(p.romaji)}</div>` : ""}
+          <div class="font-bold text-sm text-[#2b302c] wrap-text-safe">${cleanParenText(p.local)}</div>
+          ${p.romaji ? `<div class="text-[10px] text-[#e07a5f] mt-0.5 wrap-text-safe">${cleanParenText(p.romaji)}</div>` : ""}
         </div>
       `).join("");
 
@@ -5189,8 +5297,8 @@
 
         const renderAssetNormal = () => {
           div.innerHTML = `
-            <div onclick="toggleDrawer('${dId}', event)" class="px-3 py-2 flex items-center justify-between cursor-pointer whitespace-nowrap">
-              <span class="font-bold text-xs text-[#2b302c] truncate">${cleanItName}</span>
+            <div onclick="toggleDrawer('${dId}', event)" class="px-3 py-2 flex items-center justify-between gap-2 cursor-pointer">
+              <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanItName}</span>
               <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
                 ${assetSrc ? `<button onclick="openImageLightbox('${(it.img || "").replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🔍放大</button>` : ""}
                 <span class="text-xs text-[#7a827d]" onclick="toggleDrawer('${dId}', event)">▾</span>
@@ -5399,7 +5507,7 @@
       }
     }
 
-    // ==================== 18. ☁️ Gist 完整多國多旅程雙重同步 & 15 筆歷史快照滾輪清單 ====================
+    // ==================== 18. ☁️ Gist 完整多國多旅程雙重同步 & 50 筆歷史快照滾輪清單 ====================
     async function pushToGist() {
       const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
       const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
@@ -5419,14 +5527,15 @@
         const fileMap = { JP: "japan_data.json", KR: "korea_data.json", TH: "thailand_data.json", CN: "china_data.json", VN: "vietnam_data.json" };
         const countryList = [];
 
-        Object.values(state.countries).forEach(c => {
-          const allTripsInC = Object.values(state.trips).filter(t => t.countryId === c.id);
+        Object.entries(state.countries).forEach(([cidKey, c]) => {
+          const cid = c.id || cidKey;
+          const allTripsInC = Object.values(state.trips).filter(t => isSameCountryId(t.countryId, cid));
           const primaryTrip = allTripsInC.find(t => t.id === state.activeTripId) || allTripsInC[0];
-          const baseKey = c.id.split("_")[0];
-          const fName = fileMap[c.id] || fileMap[baseKey] || `${c.id.toLowerCase()}_data.json`;
+          const baseKey = cid.split("_")[0].toUpperCase();
+          const fName = fileMap[cid] || fileMap[baseKey] || `${cid.toLowerCase()}_data.json`;
 
           countryList.push({
-            id: c.id, name: c.name, flag: c.flag, currency: c.currency,
+            id: cid, name: c.name, flag: c.flag, currency: c.currency,
             rate: c.rate, lang: c.lang, speech: c.speech,
             fileName: fName, title: primaryTrip ? primaryTrip.title : `${c.name}之旅`
           });
@@ -5434,9 +5543,9 @@
           if (primaryTrip) {
             filesPayload[fName] = {
               content: JSON.stringify({
-                version: "87.0",
+                version: "88.0",
                 id: primaryTrip.id,
-                countryId: c.id,
+                countryId: cid,
                 countryName: c.name,
                 flag: c.flag,
                 currency: c.currency,
@@ -5465,7 +5574,7 @@
 
         filesPayload["global_trip_list.json"] = {
           content: JSON.stringify({
-            version: "87.0",
+            version: "88.0",
             activeCountryId: state.activeCountryId,
             activeTripId: state.activeTripId,
             companions: state.companions || [],
@@ -5583,20 +5692,22 @@
       }
     }
 
-    // 🕒 渲染最近 15 筆歷史快照（支援上下滾輪滑動檢視）
+    // 🕒 渲染最近 50 筆歷史快照（支援上下滾輪滑動檢視、文字自動換行）
     function renderSnapshotsList() {
       const box = document.getElementById("snapshotsListBox");
-      const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]").slice(0, 15);
+      const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]").slice(0, 50);
       box.innerHTML = list.length === 0
-        ? `<div class="text-xs text-gray-400 py-2 text-center">尚無歷史快照紀錄</div>`
+        ? `<div class="text-xs text-gray-400 py-4 text-center">尚無歷史快照紀錄</div>`
         : list.map((s, idx) => `
-            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] text-xs whitespace-nowrap">
-              <div class="flex items-center gap-1.5 min-w-0 pr-2">
-                <span class="sub-pill en-font shrink-0">#${idx + 1}</span>
-                <span class="truncate font-medium text-[#2b302c]">${s.label}</span>
-                <span class="text-[10px] text-[#7a827d] en-font shrink-0">${s.time}</span>
+            <div class="flex items-center justify-between px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] text-xs gap-2">
+              <div class="flex items-start gap-1.5 min-w-0 flex-1">
+                <span class="sub-pill en-font shrink-0 mt-0.5">#${idx + 1}</span>
+                <div class="min-w-0 flex-1">
+                  <div class="font-medium text-[#2b302c] wrap-text-safe">${s.label}</div>
+                  <div class="text-[10px] text-[#7a827d] en-font">${s.time} · 共 ${s.count || 0} 筆資料</div>
+                </div>
               </div>
-              <button onclick="restoreSnap('${s.id}')" class="px-2.5 py-0.5 rounded-full btn-gradient-rose text-white text-[11px] font-bold shrink-0">還原</button>
+              <button onclick="restoreSnap('${s.id}')" class="px-2.5 py-1 rounded-full btn-gradient-rose text-white text-[11px] font-bold shrink-0">還原</button>
             </div>
           `).join("");
     }
