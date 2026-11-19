@@ -113,11 +113,12 @@
       border-color: #f87171 !important;
     }
 
+    /* 保留 Enter 換行且超長自動折行不省略 */
     .wrap-text-safe {
-      white-space: normal !important;
+      white-space: pre-line !important;
       word-break: break-word;
       overflow-wrap: anywhere;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .inline-full-editor {
@@ -235,7 +236,7 @@
   <!-- 🎨 跨裝置百分比定位貼圖層 -->
   <div id="stickerCanvasLayer"></div>
 
-  <!-- ↩️ 跨頁跳轉後「一鍵返回原處/上一個動作」懸浮膠囊 -->
+  <!-- ↩️ 跨頁跳轉後「一鍵返回原處」懸浮膠囊 -->
   <div id="quickReturnBar" class="fixed top-14 left-3 z-50 hidden">
     <button onclick="returnToPreviousPlace()" class="px-3.5 py-2 rounded-full btn-gradient-rose text-white shadow-2xl border-2 border-white flex items-center gap-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition">
       <i class="fa-solid fa-arrow-rotate-left"></i>
@@ -257,7 +258,7 @@
     </div>
   </div>
 
-  <!-- 🪄 左下角懸浮「智慧解析 & 順路排程」快捷圓鈕 -->
+  <!-- 🪄 左下角懸浮「智慧排程」快捷圓鈕 -->
   <div id="aiFabWrapper" class="fixed left-3 bottom-20 z-40 flex flex-col items-start">
     <button onclick="openAiPlannerModal()" class="px-3.5 py-2.5 rounded-full btn-gradient-ai text-white shadow-xl border-2 border-white flex items-center gap-1.5 font-bold text-xs hover:scale-105 active:scale-95 transition whitespace-nowrap">
       <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
@@ -286,22 +287,16 @@
     </button>
   </div>
 
-  <!-- 🌸 頂部自適應滿版導覽列 -->
+  <!-- 🌸 頂部導覽列（已移除上一步/下一步按鈕，釋放旅程標題空間） -->
   <header class="sticky top-0 z-40 bg-[#fbf8f3]/92 backdrop-blur-md border-b border-[#e8dfd3] px-2.5 sm:px-5 py-2">
-    <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-1.5">
-      <button onclick="toggleDrawer('anywhereDoorDrawer', event)" class="flex items-center gap-1.5 bg-white border-2 border-[#e6dcd0] pl-2.5 pr-3 py-1 rounded-full shadow-2xs min-w-0 text-left">
-        <span id="topFlagEmoji" class="text-lg sm:text-xl shrink-0">🇯🇵</span>
-        <span id="topTripName" class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe leading-tight">東京＆輕井澤</span>
+    <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-2">
+      <button onclick="toggleDrawer('anywhereDoorDrawer', event)" class="flex items-center gap-1.5 bg-white border-2 border-[#e6dcd0] pl-2.5 pr-3 py-1 rounded-full shadow-2xs min-w-0 flex-1 max-w-xs sm:max-w-md text-left">
+        <span id="topFlagEmoji" class="text-lg sm:text-xl shrink-0">🇹🇭</span>
+        <span id="topTripName" class="font-bold text-xs sm:text-sm text-[#2b302c] truncate">泰國旅行手札</span>
         <i class="fa-solid fa-caret-down text-[10px] text-[#7a827d] shrink-0"></i>
       </button>
 
-      <div class="flex items-center gap-1 shrink-0">
-        <button id="btnUndo" onclick="undoAction()" disabled class="w-7 h-7 rounded-full bg-white border border-[#e2d9cc] text-xs text-[#4a524d] disabled:opacity-35 flex items-center justify-center">
-          <i class="fa-solid fa-rotate-left"></i>
-        </button>
-        <button id="btnRedo" onclick="redoAction()" disabled class="w-7 h-7 rounded-full bg-white border border-[#e2d9cc] text-xs text-[#4a524d] disabled:opacity-35 flex items-center justify-center">
-          <i class="fa-solid fa-rotate-right"></i>
-        </button>
+      <div class="flex items-center gap-1.5 shrink-0">
         <button onclick="openModal('memberModal')" class="px-2.5 py-1 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-xs font-bold text-[#9c6644] whitespace-nowrap">
           🧸 <span class="hidden sm:inline">旅伴</span>
         </button>
@@ -429,7 +424,7 @@
             <span class="sub-pill hidden sm:inline-flex">僅收錄重點地標</span>
           </div>
           <div class="flex gap-1 shrink-0">
-            <button onclick="cleanUpNonHighlightGuides()" class="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600 border" title="自動移除換匯、搭車、純吃飯等非重點導覽卡">🧹 精簡</button>
+            <button onclick="cleanUpNonHighlightGuides()" class="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600 border" title="自動移除非重點導覽卡">🧹 精簡</button>
             <button onclick="refreshAllGuidesSummaryAndPhoto()" id="btnRefreshAllGuides" class="text-xs font-bold px-2 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]" title="一鍵補齊所有景點介紹與實景圖片">🔄 補齊圖文</button>
             <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]" title="僅從行程擷取重點地標">📥 抓重點</button>
             <button onclick="openGuideModal()" class="text-xs font-bold px-2.5 py-1 rounded-full btn-gradient-sage">+ 新增</button>
@@ -568,7 +563,7 @@
           </div>
 
           <div class="grid grid-cols-2 gap-1.5">
-            <input id="expNoteInput" type="text" placeholder="📝 備註..." class="text-xs px-2.5 py-1.5 rounded-xl border border-[#dcd2c4]" />
+            <textarea id="expNoteInput" rows="1" placeholder="📝 備註 (可按 Enter 換行)..." class="text-xs px-2.5 py-1.5 rounded-xl border border-[#dcd2c4] bg-white"></textarea>
             <div class="flex gap-1">
               <input id="expImgInput" type="text" placeholder="📸 照片" class="flex-1 text-xs px-2 py-1.5 rounded-xl border border-[#dcd2c4] bg-[#fbf8f3] min-w-0" readonly />
               <label class="px-2.5 py-1.5 rounded-xl bg-[#fdf0ec] text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
@@ -611,7 +606,7 @@
             <input id="shopItemTitle" type="text" placeholder="商品名稱 *" class="col-span-1 sm:col-span-4 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
             <input id="shopItemPrice" type="number" placeholder="預估金額" class="col-span-1 sm:col-span-2 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
             <select id="shopItemOwner" class="col-span-1 sm:col-span-3 text-xs px-2 py-1.5 rounded-xl border bg-white"></select>
-            <input id="shopItemNote" type="text" placeholder="數量或備註..." class="col-span-2 sm:col-span-6 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+            <textarea id="shopItemNote" rows="1" placeholder="數量或備註 (可按 Enter 換行)..." class="col-span-2 sm:col-span-6 text-xs px-2.5 py-1.5 rounded-xl border bg-white"></textarea>
             <div class="col-span-2 sm:col-span-4 flex gap-1">
               <input id="shopItemImg" type="text" placeholder="商品照片" class="flex-1 text-xs px-2.5 py-1.5 rounded-xl border bg-white min-w-0" readonly />
               <label class="px-2.5 py-1.5 rounded-xl bg-white border text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
@@ -641,7 +636,7 @@
             </div>
             <input id="foodNameInput" type="text" placeholder="餐廳或美食名稱 *" class="col-span-1 sm:col-span-5 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
             <input id="foodLinkInput" type="text" placeholder="地圖連結" class="col-span-2 sm:col-span-4 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
-            <input id="foodNoteInput" type="text" placeholder="備註..." class="col-span-2 sm:col-span-6 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+            <textarea id="foodNoteInput" rows="1" placeholder="備註 (可按 Enter 換行)..." class="col-span-2 sm:col-span-6 text-xs px-2.5 py-1.5 rounded-xl border bg-white"></textarea>
             <div class="col-span-2 sm:col-span-4 flex gap-1">
               <input id="foodImgInput" type="text" placeholder="照片" class="flex-1 text-xs px-2.5 py-1.5 rounded-xl border bg-white min-w-0" readonly />
               <label class="px-2.5 py-1.5 rounded-xl bg-white border text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
@@ -695,7 +690,7 @@
         <div id="addMemoFormDrawer" class="drawer-panel open" onclick="event.stopPropagation()">
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-1.5 p-2.5 rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0]">
             <input id="memoTitleInp" type="text" placeholder="備忘標題 *" class="sm:col-span-4 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
-            <input id="memoBodyInp" type="text" placeholder="備註內容或網址..." class="sm:col-span-8 text-xs px-2.5 py-1.5 rounded-xl border bg-white" />
+            <textarea id="memoBodyInp" rows="2" placeholder="備註內容或網址 (可按 Enter 換行)..." class="sm:col-span-8 text-xs px-2.5 py-1.5 rounded-xl border bg-white"></textarea>
             <div class="sm:col-span-9 flex gap-1">
               <input id="memoImgInp" type="text" placeholder="📸 貼上圖片網址或點右側選圖..." class="flex-1 text-xs px-2.5 py-1.5 rounded-xl border bg-white min-w-0" />
               <label class="px-2.5 py-1.5 rounded-xl bg-[#fdf0ec] border border-[#f4c2b2] text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
@@ -907,7 +902,7 @@
         </div>
       </div>
       <div class="grid grid-cols-3 gap-2">
-        <input id="itiTitleInp" type="text" placeholder="行程 / 景點名稱 *" class="col-span-2 text-xs px-3 py-2 rounded-xl border bg-white" />
+        <textarea id="itiTitleInp" rows="2" placeholder="行程 / 景點名稱 * (可按 Enter 換行)" class="col-span-2 text-xs px-3 py-2 rounded-xl border bg-white"></textarea>
         <select id="itiCatSel" class="text-xs px-2 py-2 rounded-xl border bg-white">
           <option value="景點">📸 景點</option>
           <option value="美食">🍽️ 美食</option>
@@ -923,7 +918,7 @@
           <option value="住宿">🏨 住宿</option>
         </select>
       </div>
-      <input id="itiTransitInp" type="text" placeholder="🚇 交通方式與轉乘路線..." class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
+      <textarea id="itiTransitInp" rows="2" placeholder="🚇 交通方式與轉乘路線 (可按 Enter 換行)..." class="w-full text-xs px-3 py-2 rounded-xl border bg-white"></textarea>
       <div class="grid grid-cols-2 gap-2">
         <input id="itiHotelInp" type="text" placeholder="🏨 當晚住宿飯店" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
         <input id="itiLinkInp" type="text" placeholder="🔗 專屬導航連結" class="text-xs px-3 py-1.5 rounded-xl border bg-white" />
@@ -934,7 +929,7 @@
           選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'itiImgInp')" />
         </label>
       </div>
-      <textarea id="itiNoteInp" rows="3" placeholder="📝 備註..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
+      <textarea id="itiNoteInp" rows="3" placeholder="📝 備註 (可按 Enter 換行)..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
       <input type="hidden" id="editingItiId" value="" />
       <div class="flex gap-2">
         <button onclick="saveItineraryItem()" class="flex-1 py-2 rounded-full btn-gradient-sage font-bold text-xs">💾 儲存</button>
@@ -968,7 +963,7 @@
           選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'mealImgInp')" />
         </label>
       </div>
-      <input id="mealNoteInp" type="text" placeholder="📝 備註..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
+      <textarea id="mealNoteInp" rows="2" placeholder="📝 備註 (可按 Enter 換行)..." class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white"></textarea>
       <input type="hidden" id="editingMealId" value="" />
       <div class="flex gap-2">
         <button onclick="saveMealItem()" class="flex-1 py-2 rounded-full btn-gradient-rose font-bold text-xs">💾 儲存</button>
@@ -1124,8 +1119,7 @@
       </div>
     </div>
   </div>
-
-  <!-- ==================== JAVASCRIPT 完整核心邏輯 ==================== -->
+  <!-- ==================== JAVASCRIPT 完整核心邏輯（第 2 段） ==================== -->
   <script>
     const APP_STORAGE_KEY = "WANDERNOTE_JOURNAL_V83_DATA";
     const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V83_IMAGES";
@@ -1164,9 +1158,10 @@
       if (!desc || typeof desc !== "string") return "";
       return desc
         .replace(/【Google\s*AI\s*深度摘要】/gi, "【景點介紹】")
+        .replace(/【Google\s*AI\s*摘要】/gi, "【景點介紹】")
         .replace(/【AI\s*深度摘要】/gi, "【景點介紹】")
         .replace(/【AI\s*摘要】/gi, "【景點介紹】")
-        .replace(/【景點亮點】/g, "【景點介紹】");
+        .replace(/【景點亮點】/g, "【必看亮點】");
     }
 
     function isPlaceholderGuideDesc(desc) {
@@ -1219,7 +1214,6 @@
       return aliasGroups.some(grp => grp.some(k => a === k || a.includes(k)) && grp.some(k => b === k || b.includes(k)));
     }
 
-    // 清理單一旅程內的所有 null 壞值
     function sanitizeTripArrays(t, fallbackRegionName = "市區") {
       if (!t || typeof t !== "object") return t;
       const arrKeys = [
@@ -1285,7 +1279,6 @@
 
         let matchingTrips = Object.values(state.trips).filter(isTripInActiveCountry);
 
-        // 若同國家有多個手札，自動清除 0 筆資料的空白手札
         if (matchingTrips.length > 1) {
           const hasRealData = matchingTrips.some(x => getTripDataScore(x) > 0);
           if (hasRealData) {
@@ -1309,7 +1302,6 @@
             state.activeTripId = t.id;
             t.countryId = state.activeCountryId;
           } else {
-            // 若是泰國且完全無資料，自動帶入內建泰國完整行程
             if (isSameCountryId(activeCidStr, "TH")) {
               t = buildDefaultThailandTrip();
               t.countryId = state.activeCountryId;
@@ -1860,7 +1852,7 @@
     function attachRowGestures(el, { onLongPressEdit, onSwipeDelete }) {
       let timer = null, startX = 0, startY = 0, currentX = 0, swipingRight = false;
       const onStart = (cx, cy, target) => {
-        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link") || target.closest(".iti-drag-handle") || target.closest(".img-adjust-panel")) return;
+        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link") || target.closest(".iti-drag-handle") || target.closest(".img-adjust-panel") || target.closest(".hotel-dbl-zone")) return;
         startX = cx; startY = cy; currentX = cx; swipingRight = false;
         el.classList.add("pressing");
         timer = setTimeout(() => {
@@ -1910,7 +1902,7 @@
       el.addEventListener("mouseleave", onEnd);
     }
 
-    // ==================== 8. 預設首爾與泰國完整行程保底結構 ====================
+    // ==================== 8. 預設泰國與首爾完整行程保底結構 ====================
     function buildDefaultThailandTrip() {
       return {
         id: "trip_1794574002156",
@@ -1928,7 +1920,7 @@
         itinerary: [
           { id: "iti_1794759085108", day: 1, time: "", subRegion: "泰國", title: "抵達蘇凡納布機場(BKK)", cat: "景點", transit: "抵達蘇凡納布機場(BKK)搭乘機場快線(ARL)前往Makkasan", hotel: "", link: "", img: "", note: "" },
           { id: "iti_1794736038331", day: 1, time: "", subRegion: "曼谷", title: "SWU大學夜市", cat: "景點", transit: "", hotel: "", link: "", img: "", note: "17:00～21:00" },
-          { id: "iti_1794736212819", day: 1, time: "", subRegion: "曼谷", title: "匯狂象神參拜＆夜市", cat: "景點", transit: "MRT Phetchaburi（碧差汶里站）上車，往北搭 3 站就能直達 MRT Huai Khwang（匯狂站）", hotel: "Asoka hotel", link: "", img: "", note: "" },
+          { id: "iti_1794736212819", day: 1, time: "", subRegion: "曼谷", title: "匯狂象神參拜＆夜市", cat: "景點", transit: "MRT Phetchaburi（碧差汶里站）上車，往北搭 3 站就能直達 MRT Huai Khwang（匯狂站）", hotel: "Asoka hotel", hotelImg: "", hotelLink: "", link: "", img: "", note: "" },
           { id: "iti_1794759623454", day: 2, time: "", subRegion: "曼谷", title: "Central World", cat: "購物", transit: "從飯店步行至Asok Pier前往Pratunam Pier(水門碼頭)", hotel: "", link: "", img: "", note: "附近Superrich（9:00～20:00）換匯\nMOPPET Winter Sale \nCentralWorld Live Hall, 8F （12:00）" },
           { id: "iti_1794759941879", day: 2, time: "", subRegion: "泰國", title: "PLATINUM POP(Tofu藥妝)採買", cat: "購物", transit: "步行約 5 分鐘", hotel: "", link: "", img: "", note: "在central world對面\nTufo在一樓" },
           { id: "iti_1794760050837", day: 2, time: "", subRegion: "泰國", title: "ICONSIAM", cat: "景點", transit: "從BTS Chit Lom/Siam搭空鐵至Saphan Taksin站，轉乘免費接駁船前往ICONSIAM", hotel: "", link: "", img: "", note: "欣賞18:30聖誕節水舞燈光秀" },
@@ -1951,11 +1943,11 @@
           { id: "ml_1794909730474", day: 5, type: "早餐", title: "貴賓室美食", link: "", img: "", note: "" }
         ],
         guides: [
-          { id: "gd_1794736212819_1hu", title: "象神參拜", region: "曼谷", hours: "24 小時開放（20:00 - 01:00 香火最鼎盛）", price: "免費參拜", img: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】曼谷匯狂路口象神廟位於 MRT Huai Khwang 站 4 號出口旁，主祀掌管智慧、開運、事業與財運的象頭神。\n🙏 【參拜秘訣】參拜完畢後，走到象神座騎「小老鼠」雕像旁，一手摸老鼠頭、另一手摀住老鼠另一側耳朵，輕聲說出願望請牠代為傳話！", link: "" },
-          { id: "gd_1794757085734_kx0", title: "匯狂夜市", region: "泰國", hours: "18:00 - 凌晨 04:00", price: "免費逛街", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】匯狂夜市緊鄰 MRT 匯狂站 4 號出口與象神廟旁，是曼谷在地人最愛的宵夜天堂。\n🍢 【必吃與必逛】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋與芒果糯米飯。", link: "" },
-          { id: "gd_1794759623457_x2t", title: "Central World", region: "泰國", hours: "10:00 - 22:00", price: "免費參觀", img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】Central World 是泰國規模最大的旗艦級複合購物中心。\n📷 【必拍機位】每年 11 月至跨年期間，戶外廣場會豎立東南亞最高的「巨型聖誕樹與夢幻燈海」。", link: "" },
-          { id: "gd_1794760050838_go4", title: "ICONSIAM", region: "泰國", hours: "10:00 - 22:00 (水舞秀約 18:30 / 20:00)", price: "免費入場", img: "https://images.unsplash.com/photo-1583396618422-597b2755de83?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】昭披耶河畔頂級地標「暹羅天地 ICONSIAM」，G 樓設有冷氣室內水上市場「SookSiam」。\n📷 【必看亮點】河濱廣場長達 400 公尺的東南亞最長聲光水舞燈光秀。", link: "" },
-          { id: "gd_1794760714745_7ms", title: "搭乘超級銀河號", region: "泰國", hours: "20:00 - 22:00", price: "依預訂票券", img: "https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】曼谷三層豪華雙體遊輪（Super Galaxy Cruise），頂層擁有 360 度全露天無遮擋甲板視野，沿途飽覽鄭王廟、大皇宮與湄南河岸燈光節煙火。", link: "" }
+          { id: "gd_1794736212819_1hu", title: "象神參拜", region: "曼谷", hours: "24 小時開放（20:00 - 01:00 香火最鼎盛）", price: "免費參拜", img: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】曼谷匯狂路口象神廟位於 MRT Huai Khwang 站 4 號出口旁，主祀掌管智慧、開運、事業與財運的象頭神。\n🌟 【必看亮點】參拜完畢後，走到象神座騎「小老鼠」雕像旁，一手摸老鼠頭、另一手摀住老鼠另一側耳朵，輕聲說出願望請牠代為傳話！", link: "" },
+          { id: "gd_1794757085734_kx0", title: "匯狂夜市", region: "泰國", hours: "18:00 - 凌晨 04:00", price: "免費逛街", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】匯狂夜市緊鄰 MRT 匯狂站 4 號出口與象神廟旁，是曼谷在地人最愛的宵夜天堂。\n🌟 【必看亮點】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋與芒果糯米飯。", link: "" },
+          { id: "gd_1794759623457_x2t", title: "Central World", region: "泰國", hours: "10:00 - 22:00", price: "免費參觀", img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】Central World 是泰國規模最大的旗艦級複合購物中心。\n🌟 【必看亮點】每年 11 月至跨年期間，戶外廣場會豎立東南亞最高的巨型聖誕樹與夢幻燈海。", link: "" },
+          { id: "gd_1794760050838_go4", title: "ICONSIAM", region: "泰國", hours: "10:00 - 22:00 (水舞秀約 18:30 / 20:00)", price: "免費入場", img: "https://images.unsplash.com/photo-1583396618422-597b2755de83?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】昭披耶河畔頂級地標「暹羅天地 ICONSIAM」，G 樓設有冷氣室內水上市場。\n🌟 【必看亮點】河濱廣場長達 400 公尺的東南亞最長聲光水舞燈光秀。", link: "" },
+          { id: "gd_1794760714745_7ms", title: "搭乘超級銀河號", region: "泰國", hours: "20:00 - 22:00", price: "依預訂票券", img: "https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】曼谷三層豪華雙體遊輪（Super Galaxy Cruise），頂層擁有 360 度全露天無遮擋甲板視野。\n🌟 【必看亮點】自 ICONSIAM 啟航，沿途飽覽鄭王廟、大皇宮與湄南河岸燈光節煙火。", link: "" }
         ],
         mustEat: [],
         shopping: [],
@@ -1988,36 +1980,9 @@
           { id: "kr_fl_2", date: "2026-06-26", time: "16:20", arrTime: "17:55", flightNo: "回程班機", from: "ICN/GMP 首爾", to: "TPE 台北", link: "", img: "", note: "滿載戰利品回程" }
         ],
         itinerary: [
-          { id: "kr_iti_1", day: 1, time: "12:00", subRegion: "麻浦/汝矣島", title: "真味食堂 米其林必比登醬油螃蟹", cat: "美食", transit: "地鐵5號線兒嶺站4號出口步行約5分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "需提前預約，必點爆膏醬蟹套餐" },
-          { id: "kr_iti_2", day: 1, time: "16:30", subRegion: "明洞", title: "明洞商圈逛街 & 換錢所換匯", cat: "購物", transit: "地鐵4號線明洞站5、6號出口步行即達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "入住 HOMES Red Myeongdong，晚上逛明洞夜市與 Olive Young" },
-          { id: "kr_iti_3", day: 2, time: "10:30", subRegion: "江南/聖水洞", title: "COEX 星空圖書館 Starfield Library", cat: "打卡機位", transit: "地鐵2號線三成站6號出口經地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "13公尺高巨型書牆必拍機位" },
-          { id: "kr_iti_4", day: 2, time: "14:00", subRegion: "江南/聖水洞", title: "聖水洞潮流街區 Dior概念店 & Tamburins", cat: "購物", transit: "三成站搭地鐵2號線直達聖水站3號出口約10分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "首爾最潮文創選物、鹽麵包與咖啡廳巡禮" },
-          { id: "kr_iti_5", day: 3, time: "11:00", subRegion: "麻浦/汝矣島", title: "鷺梁津水產市場 現挑帝王蟹與活章魚", cat: "美食", transit: "地鐵1號或9號線鷺梁津站7號出口步行3分", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "1樓買海鮮、2樓代客料理，必吃蟹膏炒飯" },
-          { id: "kr_iti_6", day: 3, time: "15:30", subRegion: "麻浦/汝矣島", title: "汝矣島現代百貨 The Hyundai Seoul", cat: "購物", transit: "9號線鷺梁津站搭2站至汝矣島站地下連通道直達", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "B2 韓國潮牌匯集，頂樓空中花園" },
-          { id: "kr_iti_7", day: 4, time: "10:00", subRegion: "明洞", title: "明洞樂天超市最後採買 ➔ 前往機場", cat: "購物", transit: "忠武路或明洞搭乘機場巴士或 AREX 前往機場", hotel: "", link: "", img: "", note: "預留退稅時間" }
+          { id: "kr_iti_1", day: 1, time: "12:00", subRegion: "麻浦/汝矣島", title: "真味食堂 米其林必比登醬油螃蟹", cat: "美食", transit: "地鐵5號線兒嶺站4號出口步行約5分鐘", hotel: "HOMES Red Myeongdong", link: "", img: "", note: "需提前預約，必點爆膏醬蟹套餐" }
         ],
-        meals: [
-          { id: "kr_ml_1", day: 1, type: "午餐", title: "真味食堂 醬油螃蟹", link: "", img: "", note: "米其林推薦" },
-          { id: "kr_ml_2", day: 2, type: "下午茶", title: "聖水洞 自然島鹽麵包", link: "", img: "", note: "現烤出爐超香" },
-          { id: "kr_ml_3", day: 3, type: "午餐", title: "鷺梁津水產市場 帝王蟹海鮮大餐", link: "", img: "", note: "配蟹膏炒飯" }
-        ],
-        guides: [
-          { id: "kr_gd_1", title: "真味食堂 Jinmi Sikdang", region: "麻浦區", hours: "12:00 - 20:00", price: "₩45,000 / 人", img: "https://images.unsplash.com/photo-1580651315530-69c8e0026377?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】首爾三大醬油螃蟹名店之一，連續多年獲米其林必比登推薦。", link: "" },
-          { id: "kr_gd_2", title: "鷺梁津水產市場 Noryangjin Market", region: "銅雀區", hours: "24小時營業", price: "依時價計", img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】首爾規模最大海產批發市場，一樓挑活蟹、二樓代客清蒸與蟹膏炒飯。", link: "" },
-          { id: "kr_gd_3", title: "星空圖書館 Starfield Library", region: "江南區", hours: "10:30 - 22:00", price: "免費參觀", img: "https://images.unsplash.com/photo-1507842229356-51c61504d3ab?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】位於江南 COEX Mall 中央廣場的文化地標，13 公尺高巨型弧形書牆。", link: "" }
-        ],
-        mustEat: [
-          { id: "kr_me_1", cat: "麻浦/鷺梁津", name: "真味食堂 醬蟹", link: "", note: "米其林必比登推薦", img: "", done: false },
-          { id: "kr_me_2", cat: "麻浦/鷺梁津", name: "鷺梁津水產 活章魚＋松葉蟹膏炒飯", link: "", note: "二樓代客料理", img: "", done: false }
-        ],
-        shopping: [
-          { id: "kr_sh_1", cat: "Olive Young", title: "Torriden 保濕精華 & 面膜", price: 28000, owner: "", note: "現場退稅", img: "", done: false },
-          { id: "kr_sh_2", cat: "聖水洞", title: "Tamburins 貝殼護手霜", price: 32000, owner: "", note: "JENNIE同款香氣", img: "", done: false }
-        ],
-        expenses: [],
-        memos: [
-          { id: "kr_mm_1", title: "住宿飯店：HOMES Red Myeongdong", body: "近地鐵忠武路站/明洞站，步行可逛明洞商圈。", img: "" }
-        ],
+        meals: [], guides: [], mustEat: [], shopping: [], expenses: [], memos: [],
         stickers: [], customLinks: [], customVisas: [], customTransits: [], customPhrases: []
       };
     }
@@ -2075,7 +2040,8 @@
     let localPackingItems = [];
     let undoStack = [];
     let redoStack = [];
-        function countAllItems(s) {
+
+    function countAllItems(s) {
       if (!s || !s.trips) return 0;
       let c = 0;
       Object.values(s.trips).forEach(t => {
@@ -2211,12 +2177,10 @@
     }
 
     function ensureKoreaAndThailandTripsNotEmpty() {
-      // 保底韓國
       const krTrip = Object.values(state.trips || {}).find(t => t && isSameCountryId(t.countryId, "KR") && getTripDataScore(t) > 0);
       if (!krTrip) {
         state.trips["trip_kr_1"] = buildDefaultKoreaTrip();
       }
-      // 保底泰國國家門與完整泰國行程
       const thKey = Object.keys(state.countries || {}).find(k => isSameCountryId(k, "TH")) || "TH";
       if (!state.countries[thKey]) {
         state.countries["TH"] = {
@@ -2228,13 +2192,11 @@
       const thTrips = Object.values(state.trips || {}).filter(t => t && (isSameCountryId(t.countryId, "TH") || /泰國|曼谷/.test(t.title || "")));
       const hasValidTh = thTrips.some(t => getTripDataScore(t) > 0);
       if (!hasValidTh) {
-        // 清除空白的泰國手札並寫入完整泰國 15 筆行程
         thTrips.forEach(t => { delete state.trips[t.id]; });
         const defTh = buildDefaultThailandTrip();
         defTh.countryId = thKey;
         state.trips[defTh.id] = defTh;
       } else {
-        // 清理所有泰國手札內的 null
         thTrips.forEach(t => sanitizeTripArrays(t, "泰國"));
       }
     }
@@ -2737,7 +2699,6 @@
 
         pill.onclick = (e) => {
           e.stopPropagation();
-          // 先立刻關閉任意門抽屜，確保手機點擊立刻收合
           document.getElementById("anywhereDoorDrawer")?.classList.remove("open");
           state.activeTripId = tr.id;
           state.activeSubRegion = "ALL";
@@ -2786,7 +2747,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數、每日行程 ====================
+    // ==================== 12. 航班、天數、每日行程（無時間鈕＋飯店長按/右滑/雙擊看照片） ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -3153,8 +3114,7 @@
           dayItis = dayItis.filter(i => i.subRegion === state.activeSubRegion);
         }
         const dayMeals = (trip.meals || []).filter(m => m && Number(m.day) === dayNum);
-        const hotelItem = dayItis.find(i => i.hotel);
-        const hotelNavUrl = hotelItem ? buildSmartMapUrl(hotelItem.hotel, hotelItem.link) : "";
+        const hotelItem = dayItis.find(i => i && i.hotel && i.hotel.trim());
 
         const dayCard = document.createElement("div");
         dayCard.className = "journal-card p-3 sm:p-4 space-y-2.5";
@@ -3165,7 +3125,6 @@
               <h3 class="font-bold text-sm text-[#2b302c] wrap-text-safe">${cleanParenText(dayItis[0]?.subRegion || `第 ${dayNum} 天`)}</h3>
             </div>
             <div class="flex items-center gap-1 shrink-0 whitespace-nowrap">
-              <button onclick="manualSortDayByTime(${dayNum})" title="依時間順序排列" class="w-7 h-7 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-[#9c6644] text-xs flex items-center justify-center">🕒</button>
               <button onclick="openItineraryModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#e8f1ed] text-[#3b5a4e]">+ 行程</button>
               <button onclick="openMealModal(${dayNum})" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32]">+ 餐飲</button>
             </div>
@@ -3174,15 +3133,7 @@
           <div class="mt-2 pt-2.5 border-t-2 border-dashed border-[#e5dacb] bg-[#faf5ed]/70 -mx-3 sm:-mx-4 -mb-3 sm:-mb-4 p-2.5 sm:p-3 rounded-b-[20px] space-y-2">
             <div class="day-meals-grid grid grid-cols-3 gap-1.5"></div>
             <div class="day-extra-meals flex flex-wrap gap-1"></div>
-            ${hotelItem ? `
-              <div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e6dcd0] flex items-center justify-between gap-2">
-                <div class="flex items-start gap-1.5 min-w-0 flex-1">
-                  <span class="text-[11px] font-bold text-[#4f7768] shrink-0">🏨 住宿</span>
-                  <span class="text-xs font-bold text-[#2b302c] wrap-text-safe">${cleanParenText(hotelItem.hotel)}</span>
-                </div>
-                <a href="${hotelNavUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-[#fbf8f3] border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
-              </div>
-            ` : ""}
+            <div class="day-hotel-slot"></div>
           </div>
         `;
         wrapper.appendChild(dayCard);
@@ -3354,6 +3305,96 @@
           pill.innerHTML = `<span class="font-bold text-[#c85a32] wrap-text-safe">🍰 ${cleanParenText(em.title)}</span><a href="${emNavUrl}" target="_blank" class="shrink-0">📍</a>`;
           extraBox.appendChild(pill);
         });
+
+        // 🏨 飯店專屬互動：長按編輯（含上傳照片）、右滑刪除、雙擊文字看照片
+        const hotelSlot = dayCard.querySelector(".day-hotel-slot");
+        if (hotelItem && hotelSlot) {
+          const hCard = document.createElement("div");
+          hCard.className = "gesture-box px-2.5 py-1.5 rounded-xl bg-white border border-[#e6dcd0]";
+          const cleanHotelName = cleanParenText(hotelItem.hotel);
+          const hImgSrc = resolveImageSrc(hotelItem.hotelImg);
+
+          const renderHotelNormal = () => {
+            hCard.innerHTML = `
+              <div class="flex items-center justify-between gap-2">
+                <div class="hotel-dbl-zone flex items-start gap-1.5 min-w-0 flex-1 cursor-pointer" title="雙擊查看飯店照片 · 長按修改 · 右滑刪除">
+                  <span class="text-[11px] font-bold text-[#4f7768] shrink-0">🏨 住宿</span>
+                  <span class="text-xs font-bold text-[#2b302c] wrap-text-safe">${cleanHotelName}${hImgSrc ? ' <span class="text-[10px] text-[#e07a5f]">📸</span>' : ""}</span>
+                </div>
+                <a href="${buildSmartMapUrl(hotelItem.hotel, hotelItem.hotelLink || hotelItem.link)}" target="_blank" onclick="event.stopPropagation()" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-[#fbf8f3] border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
+              </div>
+            `;
+
+            const dblZone = hCard.querySelector(".hotel-dbl-zone");
+            let lastTapTime = 0;
+            const triggerHotelPhoto = () => {
+              if (hotelItem.hotelImg && resolveImageSrc(hotelItem.hotelImg)) {
+                openImageLightbox(hotelItem.hotelImg, `🏨 ${cleanHotelName}`);
+              } else {
+                alert("尚未上傳飯店照片喔！請長按飯店卡片即可上傳照片。");
+              }
+            };
+            dblZone.ondblclick = (e) => { e.stopPropagation(); triggerHotelPhoto(); };
+            dblZone.addEventListener("touchend", (e) => {
+              const now = Date.now();
+              if (now - lastTapTime < 320 && now - lastTapTime > 40) {
+                e.preventDefault();
+                e.stopPropagation();
+                triggerHotelPhoto();
+              }
+              lastTapTime = now;
+            });
+          };
+
+          const openHotelInlineEditor = () => {
+            const tmpImgId = "inline_ht_img_" + hotelItem.id;
+            hCard.innerHTML = `
+              <div class="inline-full-editor space-y-1.5 text-xs p-1" onclick="event.stopPropagation()">
+                <div class="font-bold text-[#52796f]">🏨 修改當晚住宿與照片</div>
+                <input type="text" class="ht-ed-name w-full px-2 py-1 rounded-lg border bg-[#fbf8f3] font-bold" value="${hotelItem.hotel || ""}" placeholder="飯店名稱 *" />
+                <input type="text" class="ht-ed-link w-full px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${hotelItem.hotelLink || ""}" placeholder="🔗 飯店地圖連結（選填）" />
+                <div class="flex gap-1">
+                  <input id="${tmpImgId}" type="text" class="ht-ed-img flex-1 px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${hotelItem.hotelImg || ""}" placeholder="📸 飯店照片網址或點右側選圖" />
+                  <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
+                </div>
+                <div class="flex gap-1.5 pt-1">
+                  <button type="button" class="btn-save-ht flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
+                  <button type="button" class="btn-del-ht px-2.5 py-1 rounded-lg bg-red-50 text-red-500 font-bold">刪除</button>
+                  <button type="button" class="btn-cancel-ht px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
+                </div>
+              </div>
+            `;
+            hCard.querySelector(".btn-save-ht").onclick = () => {
+              hotelItem.hotel = hCard.querySelector(".ht-ed-name").value.trim();
+              hotelItem.hotelLink = hCard.querySelector(".ht-ed-link").value.trim();
+              hotelItem.hotelImg = hCard.querySelector(".ht-ed-img").value.trim();
+              commitChange(`修改住宿：${hotelItem.hotel || "已清除"}`);
+            };
+            hCard.querySelector(".btn-del-ht").onclick = () => {
+              if (confirm(`確定刪除住宿「${cleanHotelName}」嗎？`)) {
+                hotelItem.hotel = "";
+                hotelItem.hotelImg = "";
+                hotelItem.hotelLink = "";
+                commitChange("刪除當晚住宿");
+              }
+            };
+            hCard.querySelector(".btn-cancel-ht").onclick = () => renderItineraryAndMeals();
+          };
+
+          renderHotelNormal();
+          attachRowGestures(hCard, {
+            onLongPressEdit: openHotelInlineEditor,
+            onSwipeDelete: () => {
+              if (confirm(`確定刪除住宿「${cleanHotelName}」嗎？`)) {
+                hotelItem.hotel = "";
+                hotelItem.hotelImg = "";
+                hotelItem.hotelLink = "";
+                commitChange("刪除當晚住宿");
+              }
+            }
+          });
+          hotelSlot.appendChild(hCard);
+        }
       });
     }
 
@@ -3414,6 +3455,7 @@
       const editId = document.getElementById("editingItiId").value;
       const title = document.getElementById("itiTitleInp").value.trim();
       if (!title) return alert("請填寫行程名稱！");
+      const existingIt = editId ? (t.itinerary || []).find(x => x && x.id === editId) : null;
       const obj = {
         id: editId || ("iti_" + Date.now()),
         day: parseInt(document.getElementById("itiDayInp").value, 10) || 1,
@@ -3423,6 +3465,8 @@
         cat: document.getElementById("itiCatSel").value,
         transit: document.getElementById("itiTransitInp").value.trim(),
         hotel: document.getElementById("itiHotelInp").value.trim(),
+        hotelImg: existingIt?.hotelImg || "",
+        hotelLink: existingIt?.hotelLink || "",
         link: document.getElementById("itiLinkInp").value.trim(),
         img: document.getElementById("itiImgInp").value.trim(),
         note: document.getElementById("itiNoteInp").value.trim()
@@ -3491,7 +3535,6 @@
       closeModalDirect("mealModal");
       commitChange(`儲存餐飲：${title}`);
     }
-
     // ==================== 13. 🧭 導覽圖鑑 & 🪄 智慧排程 ====================
     const FAMOUS_TEMPLATES = {
       JP: [
@@ -3538,13 +3581,13 @@
         hours: "24 小時開放（20:00 - 01:00 香火最鼎盛）",
         price: "免費參拜（供品花串每份約 20 - 50 泰銖）",
         img: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】曼谷匯狂路口象神廟位於 MRT Huai Khwang 站 4 號出口旁，主祀掌管智慧、開運、事業與財運的象頭神。\n🙏 【參拜秘訣】參拜後走到象神座騎「小老鼠」雕像旁，一手摸老鼠頭、另一手摀住牠另一側耳朵，輕聲說出心願請牠代為傳話！"
+        desc: "✨ 【景點介紹】曼谷匯狂路口象神廟位於 MRT Huai Khwang 站 4 號出口旁，主祀掌管智慧、開運、事業與財運的象頭神。\n🌟 【必看亮點】參拜後走到象神座騎「小老鼠」雕像旁，一手摸老鼠頭、另一手摀住牠另一側耳朵，輕聲說出心願請牠代為傳話！"
       },
       "匯狂夜市": {
         hours: "18:00 - 凌晨 04:00",
         price: "免費逛街",
         img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-        desc: "✨ 【景點介紹】匯狂夜市緊鄰 MRT 匯狂站 4 號出口與象神廟旁，是曼谷在地人最愛的宵夜天堂。\n🍢 【必吃亮點】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋與現切芒果糯米飯。"
+        desc: "✨ 【景點介紹】匯狂夜市緊鄰 MRT 匯狂站 4 號出口與象神廟旁，是曼谷在地人最愛的宵夜天堂。\n🌟 【必看亮點】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋與現切芒果糯米飯。"
       },
       "空盛桑": {
         hours: "05:30 - 20:30",
@@ -3699,6 +3742,7 @@
       if (!guideObj.imgHeight) guideObj.imgHeight = 170;
       if (guideObj.imgPosY === undefined) guideObj.imgPosY = 50;
 
+      // 1. 優先比對內建精選知識庫
       for (const [key, kb] of Object.entries(AI_SPOT_KNOWLEDGE_BASE)) {
         if (rawTitle.toLowerCase().includes(key.toLowerCase()) || (guideObj.title || "").toLowerCase().includes(key.toLowerCase())) {
           if (!guideObj.hours || guideObj.hours.startsWith("預計") || guideObj.hours === "依現場公告") guideObj.hours = kb.hours;
@@ -3709,12 +3753,26 @@
         }
       }
 
+      // 2. 即時生成類 Google 搜尋重點導覽（強制使用「景點介紹」標題，絕不出現 AI 摘要字眼）
+      try {
+        const promptTxt = `請用繁體中文撰寫旅遊地點「${c.name || ""} ${cleanTitle}」的精煉旅遊重點導覽（約 120 字），風格像搜尋引擎的精選重點，必須嚴格使用以下格式：\n✨ 【景點介紹】（簡要說明特色、定位與必訪原因）\n🌟 【必看亮點】（條列 2-3 個必拍、必吃或必玩重點）\n💡 【實用貼士】（交通、預約或最佳造訪時段建議）\n注意：絕對不要出現「AI」、「摘要」等字眼，直接輸出內容。`;
+        const aiRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptTxt)}`);
+        if (aiRes.ok) {
+          const aiTxt = (await aiRes.text()).trim();
+          if (aiTxt && aiTxt.length > 25 && !aiTxt.startsWith("<!DOCTYPE") && !aiTxt.includes("Bad Gateway")) {
+            guideObj.desc = normalizeGuideDescText(aiTxt);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      // 3. 備援：維基百科摘要
       try {
         const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanTitle)}`);
         if (res.ok) {
           const data = await res.json();
           if (data.extract && data.extract.length > 25) {
-            guideObj.desc = `✨ 【景點介紹】${data.extract}\n💡 【遊玩攻略】${fallbackIti?.note || fallbackIti?.transit || "建議預留充裕時間拍照與探索周邊特色小店。"}`;
+            guideObj.desc = `✨ 【景點介紹】${data.extract}\n💡 【實用貼士】${fallbackIti?.note || fallbackIti?.transit || "建議預留充裕時間拍照與探索周邊特色小店。"}`;
             if ((data.originalimage?.source || data.thumbnail?.source) && !guideObj.img) {
               guideObj.img = data.originalimage?.source || data.thumbnail?.source;
             }
@@ -3723,7 +3781,8 @@
         }
       } catch (e) {}
 
-      guideObj.desc = `✨ 【景點介紹】${cleanTitle} 是 ${c.name || "當地"} 極具代表性的熱門造訪地點，結合在地文化風情與特色體驗。\n${fallbackIti?.transit ? "🚇 【交通方式】" + fallbackIti.transit + "\n" : ""}🌟 【遊玩重點】${fallbackIti?.note || "建議搭配周邊商圈順遊，現場體驗在地氛圍與拍照留念。"}`;
+      // 4. 保底預設
+      guideObj.desc = `✨ 【景點介紹】${cleanTitle} 是 ${c.name || "當地"} 極具代表性的熱門造訪地點，結合在地文化風情與特色體驗。\n${fallbackIti?.transit ? "🚇 【交通方式】" + fallbackIti.transit + "\n" : ""}🌟 【必看亮點】${fallbackIti?.note || "建議搭配周邊商圈順遊，現場體驗在地氛圍與拍照留念。"}`;
     }
 
     function getSelectedAiTargetDay() {
@@ -5072,7 +5131,7 @@
                   </div>
                   <div class="grid grid-cols-2 gap-1.5">
                     <input type="number" class="sh-ed-price px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${s.price || ""}" placeholder="預估金額" />
-                    <input type="text" class="sh-ed-note px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${s.note || ""}" placeholder="數量或備註" />
+                    <textarea rows="2" class="sh-ed-note px-2 py-1 rounded-lg border bg-[#fbf8f3]" placeholder="數量或備註">${s.note || ""}</textarea>
                   </div>
                   <div class="flex gap-1">
                     <input id="${tmpImgId}" type="text" class="sh-ed-img flex-1 px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${s.img || ""}" placeholder="📸 照片" />
@@ -5686,7 +5745,6 @@
       status.textContent = "⏳ 正在將所有國家與泰國行同步至雲端 Gist...";
 
       try {
-        // 上傳前先清理所有陣列內的 null
         Object.values(state.trips).forEach(tr => sanitizeTripArrays(tr));
 
         const filesPayload = {
@@ -5827,7 +5885,6 @@
           } catch (e) {}
         }
 
-        // 同時讀取所有單國檔案，safeUpsertTrip 會自動保留資料較多的版本並清除 null
         for (const fileObj of Object.values(data.files || {})) {
           if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
           try {
