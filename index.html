@@ -72,6 +72,7 @@
       border: 1px solid #e6dec8;
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       cursor: zoom-in;
+      contrast: 1.03;
     }
 
     .ticket-card {
@@ -113,7 +114,6 @@
       border-color: #f87171 !important;
     }
 
-    /* 保留 Enter 換行且超長自動折行不省略 */
     .wrap-text-safe {
       white-space: pre-line !important;
       word-break: break-word;
@@ -233,10 +233,8 @@
 </head>
 <body>
 
-  <!-- 🎨 跨裝置百分比定位貼圖層 -->
   <div id="stickerCanvasLayer"></div>
 
-  <!-- ↩️ 跨頁跳轉後「一鍵返回原處」懸浮膠囊 -->
   <div id="quickReturnBar" class="fixed top-14 left-3 z-50 hidden">
     <button onclick="returnToPreviousPlace()" class="px-3.5 py-2 rounded-full btn-gradient-rose text-white shadow-2xl border-2 border-white flex items-center gap-1.5 text-xs font-bold hover:scale-105 active:scale-95 transition">
       <i class="fa-solid fa-arrow-rotate-left"></i>
@@ -244,7 +242,6 @@
     </button>
   </div>
 
-  <!-- 🔍 拍立得圖片放大檢視器 -->
   <div id="imageLightbox" onclick="closeImageLightbox()" class="fixed inset-0 z-[95] hidden bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-3">
     <div class="relative max-w-3xl w-full bg-[#fffdf9] rounded-3xl p-3 shadow-2xl border-2 border-[#e7dfd3]" onclick="event.stopPropagation()">
       <div class="washi-tape"></div>
@@ -258,7 +255,6 @@
     </div>
   </div>
 
-  <!-- 🪄 左下角懸浮「智慧排程」快捷圓鈕 -->
   <div id="aiFabWrapper" class="fixed left-3 bottom-20 z-40 flex flex-col items-start">
     <button onclick="openAiPlannerModal()" class="px-3.5 py-2.5 rounded-full btn-gradient-ai text-white shadow-xl border-2 border-white flex items-center gap-1.5 font-bold text-xs hover:scale-105 active:scale-95 transition whitespace-nowrap">
       <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
@@ -266,7 +262,6 @@
     </button>
   </div>
 
-  <!-- 📱 右下角懸浮「天數跳轉 ＋ 地區篩選」快捷圓鈕 -->
   <div id="dayFabWrapper" class="fixed right-3 bottom-20 z-40 flex flex-col items-end">
     <div id="dayFabMenu" class="hidden mb-2 p-3 bg-white/95 backdrop-blur-md rounded-3xl border-2 border-[#e5dacb] shadow-2xl max-h-80 overflow-y-auto w-56 space-y-2">
       <div>
@@ -287,7 +282,6 @@
     </button>
   </div>
 
-  <!-- 🌸 頂部導覽列（已移除上一步/下一步按鈕，釋放旅程標題空間） -->
   <header class="sticky top-0 z-40 bg-[#fbf8f3]/92 backdrop-blur-md border-b border-[#e8dfd3] px-2.5 sm:px-5 py-2">
     <div class="w-full max-w-6xl mx-auto flex items-center justify-between gap-2">
       <button onclick="toggleDrawer('anywhereDoorDrawer', event)" class="flex items-center gap-1.5 bg-white border-2 border-[#e6dcd0] pl-2.5 pr-3 py-1 rounded-full shadow-2xs min-w-0 flex-1 max-w-xs sm:max-w-md text-left">
@@ -297,6 +291,7 @@
       </button>
 
       <div class="flex items-center gap-1.5 shrink-0">
+        <span id="autoSyncBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e8f0ed] text-[#3d5a52]">本機就緒</span>
         <button onclick="openModal('memberModal')" class="px-2.5 py-1 rounded-full bg-[#fef9ef] border border-[#f2cc8f] text-xs font-bold text-[#9c6644] whitespace-nowrap">
           🧸 <span class="hidden sm:inline">旅伴</span>
         </button>
@@ -309,7 +304,6 @@
       </div>
     </div>
 
-    <!-- 🚪 任意門抽屜 -->
     <div id="anywhereDoorDrawer" class="drawer-panel w-full max-w-6xl mx-auto" onclick="event.stopPropagation()">
       <div class="mt-2 p-3 bg-white rounded-3xl border-2 border-[#e6dcd0] shadow-xl space-y-2.5">
         <div>
@@ -333,7 +327,6 @@
       </div>
     </div>
 
-    <!-- 🎀 貼紙抽屜 -->
     <div id="stickerDrawer" class="drawer-panel w-full max-w-6xl mx-auto" onclick="event.stopPropagation()">
       <div class="mt-2 p-2.5 bg-white rounded-3xl border-2 border-[#f4c2b2] shadow-md flex items-center justify-between gap-2 overflow-x-auto no-scrollbar whitespace-nowrap">
         <div class="flex items-center gap-2 text-xl shrink-0">
@@ -357,13 +350,10 @@
     </div>
   </header>
 
-  <!-- 📐 主容器 -->
   <main class="w-full max-w-6xl mx-auto px-2.5 sm:px-5 pt-3">
 
-    <!-- ==================== TAB 1: 航程與每日行程 ==================== -->
+    <!-- TAB 1: 航程與每日行程 -->
     <section id="tabPanel-itinerary" class="tab-panel space-y-3">
-
-      <!-- ✈️ 航班登機證 -->
       <div class="journal-card overflow-hidden">
         <div class="washi-tape"></div>
         <div onclick="toggleDrawer('flightsDrawer', event)" class="px-3.5 py-2 bg-gradient-to-r from-[#f7f2e9] to-[#f3ece0] flex items-center justify-between cursor-pointer border-b border-[#ece3d5] whitespace-nowrap">
@@ -383,7 +373,6 @@
         </div>
       </div>
 
-      <!-- 🗂️ 每日行程頂部控制卡 -->
       <div class="journal-card p-2.5 sm:p-3.5">
         <div class="washi-tape pink"></div>
         <div class="flex items-center justify-between gap-1.5 mb-2 whitespace-nowrap">
@@ -410,11 +399,10 @@
         <div id="dayPillsBar" class="drag-scroll-x flex items-center gap-1.5 no-scrollbar"></div>
       </div>
 
-      <!-- 📋 每日行程容器 -->
       <div id="daysContentWrapper" class="space-y-3"></div>
     </section>
 
-    <!-- ==================== TAB 2: 景點深度導覽 ==================== -->
+    <!-- TAB 2: 景點深度導覽 -->
     <section id="tabPanel-guide" class="tab-panel hidden space-y-3">
       <div class="journal-card p-3 sm:p-4">
         <div class="washi-tape green"></div>
@@ -424,9 +412,9 @@
             <span class="sub-pill hidden sm:inline-flex">僅收錄重點地標</span>
           </div>
           <div class="flex gap-1 shrink-0">
-            <button onclick="cleanUpNonHighlightGuides()" class="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600 border" title="自動移除非重點導覽卡">🧹 精簡</button>
-            <button onclick="refreshAllGuidesSummaryAndPhoto()" id="btnRefreshAllGuides" class="text-xs font-bold px-2 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]" title="一鍵補齊所有景點介紹與實景圖片">🔄 補齊圖文</button>
-            <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]" title="僅從行程擷取重點地標">📥 抓重點</button>
+            <button onclick="cleanUpNonHighlightGuides()" class="text-xs font-bold px-2 py-1 rounded-full bg-gray-100 text-gray-600 border">🧹 精簡</button>
+            <button onclick="refreshAllGuidesSummaryAndPhoto()" id="btnRefreshAllGuides" class="text-xs font-bold px-2 py-1 rounded-full bg-[#fdf0ec] text-[#c85a32] border border-[#f4c2b2]">🔄 補齊圖文</button>
+            <button onclick="syncGuidesFromItinerary()" class="text-xs font-bold px-2 py-1 rounded-full bg-[#e8f0ed] text-[#3d5a52]">📥 抓重點</button>
             <button onclick="openGuideModal()" class="text-xs font-bold px-2.5 py-1 rounded-full btn-gradient-sage">+ 新增</button>
           </div>
         </div>
@@ -434,12 +422,10 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 3: 分帳圖表 ==================== -->
+    <!-- TAB 3: 分帳圖表 -->
     <section id="tabPanel-expense" class="tab-panel hidden space-y-3">
-
       <div class="journal-card p-3 sm:p-4 space-y-2.5">
         <div class="washi-tape green"></div>
-
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
           <div class="flex items-center gap-1.5">
             <h3 class="font-bold text-sm text-[#2b302c]">📊 花費統計</h3>
@@ -465,12 +451,12 @@
           <div id="expenseCatLegend" class="flex-1 space-y-1 text-xs min-w-0"></div>
         </div>
 
-        <div id="chartEmbeddedDetailDrawer" class="drawer-panel bg-white rounded-2xl border border-[#ece3d5]">
+        <div id="chartEmbeddedDetailDrawer" class="drawer-panel open bg-white rounded-2xl border border-[#ece3d5]">
           <div class="px-3 py-1.5 bg-[#fdf0ec]/50 border-b border-[#ece3d5] flex items-center justify-between text-[11px] font-bold text-[#c85a32] whitespace-nowrap">
             <span id="embeddedListTitle">📋 帳務明細</span>
             <span class="text-[10px] text-[#7a827d] font-normal">長按修改 · 右滑刪除</span>
           </div>
-          <div id="chartEmbeddedListBox" class="p-2 space-y-1.5 max-h-72 overflow-y-auto"></div>
+          <div id="chartEmbeddedListBox" class="p-2 space-y-1.5 max-h-80 overflow-y-auto"></div>
         </div>
 
         <div class="pt-2 border-t border-dashed border-[#e8dfd3]">
@@ -484,7 +470,6 @@
         </div>
       </div>
 
-      <!-- ➕ 新增記帳與匯率算盤 -->
       <div class="journal-card overflow-hidden">
         <div onclick="toggleDrawer('addExpenseDrawer', event)" class="px-3.5 py-2.5 bg-gradient-to-r from-[#f7f2e9] to-[#fbf8f3] flex items-center justify-between cursor-pointer border-b border-[#ece3d5] whitespace-nowrap">
           <span class="font-bold text-sm text-[#2b302c]">➕ 新增記帳 & 匯率算盤</span>
@@ -581,7 +566,7 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: 清單中心 ==================== -->
+    <!-- TAB 4: 清單中心 -->
     <section id="tabPanel-lists" class="tab-panel hidden space-y-3">
       <div class="grid grid-cols-4 gap-1.5 whitespace-nowrap">
         <button onclick="switchListTab('shopping')" id="listBtn-shopping" class="py-2 rounded-full font-bold text-xs btn-gradient-sage">🛍️ 必買</button>
@@ -590,7 +575,6 @@
         <button onclick="switchListTab('memo')" id="listBtn-memo" class="py-2 rounded-full font-bold text-xs bg-white border border-[#dcd2c4] text-[#4a524d]">📝 備忘</button>
       </div>
 
-      <!-- 🛍️ 1. 必買購物清單 -->
       <div id="listBox-shopping" class="journal-card p-3 sm:p-4 space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
           <h3 class="font-bold text-sm text-[#2b302c]">🛍️ 必買抽屜</h3>
@@ -621,7 +605,6 @@
         <div id="shopCategoryDrawersContainer" class="space-y-2"></div>
       </div>
 
-      <!-- 🍜 2. 必吃美食清單 -->
       <div id="listBox-food" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
           <h3 class="font-bold text-sm text-[#2b302c]">🍜 必吃抽屜</h3>
@@ -650,7 +633,6 @@
         <div id="foodCategoryDrawersContainer" class="space-y-2"></div>
       </div>
 
-      <!-- 🧳 3. 單機版行李清單 -->
       <div id="listBox-packing" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
           <h3 class="font-bold text-sm text-[#2b302c]">🧳 行李表</h3>
@@ -680,7 +662,6 @@
         <div id="localPackingListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
       </div>
 
-      <!-- 📝 4. 備忘手札 -->
       <div id="listBox-memo" class="journal-card p-3 sm:p-4 hidden space-y-2.5">
         <div class="flex items-center justify-between gap-2 whitespace-nowrap">
           <h3 class="font-bold text-sm text-[#2b302c]">📝 備忘手札</h3>
@@ -705,9 +686,8 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 5: 資訊與即時翻譯 ==================== -->
+    <!-- TAB 5: 資訊與即時翻譯 -->
     <section id="tabPanel-info" class="tab-panel hidden space-y-3">
-
       <div class="journal-card overflow-hidden">
         <div class="washi-tape green"></div>
         <div onclick="toggleDrawer('phrasebookDrawer', event)" class="px-3.5 py-2.5 bg-white flex items-center justify-between cursor-pointer border-b border-[#ece3d5] whitespace-nowrap">
@@ -766,7 +746,6 @@
 
   </main>
 
-  <!-- 🧭 底部導覽列 -->
   <nav class="fixed bottom-3 inset-x-3 z-40 max-w-md mx-auto bg-white/95 backdrop-blur-md border-2 border-[#e6dcd0] rounded-full shadow-2xl px-2 py-1">
     <div class="grid grid-cols-5">
       <button onclick="switchTab('itinerary', this)" class="nav-bottom-btn flex flex-col items-center py-1 text-[#52796f] font-bold">
@@ -792,8 +771,7 @@
     </div>
   </nav>
 
-  <!-- ==================== MODALS 彈出視窗區 ==================== -->
-
+  <!-- MODALS -->
   <div id="aiParserModal" onclick="closeModalDirect('aiParserModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-3">
       <div class="flex items-center justify-between border-b pb-2">
@@ -848,7 +826,6 @@
     </div>
   </div>
 
-  <!-- 0. 👥 旅伴管理視窗 -->
   <div id="memberModal" onclick="closeModalDirect('memberModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0]">
       <div class="flex items-center justify-between mb-3">
@@ -865,7 +842,7 @@
           <button type="button" onclick="selectAvatarPreset('🌸')" class="w-8 h-8 rounded-full bg-white border">🌸</button>
           <button type="button" onclick="selectAvatarPreset('💰')" class="w-8 h-8 rounded-full bg-white border">💰</button>
           <label class="px-2.5 py-1 rounded-full bg-[#fdf0ec] border border-[#f4c2b2] text-[#c85a32] text-xs font-bold flex items-center cursor-pointer">
-            📸 照片<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'newMemberAvatarInp', 180)" />
+            📸 照片<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'newMemberAvatarInp', 320)" />
           </label>
         </div>
         <div class="flex items-center gap-2">
@@ -879,7 +856,6 @@
     </div>
   </div>
 
-  <!-- 1. 新增行程點視窗 -->
   <div id="itineraryModal" onclick="autoSaveAndCloseModal('itineraryModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -938,7 +914,6 @@
     </div>
   </div>
 
-  <!-- 2. 每日餐飲視窗 -->
   <div id="mealModal" onclick="autoSaveAndCloseModal('mealModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -972,7 +947,6 @@
     </div>
   </div>
 
-  <!-- 3. 航班視窗 -->
   <div id="flightModal" onclick="autoSaveAndCloseModal('flightModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -1005,7 +979,6 @@
     </div>
   </div>
 
-  <!-- 4. 導覽視窗 -->
   <div id="guideModal" onclick="autoSaveAndCloseModal('guideModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-lg w-full p-4 max-h-[92vh] overflow-y-auto shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -1060,7 +1033,6 @@
     </div>
   </div>
 
-  <!-- 5. 憑證/交通圖上傳視窗 -->
   <div id="assetModal" onclick="autoSaveAndCloseModal('assetModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-2.5">
       <div class="flex items-center justify-between">
@@ -1071,7 +1043,7 @@
       <div class="flex gap-1.5">
         <input id="assetImgInp" type="text" placeholder="📸 圖片連結或上傳..." class="flex-1 text-xs px-3 py-1.5 rounded-xl border bg-[#fbf8f3]" />
         <label class="px-3 py-1.5 rounded-xl bg-[#fdf0ec] text-[#c85a32] text-xs font-bold cursor-pointer shrink-0">
-          選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'assetImgInp', 1200)" />
+          選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, 'assetImgInp')" />
         </label>
       </div>
       <input id="assetUrlInp" type="text" placeholder="🔗 外部連結" class="w-full text-xs px-3 py-1.5 rounded-xl border bg-white" />
@@ -1083,20 +1055,23 @@
     </div>
   </div>
 
-  <!-- 6. ☁️ 雲端 Gist 同步視窗 -->
   <div id="cloudSyncModal" onclick="closeModalDirect('cloudSyncModal')" class="fixed inset-0 z-50 hidden bg-black/45 backdrop-blur-xs flex items-center justify-center p-3">
     <div onclick="event.stopPropagation()" class="bg-[#fffdf9] rounded-3xl max-w-md w-full p-4 shadow-2xl border-2 border-[#e6dcd0] space-y-3">
       <div class="flex items-center justify-between">
-        <h3 class="font-bold text-sm text-[#2b302c]">☁️ Gist 雲端同步</h3>
+        <h3 class="font-bold text-sm text-[#2b302c]">☁️ 智慧雲端同步 & 本機備援</h3>
         <button onclick="closeModalDirect('cloudSyncModal')" class="text-gray-400 text-base">✕</button>
       </div>
 
+      <div class="p-2.5 rounded-2xl bg-[#e8f0ed]/70 border border-[#c5dbd3] text-[11px] text-[#3d5a52] leading-relaxed">
+        ⚡ <strong>自動智慧合併已啟用</strong>：每次編輯後 0.6 秒自動比對雲端與本機內容（以內容較完整/較新為主、不互相覆蓋）；若無網路會自動停在本機版運作。
+      </div>
+
       <div class="space-y-2">
-        <input id="gistTokenInp" type="password" placeholder="GitHub Token" class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
-        <input id="gistIdInp" type="text" placeholder="Gist ID" class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
+        <input id="gistTokenInp" type="password" autocomplete="new-password" placeholder="GitHub Token（手動貼上避免自動填入）" class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
+        <input id="gistIdInp" type="text" autocomplete="off" placeholder="Gist ID" class="w-full text-xs px-3 py-2 rounded-xl border bg-white" />
         <div class="grid grid-cols-2 gap-2">
-          <button onclick="pushToGist()" class="py-2 rounded-full btn-gradient-sage font-bold text-xs">⬆️ 上傳至雲端</button>
-          <button onclick="pullFromGist()" class="py-2 rounded-full btn-gradient-rose font-bold text-xs">⬇️ 從雲端下載</button>
+          <button onclick="smartSyncWithGist(true)" class="py-2 rounded-full btn-gradient-sage font-bold text-xs">⚡ 立即智慧合併同步</button>
+          <button onclick="pullFromGist()" class="py-2 rounded-full btn-gradient-rose font-bold text-xs">⬇️ 僅下載合併</button>
         </div>
         <div id="gistStatusText" class="text-xs font-bold text-center text-[#52796f]"></div>
       </div>
@@ -1125,6 +1100,8 @@
     const IMAGE_VAULT_KEY = "WANDERNOTE_JOURNAL_V83_IMAGES";
     const LOCAL_PACKING_KEY = "WANDERNOTE_LOCAL_PACKING_V83";
     const SNAPSHOTS_KEY = "WANDERNOTE_SNAPSHOTS_V83";
+    const IDB_NAME = "WanderNotePhotoVaultDB";
+    const IDB_STORE = "images";
 
     const ITI_CATEGORIES_LIST = [
       { val: "景點", label: "📸 景點" },
@@ -1329,18 +1306,100 @@
       }
     }
 
-    // ==================== 1. 獨立雲端圖庫引擎 ====================
+    // ==================== 1. 大容量 IndexedDB + localStorage 雙層圖庫引擎（支援萬張高畫質小體積） ====================
     let imageVault = {};
+    let idbInstance = null;
+
+    function openPhotoIDB() {
+      return new Promise((resolve) => {
+        if (!("indexedDB" in window)) return resolve(null);
+        if (idbInstance) return resolve(idbInstance);
+        try {
+          const req = indexedDB.open(IDB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE)) {
+              db.createObjectStore(IDB_STORE);
+            }
+          };
+          req.onsuccess = (e) => {
+            idbInstance = e.target.result;
+            resolve(idbInstance);
+          };
+          req.onerror = () => resolve(null);
+        } catch (err) {
+          resolve(null);
+        }
+      });
+    }
+
+    async function saveSingleImageToIDB(imgId, dataUrl) {
+      const db = await openPhotoIDB();
+      if (!db) return;
+      try {
+        const tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).put(dataUrl, imgId);
+      } catch (e) {}
+    }
+
+    async function loadAllImagesFromIDB() {
+      const db = await openPhotoIDB();
+      if (!db) return;
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(IDB_STORE, "readonly");
+          const store = tx.objectStore(IDB_STORE);
+          const req = store.openCursor();
+          let loadedAny = false;
+          req.onsuccess = (e) => {
+            const cursor = e.target.result;
+            if (cursor) {
+              if (!imageVault[cursor.key]) {
+                imageVault[cursor.key] = cursor.value;
+                loadedAny = true;
+              }
+              cursor.continue();
+            } else {
+              if (loadedAny) renderAll();
+              resolve();
+            }
+          };
+          req.onerror = () => resolve();
+        } catch (err) {
+          resolve();
+        }
+      });
+    }
 
     function loadImageVault() {
       try {
         const raw = localStorage.getItem(IMAGE_VAULT_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V82_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V80_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V78_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V75_IMAGES");
         if (raw) imageVault = JSON.parse(raw) || {};
       } catch (e) { imageVault = {}; }
+      // 背景把既有圖片也同步一份進 IndexedDB，並從 IndexedDB 載入歷史圖片
+      openPhotoIDB().then(async (db) => {
+        if (db) {
+          Object.entries(imageVault).forEach(([k, v]) => saveSingleImageToIDB(k, v));
+          await loadAllImagesFromIDB();
+        }
+      });
     }
 
     function saveImageVault() {
-      try { localStorage.setItem(IMAGE_VAULT_KEY, JSON.stringify(imageVault)); } catch (e) {}
+      // 1. 全部無上限存入 IndexedDB
+      Object.entries(imageVault).forEach(([k, v]) => saveSingleImageToIDB(k, v));
+      // 2. localStorage 盡可能保存（若超過 5MB 上限，僅在 localStorage 淘汰最舊鍵值，IndexedDB 仍完整保留全部）
+      const lsCopy = { ...imageVault };
+      for (let guard = 0; guard < 120; guard++) {
+        try {
+          localStorage.setItem(IMAGE_VAULT_KEY, JSON.stringify(lsCopy));
+          break;
+        } catch (e) {
+          const keys = Object.keys(lsCopy);
+          if (keys.length <= 1) break;
+          delete lsCopy[keys[0]];
+        }
+      }
     }
 
     function resolveImageSrc(ref) {
@@ -1351,7 +1410,8 @@
       return trimmed;
     }
 
-    function compressAndBindImage(event, targetInputId, maxWidth = 860) {
+    // 清晰高壓縮比：最長邊 680px、高畫質重採樣、WebP 0.56（或 JPEG 0.58），約 15~28KB/張，文字清晰且可容納萬張
+    function compressAndBindImage(event, targetInputId, maxWidth = 680) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -1360,20 +1420,36 @@
         img.onload = function() {
           const canvas = document.createElement("canvas");
           let w = img.width, h = img.height;
-          if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
-          canvas.width = w; canvas.height = h;
-          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-          const compressed = canvas.toDataURL("image/jpeg", 0.72);
+          if (w > maxWidth || h > maxWidth) {
+            if (w >= h) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+            else { w = Math.round((w * maxWidth) / h); h = maxWidth; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, w, h);
+
+          let compressed = canvas.toDataURL("image/webp", 0.56);
+          if (!compressed || !compressed.startsWith("data:image/webp")) {
+            compressed = canvas.toDataURL("image/jpeg", 0.58);
+          }
+
           const imgId = "img_" + Date.now() + "_" + Math.random().toString(36).slice(2, 5);
           imageVault[imgId] = compressed;
           saveImageVault();
 
           const inp = document.getElementById(targetInputId);
-          if (inp) inp.value = `[📸 雲端圖片 #${imgId}]`;
+          if (inp) {
+            inp.value = `[📸 雲端圖片 #${imgId}]`;
+            inp.dispatchEvent(new Event("input", { bubbles: true }));
+          }
           if (targetInputId === "newMemberAvatarInp") {
             const prev = document.getElementById("selectedAvatarPreview");
             if (prev) prev.innerHTML = `<img src="${compressed}" alt="avatar" />`;
           }
+          scheduleAutoSync();
         };
         img.src = e.target.result;
       };
@@ -1439,7 +1515,8 @@
           imgPosY: 50,
           imgFit: "cover",
           desc: "⏳ 正在為您擷取景點介紹與實景圖片...",
-          link: fallbackIti.link || ""
+          link: fallbackIti.link || "",
+          updatedAt: Date.now()
         };
         t.guides.unshift(newGd);
         targetGuide = newGd;
@@ -1473,8 +1550,10 @@
 
         if (needsPopulate) {
           await populateGuideWithAiSummary(targetGuide, fallbackIti);
+          targetGuide.updatedAt = Date.now();
           saveAppState(false);
           renderGuidesSection();
+          scheduleAutoSync();
         }
       }
     }
@@ -2038,8 +2117,6 @@
 
     let state = null;
     let localPackingItems = [];
-    let undoStack = [];
-    let redoStack = [];
 
     function countAllItems(s) {
       if (!s || !s.trips) return 0;
@@ -2068,6 +2145,55 @@
       return CAT_NORM_MAP[rawCat] || "其他雜支";
     }
 
+    // ==================== 內容優先智慧聯集合併引擎（不互相覆蓋、抓最新/最多內容） ====================
+    function getRecordRichness(rec) {
+      if (!rec || typeof rec !== "object") return 0;
+      return JSON.stringify(rec).length;
+    }
+
+    function mergeArrayById(localArr = [], remoteArr = []) {
+      const map = new Map();
+      const putItem = (item) => {
+        if (!item || typeof item !== "object") return;
+        const key = item.id || JSON.stringify(item);
+        if (!map.has(key)) {
+          map.set(key, { ...item });
+          return;
+        }
+        const prev = map.get(key);
+        const prevTime = Number(prev.updatedAt || 0);
+        const nextTime = Number(item.updatedAt || 0);
+        if (nextTime > prevTime) {
+          map.set(key, { ...prev, ...item });
+        } else if (nextTime === prevTime && getRecordRichness(item) > getRecordRichness(prev)) {
+          map.set(key, { ...prev, ...item });
+        }
+      };
+      (remoteArr || []).filter(Boolean).forEach(putItem);
+      (localArr || []).filter(Boolean).forEach(putItem);
+      return Array.from(map.values());
+    }
+
+    function mergeTripObjects(localTrip, remoteTrip) {
+      if (!remoteTrip || typeof remoteTrip !== "object") return sanitizeTripArrays({ ...localTrip });
+      if (!localTrip || typeof localTrip !== "object") return sanitizeTripArrays({ ...remoteTrip });
+
+      const base = getRecordRichness(localTrip) >= getRecordRichness(remoteTrip)
+        ? { ...remoteTrip, ...localTrip }
+        : { ...localTrip, ...remoteTrip };
+
+      const listKeys = [
+        "flightSegments", "itinerary", "meals", "guides",
+        "expenses", "shopping", "mustEat", "memos", "stickers",
+        "customLinks", "customVisas", "customTransits", "customPhrases", "companions"
+      ];
+      listKeys.forEach((k) => {
+        base[k] = mergeArrayById(localTrip[k], remoteTrip[k]);
+      });
+      base.subRegions = Array.from(new Set([...(remoteTrip.subRegions || []), ...(localTrip.subRegions || [])])).filter(Boolean);
+      return sanitizeTripArrays(base, base.subRegions[0] || "市區");
+    }
+
     function convertAndMergeAnyLegacyData(rawJson, overwriteAll = false, filename = "") {
       if (!rawJson || typeof rawJson !== "object") return false;
 
@@ -2085,7 +2211,7 @@
         });
       }
 
-      const safeUpsertTrip = (tid, incomingTrip, fallbackCountryKey) => {
+      const safeSmartUpsertTrip = (tid, incomingTrip, fallbackCountryKey) => {
         if (!incomingTrip || typeof incomingTrip !== "object") return;
         const cleanId = tid || incomingTrip.id || ("trip_" + Date.now());
         const targetCid = incomingTrip.countryId || fallbackCountryKey || "JP";
@@ -2100,12 +2226,12 @@
           guides: (cleanedTrip.guides || []).map(g => ({ ...g, desc: normalizeGuideDescText(g.desc) }))
         };
 
-        const newScore = getTripDataScore(normalizedTrip);
         const existingSameId = state.trips[cleanId];
-        if (existingSameId && getTripDataScore(existingSameId) > newScore && newScore === 0) {
-          return;
+        if (existingSameId) {
+          state.trips[cleanId] = mergeTripObjects(existingSameId, normalizedTrip);
+        } else {
+          state.trips[cleanId] = normalizedTrip;
         }
-        state.trips[cleanId] = normalizedTrip;
       };
 
       if (rawJson.trips && typeof rawJson.trips === "object" && rawJson.countries) {
@@ -2120,12 +2246,12 @@
           };
         });
         Object.entries(rawJson.trips).forEach(([tid, tObj]) => {
-          safeUpsertTrip(tid, tObj, tObj?.countryId);
+          safeSmartUpsertTrip(tid, tObj, tObj?.countryId);
         });
-        if (rawJson.activeCountryId && state.countries[rawJson.activeCountryId]) {
+        if (!state.activeCountryId && rawJson.activeCountryId && state.countries[rawJson.activeCountryId]) {
           state.activeCountryId = rawJson.activeCountryId;
         }
-        if (rawJson.activeTripId && state.trips[rawJson.activeTripId]) {
+        if (!state.activeTripId && rawJson.activeTripId && state.trips[rawJson.activeTripId]) {
           state.activeTripId = rawJson.activeTripId;
         }
         return true;
@@ -2153,13 +2279,13 @@
         if (Array.isArray(rawJson.allTripsInCountry) && rawJson.allTripsInCountry.length > 0) {
           rawJson.allTripsInCountry.filter(Boolean).forEach(tObj => {
             const tid = tObj.id || ("trip_" + existingCountryKey.toLowerCase() + "_1");
-            safeUpsertTrip(tid, tObj, existingCountryKey);
+            safeSmartUpsertTrip(tid, tObj, existingCountryKey);
           });
         }
 
         if (Array.isArray(rawJson.flightSegments) || Array.isArray(rawJson.itinerary)) {
           const tid = rawJson.id || ("trip_" + existingCountryKey.toLowerCase() + "_1");
-          safeUpsertTrip(tid, {
+          safeSmartUpsertTrip(tid, {
             id: tid, countryId: existingCountryKey, title: rawJson.title || `${rawJson.countryName || cid} 之旅`,
             companions: rawJson.companions || [],
             subRegions: rawJson.subRegions || [], flightSegments: rawJson.flightSegments || [],
@@ -2261,18 +2387,18 @@
       localStorage.setItem(LOCAL_PACKING_KEY, JSON.stringify(localPackingItems));
     }
 
+    // 每次變動：立刻存本機 ＋ 0.6 秒後背景自動智慧合併上傳
     function commitChange(label = "更新手札") {
-      undoStack.push(JSON.stringify(state));
-      if (undoStack.length > 25) undoStack.shift();
-      redoStack = [];
-      updateUndoRedoUI();
       saveAppState(true, label);
       renderAll();
+      scheduleAutoSync();
     }
 
     function saveAppState(makeSnap = false, label = "自動儲存") {
       if (!state || !state.trips || Object.keys(state.trips).length === 0) return;
-      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
+      try {
+        localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
       if (makeSnap) {
         try {
           const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]");
@@ -2286,31 +2412,6 @@
           localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list.slice(0, 50)));
         } catch (e) {}
       }
-    }
-
-    function undoAction() {
-      if (undoStack.length === 0) return;
-      redoStack.push(JSON.stringify(state));
-      state = JSON.parse(undoStack.pop());
-      saveAppState(false);
-      updateUndoRedoUI();
-      renderAll();
-    }
-
-    function redoAction() {
-      if (redoStack.length === 0) return;
-      undoStack.push(JSON.stringify(state));
-      state = JSON.parse(redoStack.pop());
-      saveAppState(false);
-      updateUndoRedoUI();
-      renderAll();
-    }
-
-    function updateUndoRedoUI() {
-      const u = document.getElementById("btnUndo");
-      const r = document.getElementById("btnRedo");
-      if (u) u.disabled = undoStack.length === 0;
-      if (r) r.disabled = redoStack.length === 0;
     }
 
     function getCountry() {
@@ -2406,8 +2507,8 @@
       if (!Array.isArray(t.companions)) t.companions = [];
 
       const existing = t.companions.find(c => c && c.name === name);
-      if (existing) existing.avatar = avatar;
-      else t.companions.push({ id: "cp_" + Date.now(), name, avatar });
+      if (existing) { existing.avatar = avatar; existing.updatedAt = Date.now(); }
+      else t.companions.push({ id: "cp_" + Date.now(), name, avatar, updatedAt: Date.now() });
 
       if (!state.companions.some(c => c && c.name === name)) {
         state.companions.push({ id: "cp_g_" + Date.now(), name, avatar });
@@ -2427,6 +2528,7 @@
       const newEmoji = prompt(`更換「${cp.name}」的貼圖 Emoji：`, (cp.avatar || "").startsWith("[📸") ? "🐶" : cp.avatar);
       if (newEmoji && newEmoji.trim()) {
         cp.avatar = newEmoji.trim();
+        cp.updatedAt = Date.now();
         renderMemberModalList();
         commitChange(`更換 ${cp.name} 頭貼`);
       }
@@ -2606,6 +2708,11 @@
         renderExpenseSection();
         return;
       }
+      if (!navigator.onLine) {
+        if (badge) badge.textContent = `離線 1 ${c.currency}≈${c.rate}`;
+        updateCalcPreview();
+        return;
+      }
       try {
         const res = await fetch(`https://open.er-api.com/v6/latest/${c.currency}`);
         const data = await res.json();
@@ -2747,7 +2854,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數、每日行程（無時間鈕＋飯店長按/右滑/雙擊看照片） ====================
+    // ==================== 12. 航班、天數、每日行程 ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2796,6 +2903,7 @@
                 <div class="text-[10px] font-bold text-[#e07a5f] en-font">${displayArrTime ? `${displayArrTime} 抵達` : (f.note || "--:--")}</div>
               </div>
             </div>
+            ${imgSrc ? `<img src="${imgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')" class="polaroid-img h-24 w-auto object-cover mt-1" />` : ""}
             ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] wrap-text-safe px-1">📝 ${f.note}</div>` : ""}
           `;
         };
@@ -2837,6 +2945,7 @@
             f.link = card.querySelector(".fl-ed-link").value.trim();
             f.img = card.querySelector(".fl-ed-img").value.trim();
             f.note = card.querySelector(".fl-ed-note").value.trim();
+            f.updatedAt = Date.now();
             commitChange("修改航段");
           };
           card.querySelector(".btn-cancel-fl").onclick = () => renderFlights();
@@ -2884,7 +2993,8 @@
         to: document.getElementById("segToInp").value.trim(),
         link: document.getElementById("segLinkInp").value.trim(),
         img: document.getElementById("segImgInp").value.trim(),
-        note: document.getElementById("segNoteInp").value.trim()
+        note: document.getElementById("segNoteInp").value.trim(),
+        updatedAt: Date.now()
       });
       closeModalDirect("flightModal");
       commitChange(`新增航班：${flightNo}`);
@@ -3167,7 +3277,7 @@
                 </div>
                 ${item.transit ? `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-[#e5dacb] text-[11px] text-[#3b5a4e] wrap-text-safe">🚇 ${cleanParenText(item.transit)}</div>` : ""}
                 ${item.note ? `<div class="text-[11px] text-[#6e7772] bg-[#fef9ef] px-2.5 py-1 rounded-xl border border-[#f2cc8f]/50 wrap-text-safe">💡 ${cleanParenText(item.note)}</div>` : ""}
-                ${itiImgSrc ? `<img src="${itiImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(item.img || "").replace(/'/g, "")}', '${displayTitle.replace(/'/g, "")}')" class="polaroid-img h-24 sm:h-32 w-auto object-cover" />` : ""}
+                ${itiImgSrc ? `<img src="${itiImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(item.img || "").replace(/'/g, "")}', '${displayTitle.replace(/'/g, "")}')" class="polaroid-img h-28 sm:h-36 w-auto object-cover" />` : ""}
               `;
               const jumpBtn = itemEl.querySelector(".spot-jump-link");
               if (jumpBtn) {
@@ -3224,6 +3334,7 @@
                 item.link = itemEl.querySelector(".iti-ed-link").value.trim();
                 item.img = itemEl.querySelector(".iti-ed-img").value.trim();
                 item.note = itemEl.querySelector(".iti-ed-note").value.trim();
+                item.updatedAt = Date.now();
                 if (item.time) sortDayItineraryByTime(trip, item.day);
                 commitChange(`修改行程：${item.title}`);
               };
@@ -3266,6 +3377,7 @@
           } else {
             const mObj = slot.obj;
             const mealNavUrl = buildSmartMapUrl(mObj.title, mObj.link);
+            const mealImgSrc = resolveImageSrc(mObj.img);
             slotEl.className = "gesture-box p-2 rounded-xl bg-white border border-[#e6dcd0] flex flex-col justify-between gap-0.5 min-w-0 shadow-2xs cursor-pointer";
             attachRowGestures(slotEl, {
               onLongPressEdit: () => openMealModal(dayNum, mObj.id),
@@ -3283,6 +3395,7 @@
               </div>
               <div class="font-bold text-xs text-[#2b302c] wrap-text-safe" onclick="jumpToGuideBySpotTitle('${(mObj.title || "").replace(/'/g, "")}', {id:'${mObj.id}', title:'${(mObj.title || "").replace(/'/g, "")}', note:'${(mObj.note || "").replace(/'/g, "")}'})">${cleanParenText(mObj.title)}</div>
               ${mObj.note ? `<div class="text-[10px] text-[#78807b] wrap-text-safe">${cleanParenText(mObj.note)}</div>` : ""}
+              ${mealImgSrc ? `<img src="${mealImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(mObj.img || "").replace(/'/g, "")}', '${cleanParenText(mObj.title).replace(/'/g, "")}')" class="polaroid-img w-full h-16 object-cover mt-1" />` : ""}
             `;
           }
           mealsGrid.appendChild(slotEl);
@@ -3291,6 +3404,7 @@
         const extraBox = dayCard.querySelector(".day-extra-meals");
         extraMeals.forEach(em => {
           const emNavUrl = buildSmartMapUrl(em.title, em.link);
+          const emImgSrc = resolveImageSrc(em.img);
           const pill = document.createElement("div");
           pill.className = "gesture-box px-2.5 py-1 rounded-2xl bg-white border text-[11px] flex items-center gap-1 cursor-pointer w-auto";
           attachRowGestures(pill, {
@@ -3302,11 +3416,10 @@
               }
             }
           });
-          pill.innerHTML = `<span class="font-bold text-[#c85a32] wrap-text-safe">🍰 ${cleanParenText(em.title)}</span><a href="${emNavUrl}" target="_blank" class="shrink-0">📍</a>`;
+          pill.innerHTML = `<span class="font-bold text-[#c85a32] wrap-text-safe">🍰 ${cleanParenText(em.title)}</span>${emImgSrc ? `<button type="button" onclick="event.stopPropagation(); openImageLightbox('${(em.img || "").replace(/'/g, "")}', '${cleanParenText(em.title).replace(/'/g, "")}')" class="text-[10px]">📸</button>` : ""}<a href="${emNavUrl}" target="_blank" class="shrink-0">📍</a>`;
           extraBox.appendChild(pill);
         });
 
-        // 🏨 飯店專屬互動：長按編輯（含上傳照片）、右滑刪除、雙擊文字看照片
         const hotelSlot = dayCard.querySelector(".day-hotel-slot");
         if (hotelItem && hotelSlot) {
           const hCard = document.createElement("div");
@@ -3323,6 +3436,7 @@
                 </div>
                 <a href="${buildSmartMapUrl(hotelItem.hotel, hotelItem.hotelLink || hotelItem.link)}" target="_blank" onclick="event.stopPropagation()" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-[#fbf8f3] border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
               </div>
+              ${hImgSrc ? `<img src="${hImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(hotelItem.hotelImg || "").replace(/'/g, "")}', '🏨 ${cleanHotelName.replace(/'/g, "")}')" class="polaroid-img h-24 w-auto object-cover mt-1.5" />` : ""}
             `;
 
             const dblZone = hCard.querySelector(".hotel-dbl-zone");
@@ -3368,6 +3482,7 @@
               hotelItem.hotel = hCard.querySelector(".ht-ed-name").value.trim();
               hotelItem.hotelLink = hCard.querySelector(".ht-ed-link").value.trim();
               hotelItem.hotelImg = hCard.querySelector(".ht-ed-img").value.trim();
+              hotelItem.updatedAt = Date.now();
               commitChange(`修改住宿：${hotelItem.hotel || "已清除"}`);
             };
             hCard.querySelector(".btn-del-ht").onclick = () => {
@@ -3375,6 +3490,7 @@
                 hotelItem.hotel = "";
                 hotelItem.hotelImg = "";
                 hotelItem.hotelLink = "";
+                hotelItem.updatedAt = Date.now();
                 commitChange("刪除當晚住宿");
               }
             };
@@ -3389,6 +3505,7 @@
                 hotelItem.hotel = "";
                 hotelItem.hotelImg = "";
                 hotelItem.hotelLink = "";
+                hotelItem.updatedAt = Date.now();
                 commitChange("刪除當晚住宿");
               }
             }
@@ -3469,7 +3586,8 @@
         hotelLink: existingIt?.hotelLink || "",
         link: document.getElementById("itiLinkInp").value.trim(),
         img: document.getElementById("itiImgInp").value.trim(),
-        note: document.getElementById("itiNoteInp").value.trim()
+        note: document.getElementById("itiNoteInp").value.trim(),
+        updatedAt: Date.now()
       };
       if (editId) {
         const idx = t.itinerary.findIndex(x => x && x.id === editId);
@@ -3525,7 +3643,8 @@
         title,
         link: document.getElementById("mealLinkInp").value.trim(),
         img: document.getElementById("mealImgInp").value.trim(),
-        note: document.getElementById("mealNoteInp").value.trim()
+        note: document.getElementById("mealNoteInp").value.trim(),
+        updatedAt: Date.now()
       };
       if (editId) {
         const idx = t.meals.findIndex(x => x && x.id === editId);
@@ -3535,6 +3654,7 @@
       closeModalDirect("mealModal");
       commitChange(`儲存餐飲：${title}`);
     }
+
     // ==================== 13. 🧭 導覽圖鑑 & 🪄 智慧排程 ====================
     const FAMOUS_TEMPLATES = {
       JP: [
@@ -3677,6 +3797,7 @@
     }
 
     async function fetchSpotImageFromWeb(spotTitle, countryName = "", offset = 0) {
+      if (!navigator.onLine) return "";
       const cleanName = cleanParenText(spotTitle || "")
         .replace(/^(匯狂路口|體驗在地|欣賞|參觀|前往)\s*/, "")
         .split(/[·➔(（]/)[0]
@@ -3735,14 +3856,13 @@
         .split(/[·➔]/)[0]
         .trim();
 
-      if (!guideObj.img || forceRefresh) {
+      if ((!guideObj.img || forceRefresh) && navigator.onLine) {
         const webImg = await fetchSpotImageFromWeb(rawTitle || cleanTitle, c.name || "", 0);
         if (webImg) guideObj.img = webImg;
       }
       if (!guideObj.imgHeight) guideObj.imgHeight = 170;
       if (guideObj.imgPosY === undefined) guideObj.imgPosY = 50;
 
-      // 1. 優先比對內建精選知識庫
       for (const [key, kb] of Object.entries(AI_SPOT_KNOWLEDGE_BASE)) {
         if (rawTitle.toLowerCase().includes(key.toLowerCase()) || (guideObj.title || "").toLowerCase().includes(key.toLowerCase())) {
           if (!guideObj.hours || guideObj.hours.startsWith("預計") || guideObj.hours === "依現場公告") guideObj.hours = kb.hours;
@@ -3753,35 +3873,34 @@
         }
       }
 
-      // 2. 即時生成類 Google 搜尋重點導覽（強制使用「景點介紹」標題，絕不出現 AI 摘要字眼）
-      try {
-        const promptTxt = `請用繁體中文撰寫旅遊地點「${c.name || ""} ${cleanTitle}」的精煉旅遊重點導覽（約 120 字），風格像搜尋引擎的精選重點，必須嚴格使用以下格式：\n✨ 【景點介紹】（簡要說明特色、定位與必訪原因）\n🌟 【必看亮點】（條列 2-3 個必拍、必吃或必玩重點）\n💡 【實用貼士】（交通、預約或最佳造訪時段建議）\n注意：絕對不要出現「AI」、「摘要」等字眼，直接輸出內容。`;
-        const aiRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptTxt)}`);
-        if (aiRes.ok) {
-          const aiTxt = (await aiRes.text()).trim();
-          if (aiTxt && aiTxt.length > 25 && !aiTxt.startsWith("<!DOCTYPE") && !aiTxt.includes("Bad Gateway")) {
-            guideObj.desc = normalizeGuideDescText(aiTxt);
-            return;
-          }
-        }
-      } catch (e) {}
-
-      // 3. 備援：維基百科摘要
-      try {
-        const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanTitle)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.extract && data.extract.length > 25) {
-            guideObj.desc = `✨ 【景點介紹】${data.extract}\n💡 【實用貼士】${fallbackIti?.note || fallbackIti?.transit || "建議預留充裕時間拍照與探索周邊特色小店。"}`;
-            if ((data.originalimage?.source || data.thumbnail?.source) && !guideObj.img) {
-              guideObj.img = data.originalimage?.source || data.thumbnail?.source;
+      if (navigator.onLine) {
+        try {
+          const promptTxt = `請用繁體中文撰寫旅遊地點「${c.name || ""} ${cleanTitle}」的精煉旅遊重點導覽（約 120 字），必須嚴格使用以下格式：\n✨ 【景點介紹】（簡要說明特色、定位與必訪原因）\n🌟 【必看亮點】（條列 2-3 個必拍、必吃或必玩重點）\n💡 【實用貼士】（交通、預約或最佳造訪時段建議）\n注意：絕對不要出現「AI」、「摘要」等字眼，直接輸出內容。`;
+          const aiRes = await fetch(`https://text.pollinations.ai/${encodeURIComponent(promptTxt)}`);
+          if (aiRes.ok) {
+            const aiTxt = (await aiRes.text()).trim();
+            if (aiTxt && aiTxt.length > 25 && !aiTxt.startsWith("<!DOCTYPE") && !aiTxt.includes("Bad Gateway")) {
+              guideObj.desc = normalizeGuideDescText(aiTxt);
+              return;
             }
-            return;
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
 
-      // 4. 保底預設
+        try {
+          const res = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanTitle)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.extract && data.extract.length > 25) {
+              guideObj.desc = `✨ 【景點介紹】${data.extract}\n💡 【實用貼士】${fallbackIti?.note || fallbackIti?.transit || "建議預留充裕時間拍照與探索周邊特色小店。"}`;
+              if ((data.originalimage?.source || data.thumbnail?.source) && !guideObj.img) {
+                guideObj.img = data.originalimage?.source || data.thumbnail?.source;
+              }
+              return;
+            }
+          }
+        } catch (e) {}
+      }
+
       guideObj.desc = `✨ 【景點介紹】${cleanTitle} 是 ${c.name || "當地"} 極具代表性的熱門造訪地點，結合在地文化風情與特色體驗。\n${fallbackIti?.transit ? "🚇 【交通方式】" + fallbackIti.transit + "\n" : ""}🌟 【必看亮點】${fallbackIti?.note || "建議搭配周邊商圈順遊，現場體驗在地氛圍與拍照留念。"}`;
     }
 
@@ -3927,7 +4046,8 @@
               title: mTitle,
               link: "",
               img: "",
-              note: note || clauses.slice(1).join("，")
+              note: note || clauses.slice(1).join("，"),
+              updatedAt: Date.now()
             });
           }
         }
@@ -3943,7 +4063,8 @@
           hotel: "",
           link: "",
           img: "",
-          note: cleanParenText(note)
+          note: cleanParenText(note),
+          updatedAt: Date.now()
         };
 
         t.itinerary.push(newIti);
@@ -3972,7 +4093,8 @@
             imgHeight: 170,
             imgPosY: 50,
             desc: "",
-            link: ""
+            link: "",
+            updatedAt: Date.now()
           };
           await populateGuideWithAiSummary(gdObj, sp);
           t.guides.push(gdObj);
@@ -4040,7 +4162,8 @@
           title: it.title,
           cat: it.cat,
           transit: it.transit,
-          hotel: "", link: "", img: "", note: it.note
+          hotel: "", link: "", img: "", note: it.note,
+          updatedAt: Date.now()
         };
         t.itinerary.push(newIti);
         if (isSpecialLandmarkSpot(newIti)) autoSyncGuideSpot(t, newIti);
@@ -4069,6 +4192,7 @@
     }
 
     async function geocodeSpotKeyless(spotName, countryName) {
+      if (!navigator.onLine) return null;
       try {
         const clean = (spotName || "")
           .replace(/^[0-9\/:\s]+/, "")
@@ -4128,6 +4252,7 @@
         if (!x.time) {
           x.time = `${String(Math.min(21, 9 + idx * 2)).padStart(2, "0")}:30`;
         }
+        x.updatedAt = Date.now();
       });
 
       const otherDays = (t.itinerary || []).filter(i => i && Number(i.day) !== dayNum);
@@ -4206,7 +4331,8 @@
           title: sp.title,
           cat: sp.cat,
           transit: sp.transit || "起點出發",
-          hotel: "", link: "", img: "", note: ""
+          hotel: "", link: "", img: "", note: "",
+          updatedAt: Date.now()
         };
         t.itinerary.push(newIti);
         if (isSpecialLandmarkSpot(newIti)) autoSyncGuideSpot(t, newIti);
@@ -4295,7 +4421,8 @@
           imgHeight: 170,
           imgPosY: 50,
           desc: "",
-          link: iti.link || ""
+          link: iti.link || "",
+          updatedAt: Date.now()
         };
         populateGuideWithAiSummary(newGd, iti).then(() => {
           saveAppState(false);
@@ -4324,7 +4451,8 @@
               imgHeight: 170,
               imgPosY: 50,
               desc: "",
-              link: i.link || ""
+              link: i.link || "",
+              updatedAt: Date.now()
             };
             await populateGuideWithAiSummary(newGd, i);
             t.guides.push(newGd);
@@ -4352,6 +4480,7 @@
         } else {
           g.desc = normalizeGuideDescText(g.desc);
         }
+        g.updatedAt = Date.now();
       }
 
       if (btn) btn.textContent = oldTxt || "🔄 補齊圖文";
@@ -4364,6 +4493,7 @@
       if (!g) return;
       if (btnEl) btnEl.textContent = "⏳ 更新中...";
       await populateGuideWithAiSummary(g, { title: g.title }, true);
+      g.updatedAt = Date.now();
       commitChange(`更新景點介紹：${g.title}`);
     }
 
@@ -4377,6 +4507,7 @@
       const nextImg = await fetchSpotImageFromWeb(g.title, c.name || "", g._imgOffset);
       if (nextImg) {
         g.img = nextImg;
+        g.updatedAt = Date.now();
         commitChange(`更換景點照片：${g.title}`);
       } else if (btnEl) {
         btnEl.textContent = "🔀 換張圖";
@@ -4398,6 +4529,7 @@
         g.imgFit = g.imgFit === "contain" ? "cover" : "contain";
         if (imgEl) imgEl.style.objectFit = g.imgFit;
       }
+      g.updatedAt = Date.now();
       saveAppState(false);
     }
 
@@ -4407,6 +4539,7 @@
       const inp = document.getElementById(inputId);
       if (!g || !inp || !inp.value.trim()) return;
       g.img = inp.value.trim();
+      g.updatedAt = Date.now();
       commitChange(`更新導覽照片：${g.title}`);
     }
 
@@ -4432,7 +4565,7 @@
         const adjustDrawerId = `gdImgAdj_${g.id}`;
         const customUrlInpId = `gdCustomUrl_${g.id}`;
 
-        if ((isPlaceholderGuideDesc(g.desc) || !gdSrc) && !g._autoFetching) {
+        if ((isPlaceholderGuideDesc(g.desc) || !gdSrc) && !g._autoFetching && navigator.onLine) {
           g._autoFetching = true;
           populateGuideWithAiSummary(g, { title: g.title }, false).then(() => {
             g._autoFetching = false;
@@ -4566,7 +4699,8 @@
         imgHeight: Number(document.getElementById("gdImgHeightInp").value) || 170,
         imgPosY: Number(document.getElementById("gdImgPosYInp").value ?? 50),
         desc: normalizeGuideDescText(document.getElementById("gdDescInp").value.trim()),
-        link: document.getElementById("gdLinkInp").value.trim()
+        link: document.getElementById("gdLinkInp").value.trim(),
+        updatedAt: Date.now()
       };
 
       if (!obj.desc || !obj.img) {
@@ -4583,7 +4717,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 14. 📊 分帳記帳系統 ====================
+    // ==================== 14. 📊 分帳記帳系統（直接顯示照片縮圖＋點擊放大） ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -4656,7 +4790,8 @@
         host: mode === "treat" ? host : "",
         beneficiaries: mode === "self" ? [payer] : (bens.length > 0 ? bens : [payer]),
         note, img,
-        date: formatDisplayDate(pickedDate) || new Date().toLocaleDateString("zh-TW", { month: "2-digit", day: "2-digit" })
+        date: formatDisplayDate(pickedDate) || new Date().toLocaleDateString("zh-TW", { month: "2-digit", day: "2-digit" }),
+        updatedAt: Date.now()
       };
 
       if (editId) {
@@ -4886,6 +5021,7 @@
       embeddedBox.innerHTML = "";
 
       const openExpenseInlineFullEditor = (rowEl, expObj) => {
+        const tmpImgId = "inline_ex_img_" + expObj.id;
         const allPeople = getActiveCompanions().map(x => x.name);
         if (expObj.payer && !allPeople.includes(expObj.payer)) allPeople.push(expObj.payer);
         rowEl.innerHTML = `
@@ -4927,7 +5063,11 @@
               </select>
               <input type="text" class="ex-ed-bens px-2 py-1 rounded-lg border bg-white" value="${(expObj.beneficiaries || []).join(",")}" placeholder="分攤人：凱,淨" />
             </div>
-            <input type="text" class="ex-ed-note w-full px-2 py-1 rounded-lg border bg-white" value="${expObj.note || ""}" placeholder="📝 備註" />
+            <div class="flex gap-1">
+              <input id="${tmpImgId}" type="text" class="ex-ed-img flex-1 px-2 py-1 rounded-lg border bg-white" value="${expObj.img || ""}" placeholder="📸 收據或商品照片" />
+              <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
+            </div>
+            <textarea rows="2" class="ex-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註">${expObj.note || ""}</textarea>
             <div class="flex gap-1.5 pt-1">
               <button type="button" class="btn-save-ex flex-1 py-1.5 rounded-lg btn-gradient-sage font-bold">✓ 儲存修改</button>
               <button type="button" class="btn-cancel-ex px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 font-bold">取消</button>
@@ -4945,7 +5085,9 @@
           expObj.host = expObj.mode === "treat" ? rowEl.querySelector(".ex-ed-host").value : "";
           const bArr = rowEl.querySelector(".ex-ed-bens").value.split(/[,，、\s]+/).map(s => s.trim()).filter(Boolean);
           expObj.beneficiaries = bArr.length ? bArr : [expObj.payer];
+          expObj.img = rowEl.querySelector(".ex-ed-img").value.trim();
           expObj.note = rowEl.querySelector(".ex-ed-note").value.trim();
+          expObj.updatedAt = Date.now();
           commitChange(`修改帳務：${expObj.title}`);
         };
         rowEl.querySelector(".btn-cancel-ex").onclick = () => renderExpenseSection();
@@ -4962,16 +5104,19 @@
             ? entry.role
             : (origExp.mode === "treat" ? `${origExp.payer}先墊·${origExp.host}請客` : `${origExp.payer}先付`);
           const row = document.createElement("div");
-          row.className = "gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-start justify-between gap-2";
+          row.className = "gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center justify-between gap-2";
           row.innerHTML = `
-            <div class="flex flex-wrap items-center gap-1.5 min-w-0 flex-1">
-              ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
-              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${(origExp.cat || "消費").slice(0, 2)}</span>
-              <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanETitle}</span>
-              <span class="sub-pill shrink-0">${roleText}</span>
+            <div class="flex flex-col gap-1 min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-1.5">
+                ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${(origExp.cat || "消費").slice(0, 2)}</span>
+                <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanETitle}</span>
+                <span class="sub-pill shrink-0">${roleText}</span>
+              </div>
+              ${origExp.note ? `<div class="text-[10px] text-[#7a827d] wrap-text-safe">${cleanParenText(origExp.note)}</div>` : ""}
             </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              ${expImgSrc ? `<button onclick="event.stopPropagation(); openImageLightbox('${origExp.img.replace(/'/g, "")}', '${cleanETitle.replace(/'/g, "")}')" class="text-[10px] text-[#c85a32]">📸</button>` : ""}
+            <div class="flex items-center gap-2 shrink-0">
+              ${expImgSrc ? `<img src="${expImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(origExp.img || "").replace(/'/g, "")}', '${cleanETitle.replace(/'/g, "")}')" class="polaroid-img w-12 h-12 object-cover shrink-0" />` : ""}
               <span class="font-bold text-xs text-[#2b302c] en-font">NT$${twd.toLocaleString()}</span>
             </div>
           `;
@@ -5022,7 +5167,7 @@
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
 
-    // ==================== 15. 🛍️ 清單中心 ====================
+    // ==================== 15. 🛍️ 清單中心（必買/必吃/備忘直接秀圖＋點擊放大） ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
         document.getElementById("listBox-" + k).classList.toggle("hidden", k !== tabKey);
@@ -5113,7 +5258,7 @@
                   ${s.price ? `<div class="text-[10px] font-bold text-[#c85a32] en-font mt-1">💰 ${Number(s.price).toLocaleString()} ${c.currency}</div>` : ""}
                   ${s.note ? `<div class="text-[10px] text-[#7a827d] wrap-text-safe mt-0.5">${cleanParenText(s.note)}</div>` : ""}
                 </div>
-                ${sImgSrc ? `<img src="${sImgSrc}" onclick="openImageLightbox('${s.img.replace(/'/g, "")}', '${cleanSTitle.replace(/'/g, "")}')" class="polaroid-img w-full h-24 object-cover mt-1" />` : ""}
+                ${sImgSrc ? `<img src="${sImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(s.img || "").replace(/'/g, "")}', '${cleanSTitle.replace(/'/g, "")}')" class="polaroid-img w-full h-28 object-cover mt-1" />` : ""}
               `;
             };
 
@@ -5151,6 +5296,7 @@
                 s.price = card.querySelector(".sh-ed-price").value.trim();
                 s.note = card.querySelector(".sh-ed-note").value.trim();
                 s.img = card.querySelector(".sh-ed-img").value.trim();
+                s.updatedAt = Date.now();
                 commitChange("修改必買");
               };
               card.querySelector(".btn-cancel-sh").onclick = () => renderListsSection();
@@ -5206,8 +5352,10 @@
             row.className = "gesture-box p-2.5 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0]";
             const mapUrl = buildSmartMapUrl(f.name, f.link);
             const cleanFName = cleanParenText(f.name);
+            const fImgSrc = resolveImageSrc(f.img);
 
             const openFoodInlineEditor = () => {
+              const tmpImgId = "inline_fd_img_" + f.id;
               row.innerHTML = `
                 <div class="inline-full-editor space-y-1.5 text-xs" onclick="event.stopPropagation()">
                   <div class="font-bold text-[#c85a32]">🍜 修改必吃美食</div>
@@ -5216,6 +5364,10 @@
                     <input type="text" class="fd-ed-name col-span-2 px-2 py-1 rounded-lg border bg-white font-bold" value="${cleanFName}" placeholder="餐廳名稱 *" />
                   </div>
                   <input type="text" class="fd-ed-link w-full px-2 py-1 rounded-lg border bg-white" value="${f.link || ""}" placeholder="🔗 專屬地圖連結" />
+                  <div class="flex gap-1">
+                    <input id="${tmpImgId}" type="text" class="fd-ed-img flex-1 px-2 py-1 rounded-lg border bg-white" value="${f.img || ""}" placeholder="📸 美食照片" />
+                    <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">選圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
+                  </div>
                   <textarea rows="2" class="fd-ed-note w-full px-2 py-1 rounded-lg border bg-white" placeholder="📝 備註">${f.note || ""}</textarea>
                   <div class="flex gap-1.5 pt-1">
                     <button type="button" class="btn-save-fd flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
@@ -5227,7 +5379,9 @@
                 f.cat = row.querySelector(".fd-ed-cat").value.trim() || f.cat;
                 f.name = row.querySelector(".fd-ed-name").value.trim() || f.name;
                 f.link = row.querySelector(".fd-ed-link").value.trim();
+                f.img = row.querySelector(".fd-ed-img").value.trim();
                 f.note = row.querySelector(".fd-ed-note").value.trim();
+                f.updatedAt = Date.now();
                 commitChange("修改必吃");
               };
               row.querySelector(".btn-cancel-fd").onclick = () => renderListsSection();
@@ -5238,6 +5392,7 @@
                 <div class="min-w-0 flex-1">
                   <div class="font-bold text-xs sm:text-sm text-[#2b302c] wrap-text-safe">${cleanFName}</div>
                   ${f.note ? `<div class="text-[11px] text-[#7a827d] wrap-text-safe mt-0.5">${cleanParenText(f.note)}</div>` : ""}
+                  ${fImgSrc ? `<img src="${fImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFName.replace(/'/g, "")}')" class="polaroid-img h-24 w-auto object-cover mt-1.5" />` : ""}
                 </div>
                 <a href="${mapUrl}" target="_blank" title="開啟地圖導航" class="w-6 h-6 rounded-full bg-white border border-[#dcd2c4] flex items-center justify-center text-xs shrink-0 hover:bg-[#e8f0ed]">📍</a>
               </div>
@@ -5348,6 +5503,7 @@
             m.title = div.querySelector(".mm-ed-title").value.trim() || m.title;
             m.body = div.querySelector(".mm-ed-body").value.trim();
             m.img = div.querySelector(".mm-ed-img").value.trim();
+            m.updatedAt = Date.now();
             commitChange("修改備忘");
           };
           div.querySelector(".btn-cancel-mm").onclick = () => renderListsSection();
@@ -5380,7 +5536,7 @@
       const note = document.getElementById("shopItemNote").value.trim();
       const img = document.getElementById("shopItemImg").value.trim();
       if (!title) return alert("請輸入商品名稱！");
-      t.shopping.unshift({ id: "sh_" + Date.now(), cat, title, price, owner, note, img, done: false });
+      t.shopping.unshift({ id: "sh_" + Date.now(), cat, title, price, owner, note, img, done: false, updatedAt: Date.now() });
       document.getElementById("shopItemTitle").value = "";
       document.getElementById("shopItemPrice").value = "";
       document.getElementById("shopItemNote").value = "";
@@ -5392,6 +5548,7 @@
       const item = (getTrip().shopping || []).find(x => x && x.id === id);
       if (!item) return;
       item.done = !item.done;
+      item.updatedAt = Date.now();
       commitChange("更新必買");
     }
 
@@ -5403,7 +5560,7 @@
       const note = document.getElementById("foodNoteInput").value.trim();
       const img = document.getElementById("foodImgInput").value.trim();
       if (!name) return alert("請輸入餐廳名稱！");
-      t.mustEat.unshift({ id: "fd_" + Date.now(), cat, name, link, note, img, done: false });
+      t.mustEat.unshift({ id: "fd_" + Date.now(), cat, name, link, note, img, done: false, updatedAt: Date.now() });
       document.getElementById("foodNameInput").value = "";
       document.getElementById("foodLinkInput").value = "";
       document.getElementById("foodNoteInput").value = "";
@@ -5442,14 +5599,14 @@
       const body = document.getElementById("memoBodyInp").value.trim();
       const img = document.getElementById("memoImgInp")?.value.trim() || "";
       if (!title && !img) return alert("請填寫備忘標題或選擇一張照片！");
-      t.memos.unshift({ id: "mm_" + Date.now(), title: title || "📸 圖片備忘", body, img });
+      t.memos.unshift({ id: "mm_" + Date.now(), title: title || "📸 圖片備忘", body, img, updatedAt: Date.now() });
       document.getElementById("memoTitleInp").value = "";
       document.getElementById("memoBodyInp").value = "";
       if (document.getElementById("memoImgInp")) document.getElementById("memoImgInp").value = "";
       commitChange(`新增備忘：${title || "圖片備忘"}`);
     }
 
-    // ==================== 16. 資訊與翻譯頁 ====================
+    // ==================== 16. 資訊與翻譯頁（憑證/交通圖直接顯示並可點擊放大） ====================
     function renderInfoSection() {
       const c = getCountry();
       const t = getTrip();
@@ -5517,21 +5674,18 @@
         const div = document.createElement("div");
         div.className = "gesture-box rounded-2xl bg-[#fbf8f3] border border-[#e6dcd0] overflow-hidden";
         const assetSrc = resolveImageSrc(it.img);
-        const dId = `${boxId}_drawer_${idx}`;
         const cleanItName = cleanParenText(it.name || "圖卡");
 
         const renderAssetNormal = () => {
           div.innerHTML = `
-            <div onclick="toggleDrawer('${dId}', event)" class="px-3 py-2 flex items-center justify-between gap-2 cursor-pointer">
+            <div class="px-3 py-2 flex items-center justify-between gap-2">
               <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanItName}</span>
               <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+                ${it.url ? `<a href="${it.url}" target="_blank" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border text-[#52796f]">連結↗</a>` : ""}
                 ${assetSrc ? `<button onclick="openImageLightbox('${(it.img || "").replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#e8f0ed] text-[#3d5a52]">🔍放大</button>` : ""}
-                <span class="text-xs text-[#7a827d]" onclick="toggleDrawer('${dId}', event)">▾</span>
               </div>
             </div>
-            <div id="${dId}" class="drawer-panel px-3 pb-2.5">
-              ${assetSrc ? `<img src="${assetSrc}" onclick="openImageLightbox('${(it.img || "").replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="polaroid-img w-full h-32 object-cover mt-1" />` : `<div class="text-[11px] text-[#7a827d] py-2">長按此卡可上傳或更換圖片</div>`}
-            </div>
+            ${assetSrc ? `<div class="px-3 pb-2.5"><img src="${assetSrc}" onclick="event.stopPropagation(); openImageLightbox('${(it.img || "").replace(/'/g, "")}', '${cleanItName.replace(/'/g, "")}')" class="polaroid-img w-full h-32 object-cover" /></div>` : `<div class="px-3 pb-2 text-[11px] text-[#7a827d]">長按此卡可上傳或更換圖片</div>`}
           `;
         };
 
@@ -5543,7 +5697,7 @@
               <input type="text" class="as-ed-name w-full px-2 py-1 rounded-lg border bg-[#fbf8f3] font-bold" value="${cleanItName}" placeholder="圖卡名稱 *" />
               <div class="flex gap-1">
                 <input id="${tmpImgId}" type="text" class="as-ed-img flex-1 px-2 py-1 rounded-lg border bg-[#fbf8f3]" value="${it.img || ""}" placeholder="📸 圖片連結或點選圖上傳" />
-                <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">換圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}', 1200)" /></label>
+                <label class="px-2 py-1 rounded-lg bg-[#fdf0ec] text-[#c85a32] font-bold cursor-pointer shrink-0">換圖<input type="file" accept="image/*" class="hidden" onchange="compressAndBindImage(event, '${tmpImgId}')" /></label>
               </div>
               <div class="flex gap-1.5 pt-1">
                 <button type="button" class="btn-save-as flex-1 py-1 rounded-lg btn-gradient-sage font-bold">✓ 儲存</button>
@@ -5554,6 +5708,7 @@
           div.querySelector(".btn-save-as").onclick = () => {
             it.name = div.querySelector(".as-ed-name").value.trim() || it.name;
             it.img = div.querySelector(".as-ed-img").value.trim();
+            it.updatedAt = Date.now();
             commitChange("更新圖卡");
           };
           div.querySelector(".btn-cancel-as").onclick = () => renderInfoSection();
@@ -5584,7 +5739,7 @@
         const data = await res.json();
         const local = data[0].map(s => s[0]).join("");
         if (!t.customPhrases) t.customPhrases = [];
-        t.customPhrases.unshift({ cat: "dining", zh, local, romaji: "" });
+        t.customPhrases.unshift({ id: "ph_" + Date.now(), cat: "dining", zh, local, romaji: "", updatedAt: Date.now() });
         document.getElementById("googleTransInput").value = "";
         commitChange("新增字卡");
       } catch (e) {}
@@ -5608,7 +5763,7 @@
       const url = prompt("輸入網址：", "https://");
       if (!url) return;
       if (!t.customLinks) t.customLinks = [];
-      t.customLinks.push({ title: title.trim(), url: url.trim(), icon: "fa-star" });
+      t.customLinks.push({ id: "lk_" + Date.now(), title: title.trim(), url: url.trim(), icon: "fa-star", updatedAt: Date.now() });
       commitChange("新增連結");
     }
 
@@ -5629,10 +5784,10 @@
       if (!name) return;
       if (type === "visa") {
         if (!t.customVisas) t.customVisas = [];
-        t.customVisas.push({ name, img, url });
+        t.customVisas.push({ id: "visa_" + Date.now(), name, img, url, updatedAt: Date.now() });
       } else {
         if (!t.customTransits) t.customTransits = [];
-        t.customTransits.push({ name, img, url });
+        t.customTransits.push({ id: "transit_" + Date.now(), name, img, url, updatedAt: Date.now() });
       }
       closeModalDirect("assetModal");
       commitChange(`新增圖卡：${name}`);
@@ -5673,10 +5828,10 @@
         };
         el.addEventListener("mousedown", () => { drag = true; });
         window.addEventListener("mousemove", e => move(e.clientX, e.clientY));
-        window.addEventListener("mouseup", () => { if (drag) { drag = false; saveAppState(false); } });
+        window.addEventListener("mouseup", () => { if (drag) { drag = false; saveAppState(false); scheduleAutoSync(); } });
         el.addEventListener("touchstart", () => { drag = true; }, { passive: true });
         el.addEventListener("touchmove", e => { if (drag && e.touches[0]) move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-        el.addEventListener("touchend", () => { if (drag) { drag = false; saveAppState(false); } });
+        el.addEventListener("touchend", () => { if (drag) { drag = false; saveAppState(false); scheduleAutoSync(); } });
         layer.appendChild(el);
       });
     }
@@ -5689,7 +5844,8 @@
         html,
         imgRef,
         xPct: Number((45 + (Math.random() * 14 - 7)).toFixed(2)),
-        yPct: Number((35 + (Math.random() * 14 - 7)).toFixed(2))
+        yPct: Number((35 + (Math.random() * 14 - 7)).toFixed(2)),
+        updatedAt: Date.now()
       });
       commitChange("貼上貼圖");
     }
@@ -5702,12 +5858,12 @@
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement("canvas");
-          const max = 220;
+          const max = 240;
           let w = img.width, h = img.height;
           if (w > max) { h = Math.round((h * max) / w); w = max; }
           canvas.width = w; canvas.height = h;
           canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-          const compressed = canvas.toDataURL("image/jpeg", 0.78);
+          const compressed = canvas.toDataURL("image/webp", 0.65) || canvas.toDataURL("image/jpeg", 0.68);
           const imgId = "img_st_" + Date.now();
           imageVault[imgId] = compressed;
           saveImageVault();
@@ -5732,114 +5888,70 @@
       }
     }
 
-    // ==================== 18. ☁️ Gist 完整多國多旅程雙重同步 & 50 筆歷史快照 ====================
-    async function pushToGist() {
-      const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
-      const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
-      const status = document.getElementById("gistStatusText");
-      if (!token || !gistId) return alert("請填寫 GitHub Token 與 Gist ID！");
-      if (countAllItems(state) === 0 && Object.keys(state.countries).length <= 2) return alert("🛡️ 本地尚無行程資料，避免覆蓋雲端！");
+    // ==================== 18. ⚡ 高速免點擊自動智慧合併同步 ＋ 離線本機保護 ====================
+    let autoSyncTimer = null;
+    let isSyncingNow = false;
 
-      localStorage.setItem("GIST_TOKEN", token);
-      localStorage.setItem("GIST_ID", gistId);
-      status.textContent = "⏳ 正在將所有國家與泰國行同步至雲端 Gist...";
-
-      try {
-        Object.values(state.trips).forEach(tr => sanitizeTripArrays(tr));
-
-        const filesPayload = {
-          "travel_images.json": { content: JSON.stringify(imageVault) },
-          "wandernote_full_state.json": { content: JSON.stringify(state, null, 2) }
-        };
-        const fileMap = { JP: "japan_data.json", KR: "korea_data.json", TH: "thailand_data.json", CN: "china_data.json", VN: "vietnam_data.json" };
-        const countryList = [];
-
-        Object.entries(state.countries).forEach(([cidKey, c]) => {
-          const cid = c.id || cidKey;
-          const allTripsInC = Object.values(state.trips)
-            .filter(t => t && isSameCountryId(t.countryId, cid))
-            .sort((a, b) => getTripDataScore(b) - getTripDataScore(a));
-          const primaryTrip = allTripsInC.find(t => t.id === state.activeTripId && getTripDataScore(t) > 0) || allTripsInC[0];
-          const baseKey = String(cid).split("_")[0].toUpperCase();
-          const fName = fileMap[cid] || fileMap[baseKey] || `${String(cid).toLowerCase()}_data.json`;
-
-          countryList.push({
-            id: cid, name: c.name, flag: c.flag, currency: c.currency,
-            rate: c.rate, lang: c.lang, speech: c.speech,
-            fileName: fName, title: primaryTrip ? primaryTrip.title : `${c.name}之旅`
-          });
-
-          if (primaryTrip) {
-            filesPayload[fName] = {
-              content: JSON.stringify({
-                version: "88.0",
-                id: primaryTrip.id,
-                countryId: cid,
-                countryName: c.name,
-                flag: c.flag,
-                currency: c.currency,
-                rate: c.rate,
-                lang: c.lang,
-                speech: c.speech,
-                title: primaryTrip.title,
-                companions: primaryTrip.companions || [],
-                subRegions: primaryTrip.subRegions || [],
-                visas: [...(c.visas || []), ...(primaryTrip.customVisas || [])],
-                transits: [...(c.transits || []), ...(primaryTrip.customTransits || [])],
-                flightSegments: primaryTrip.flightSegments || [],
-                itinerary: primaryTrip.itinerary || [],
-                meals: primaryTrip.meals || [],
-                guides: primaryTrip.guides || [],
-                mustEat: primaryTrip.mustEat || [],
-                shopping: primaryTrip.shopping || [],
-                expenses: primaryTrip.expenses || [],
-                memos: primaryTrip.memos || [],
-                stickers: primaryTrip.stickers || [],
-                allTripsInCountry: allTripsInC
-              }, null, 2)
-            };
-          }
-        });
-
-        filesPayload["global_trip_list.json"] = {
-          content: JSON.stringify({
-            version: "88.0",
-            activeCountryId: state.activeCountryId,
-            activeTripId: state.activeTripId,
-            companions: state.companions || [],
-            countryList
-          }, null, 2)
-        };
-
-        const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-          method: "PATCH",
-          headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ description: "WanderNote Sync", files: filesPayload })
-        });
-        if (!res.ok) throw new Error();
-        status.textContent = `✅ 雲端上傳成功！包含 ${countryList.map(x => x.name).join("、")} (${new Date().toLocaleTimeString()})`;
-      } catch (e) {
-        status.textContent = "❌ 上傳失敗，請確認 Token 權限 (需勾選 gist) 與 Gist ID。";
-      }
+    function updateAutoSyncBadge(text, isOffline = false) {
+      const el = document.getElementById("autoSyncBadge");
+      if (!el) return;
+      el.textContent = text;
+      el.className = isOffline
+        ? "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800"
+        : "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e8f0ed] text-[#3d5a52]";
     }
 
-    async function pullFromGist() {
-      const token = document.getElementById("gistTokenInp").value.trim() || localStorage.getItem("GIST_TOKEN");
-      const gistId = document.getElementById("gistIdInp").value.trim() || localStorage.getItem("GIST_ID");
+    function scheduleAutoSync() {
+      if (!navigator.onLine) {
+        updateAutoSyncBadge("📴 離線本機", true);
+        return;
+      }
+      const token = (document.getElementById("gistTokenInp")?.value || localStorage.getItem("GIST_TOKEN") || "").trim();
+      const gistId = (document.getElementById("gistIdInp")?.value || localStorage.getItem("GIST_ID") || "").trim();
+      if (!token || !gistId) return;
+
+      if (autoSyncTimer) clearTimeout(autoSyncTimer);
+      updateAutoSyncBadge("⏳ 準備同步");
+      // 0.6 秒極速防抖，輸入停頓後立刻合併並上傳
+      autoSyncTimer = setTimeout(() => {
+        smartSyncWithGist(false);
+      }, 600);
+    }
+
+    // 智慧雙向合併同步：先抓雲端與本機依 id 聯集合併（保留最新/最多內容），有 Token 則立刻回傳雲端
+    async function smartSyncWithGist(showAlertToast = false) {
       const status = document.getElementById("gistStatusText");
-      if (!gistId) return alert("請填寫 Gist ID！");
+      if (!navigator.onLine) {
+        updateAutoSyncBadge("📴 離線本機", true);
+        if (status) status.textContent = "📴 目前無網路，已安全儲存於本機版，連線後將自動同步。";
+        return;
+      }
+
+      const tokenInp = document.getElementById("gistTokenInp");
+      const gistIdInp = document.getElementById("gistIdInp");
+      const token = (tokenInp?.value || localStorage.getItem("GIST_TOKEN") || "").trim();
+      const gistId = (gistIdInp?.value || localStorage.getItem("GIST_ID") || "").trim();
+
+      if (!gistId) {
+        if (showAlertToast) alert("請填寫 Gist ID！");
+        return;
+      }
+      if (isSyncingNow) return;
+      isSyncingNow = true;
+
       localStorage.setItem("GIST_ID", gistId);
       if (token) localStorage.setItem("GIST_TOKEN", token);
+      updateAutoSyncBadge("🔄 智慧同步中");
+      if (status) status.textContent = "⏳ 正在比對雲端與本機內容並智慧合併...";
 
-      status.textContent = "⏳ 正在從雲端讀取所有國家與旅程...";
       try {
+        // 第 1 步：先讀取雲端 Gist 並做內容聯集合併
         const headers = token ? { Authorization: `token ${token}` } : {};
-        const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-
-        undoStack.push(JSON.stringify(state));
-        saveAppState(true, "下載前備份");
+        const getRes = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
+        if (!getRes.ok) {
+          throw new Error(getRes.status === 401 ? "Token 驗證失敗(401)" : `讀取失敗(${getRes.status})`);
+        }
+        const data = await getRes.json();
 
         const readFileContent = async (fObj) => {
           if (!fObj) return null;
@@ -5853,7 +5965,8 @@
         if (data.files["travel_images.json"]) {
           const imgTxt = await readFileContent(data.files["travel_images.json"]);
           if (imgTxt) {
-            imageVault = { ...imageVault, ...JSON.parse(imgTxt) };
+            const remoteImgs = JSON.parse(imgTxt) || {};
+            imageVault = { ...remoteImgs, ...imageVault };
             saveImageVault();
           }
         }
@@ -5862,26 +5975,7 @@
           try {
             const fullTxt = await readFileContent(data.files["wandernote_full_state.json"]);
             const fullParsed = JSON.parse(fullTxt);
-            convertAndMergeAnyLegacyData(fullParsed, true, "wandernote_full_state.json");
-          } catch (e) {}
-        }
-
-        if (data.files["global_trip_list.json"]) {
-          try {
-            const gTxt = await readFileContent(data.files["global_trip_list.json"]);
-            const g = JSON.parse(gTxt);
-            if (Array.isArray(g.countryList)) {
-              g.countryList.forEach(cCfg => {
-                if (cCfg && !state.countries[cCfg.id]) {
-                  state.countries[cCfg.id] = {
-                    id: cCfg.id, name: cCfg.name, flag: cCfg.flag, currency: cCfg.currency,
-                    rate: cCfg.rate || 1, lang: cCfg.lang || "en", speech: cCfg.speech || "en-US",
-                    quickLinks: buildCountryQuickLinks(String(cCfg.id).split("_")[0], cCfg.name, ""),
-                    visas: [], transits: [], phrases: buildExpandedPhrases(cCfg.lang || "en")
-                  };
-                }
-              });
-            }
+            convertAndMergeAnyLegacyData(fullParsed, false, "wandernote_full_state.json");
           } catch (e) {}
         }
 
@@ -5895,16 +5989,162 @@
         }
 
         ensureKoreaAndThailandTripsNotEmpty();
-
         getTrip();
-        state.activeDay = 1;
         saveAppState(false);
-        updateUndoRedoUI();
         renderAll();
-        status.textContent = `✅ 雲端下載完成！共載入 ${Object.keys(state.countries).length} 個國家、${Object.keys(state.trips).length} 趟旅程`;
-        setTimeout(() => closeModalDirect("cloudSyncModal"), 900);
+
+        // 第 2 步：若有填寫 Token 且本地有資料，自動將合併後的最新成果寫回雲端
+        if (token && countAllItems(state) > 0) {
+          Object.values(state.trips).forEach(tr => sanitizeTripArrays(tr));
+          const filesPayload = {
+            "travel_images.json": { content: JSON.stringify(imageVault) },
+            "wandernote_full_state.json": { content: JSON.stringify(state, null, 2) }
+          };
+          const fileMap = { JP: "japan_data.json", KR: "korea_data.json", TH: "thailand_data.json", CN: "china_data.json", VN: "vietnam_data.json" };
+          const countryList = [];
+
+          Object.entries(state.countries).forEach(([cidKey, c]) => {
+            const cid = c.id || cidKey;
+            const allTripsInC = Object.values(state.trips)
+              .filter(t => t && isSameCountryId(t.countryId, cid))
+              .sort((a, b) => getTripDataScore(b) - getTripDataScore(a));
+            const primaryTrip = allTripsInC.find(t => t.id === state.activeTripId && getTripDataScore(t) > 0) || allTripsInC[0];
+            const baseKey = String(cid).split("_")[0].toUpperCase();
+            const fName = fileMap[cid] || fileMap[baseKey] || `${String(cid).toLowerCase()}_data.json`;
+
+            countryList.push({
+              id: cid, name: c.name, flag: c.flag, currency: c.currency,
+              rate: c.rate, lang: c.lang, speech: c.speech,
+              fileName: fName, title: primaryTrip ? primaryTrip.title : `${c.name}之旅`
+            });
+
+            if (primaryTrip) {
+              filesPayload[fName] = {
+                content: JSON.stringify({
+                  version: "88.0",
+                  id: primaryTrip.id,
+                  countryId: cid,
+                  countryName: c.name,
+                  flag: c.flag,
+                  currency: c.currency,
+                  rate: c.rate,
+                  lang: c.lang,
+                  speech: c.speech,
+                  title: primaryTrip.title,
+                  companions: primaryTrip.companions || [],
+                  subRegions: primaryTrip.subRegions || [],
+                  visas: [...(c.visas || []), ...(primaryTrip.customVisas || [])],
+                  transits: [...(c.transits || []), ...(primaryTrip.customTransits || [])],
+                  flightSegments: primaryTrip.flightSegments || [],
+                  itinerary: primaryTrip.itinerary || [],
+                  meals: primaryTrip.meals || [],
+                  guides: primaryTrip.guides || [],
+                  mustEat: primaryTrip.mustEat || [],
+                  shopping: primaryTrip.shopping || [],
+                  expenses: primaryTrip.expenses || [],
+                  memos: primaryTrip.memos || [],
+                  stickers: primaryTrip.stickers || [],
+                  allTripsInCountry: allTripsInC
+                }, null, 2)
+              };
+            }
+          });
+
+          filesPayload["global_trip_list.json"] = {
+            content: JSON.stringify({
+              version: "88.0",
+              activeCountryId: state.activeCountryId,
+              activeTripId: state.activeTripId,
+              companions: state.companions || [],
+              countryList
+            }, null, 2)
+          };
+
+          const patchRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+            method: "PATCH",
+            headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ description: "WanderNote Auto Smart Sync", files: filesPayload })
+          });
+          if (!patchRes.ok) {
+            throw new Error(patchRes.status === 401 ? "Token 密碼不正確或無 gist 權限(401)" : `上傳失敗(${patchRes.status})`);
+          }
+          const nowStr = new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          updateAutoSyncBadge(`✅ 已同步 ${nowStr}`);
+          if (status) status.textContent = `✅ 智慧雙向合併同步完成！(${nowStr})`;
+        } else {
+          updateAutoSyncBadge("✅ 已合併雲端");
+          if (status) status.textContent = "✅ 已從雲端合併最新資料（未填 Token，僅作單向讀取）。";
+        }
+      } catch (err) {
+        console.warn("雲端同步異常，保留本機資料:", err);
+        updateAutoSyncBadge("⚠️ 本機模式", true);
+        if (status) status.textContent = `⚠️ ${err.message || "連線失敗"}（已保留本機最新資料，請確認 Token 是否正確）`;
+      } finally {
+        isSyncingNow = false;
+      }
+    }
+
+    async function pushToGist() {
+      await smartSyncWithGist(true);
+    }
+
+    async function pullFromGist() {
+      const token = (document.getElementById("gistTokenInp")?.value || localStorage.getItem("GIST_TOKEN") || "").trim();
+      const gistId = (document.getElementById("gistIdInp")?.value || localStorage.getItem("GIST_ID") || "").trim();
+      const status = document.getElementById("gistStatusText");
+      if (!gistId) return alert("請填寫 Gist ID！");
+      if (!navigator.onLine) {
+        if (status) status.textContent = "📴 目前無網路，停留在離線本機版。";
+        return;
+      }
+      localStorage.setItem("GIST_ID", gistId);
+      if (token) localStorage.setItem("GIST_TOKEN", token);
+
+      if (status) status.textContent = "⏳ 正在下載並與本機內容合併...";
+      try {
+        const headers = token ? { Authorization: `token ${token}` } : {};
+        const res = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
+        if (!res.ok) throw new Error(res.status === 401 ? "Token 密碼不正確(401)" : `下載失敗(${res.status})`);
+        const data = await res.json();
+
+        saveAppState(true, "下載合併前備份");
+        const readFileContent = async (fObj) => {
+          if (!fObj) return null;
+          if (fObj.truncated && fObj.raw_url) {
+            const r = await fetch(fObj.raw_url);
+            return await r.text();
+          }
+          return fObj.content;
+        };
+
+        if (data.files["travel_images.json"]) {
+          const imgTxt = await readFileContent(data.files["travel_images.json"]);
+          if (imgTxt) {
+            imageVault = { ...JSON.parse(imgTxt), ...imageVault };
+            saveImageVault();
+          }
+        }
+        if (data.files["wandernote_full_state.json"]) {
+          try {
+            const fullTxt = await readFileContent(data.files["wandernote_full_state.json"]);
+            convertAndMergeAnyLegacyData(JSON.parse(fullTxt), false, "wandernote_full_state.json");
+          } catch (e) {}
+        }
+        for (const fileObj of Object.values(data.files || {})) {
+          if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
+          try {
+            const contentTxt = await readFileContent(fileObj);
+            convertAndMergeAnyLegacyData(JSON.parse(contentTxt), false, fileObj.filename);
+          } catch (err) {}
+        }
+
+        ensureKoreaAndThailandTripsNotEmpty();
+        getTrip();
+        saveAppState(false);
+        renderAll();
+        if (status) status.textContent = `✅ 雲端下載並合併完成！共 ${Object.keys(state.countries).length} 個國家`;
       } catch (e) {
-        status.textContent = "❌ 下載失敗，請確認 Gist ID 是否正確。";
+        if (status) status.textContent = `❌ ${e.message || "下載失敗，請確認 Token 與 Gist ID"}`;
       }
     }
 
@@ -5931,13 +6171,12 @@
       const list = JSON.parse(localStorage.getItem(SNAPSHOTS_KEY) || "[]");
       const found = list.find(x => x.id === id);
       if (found && confirm(`確定還原至「${found.time} · ${found.label}」的版本？`)) {
-        undoStack.push(JSON.stringify(state));
         state = JSON.parse(found.payload);
         ensureKoreaAndThailandTripsNotEmpty();
         saveAppState(false);
-        updateUndoRedoUI();
         renderAll();
         closeModalDirect("cloudSyncModal");
+        scheduleAutoSync();
       }
     }
 
@@ -5957,15 +6196,14 @@
       r.onload = e => {
         try {
           const parsed = JSON.parse(e.target.result);
-          undoStack.push(JSON.stringify(state));
           if (parsed.state && parsed.state.trips) {
-            state = parsed.state;
+            convertAndMergeAnyLegacyData(parsed.state, false, f.name);
             if (parsed.imageVault) { imageVault = { ...imageVault, ...parsed.imageVault }; saveImageVault(); }
           } else {
             convertAndMergeAnyLegacyData(parsed, false, f.name);
           }
           ensureKoreaAndThailandTripsNotEmpty();
-          commitChange("匯入備份");
+          commitChange("匯入並合併備份");
           closeModalDirect("cloudSyncModal");
         } catch (err) { alert("檔案格式錯誤！"); }
       };
@@ -6011,6 +6249,15 @@
       safeRun(enableDragScrollOnContainers, "橫向滑動");
     }
 
+    window.addEventListener("online", () => {
+      updateAutoSyncBadge("🌐 已恢復連線");
+      smartSyncWithGist(false);
+    });
+
+    window.addEventListener("offline", () => {
+      updateAutoSyncBadge("📴 離線本機", true);
+    });
+
     window.addEventListener("DOMContentLoaded", () => {
       initApp();
       const tk = localStorage.getItem("GIST_TOKEN");
@@ -6019,6 +6266,13 @@
       if (gid) document.getElementById("gistIdInp").value = gid;
       refreshCountryRate(false);
       renderAll();
+
+      // 開機自動檢查網路：有網且有 Gist ID 就自動合併一次，無網則安靜停在本機版
+      if (navigator.onLine && gid) {
+        smartSyncWithGist(false);
+      } else if (!navigator.onLine) {
+        updateAutoSyncBadge("📴 離線本機", true);
+      }
     });
   </script>
 </body>
