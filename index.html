@@ -370,7 +370,9 @@
         </div>
         <div id="flightsDrawer" class="drawer-panel open">
           <div id="flightSegmentsContainer" class="p-2.5 grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[340px] overflow-y-auto overscroll-contain" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;"></div>
+        </div>
       </div>
+
       <div class="journal-card p-2.5 sm:p-3.5">
         <div class="washi-tape pink"></div>
         <div class="flex items-center justify-between gap-1.5 mb-2 whitespace-nowrap">
@@ -1304,7 +1306,7 @@
       }
     }
 
-    // ==================== 1. 大容量 IndexedDB + localStorage 雙層圖庫引擎（支援萬張高畫質小體積） ====================
+    // ==================== 1. 大容量 IndexedDB + localStorage 雙層圖庫引擎 ====================
     let imageVault = {};
     let idbInstance = null;
 
@@ -1374,7 +1376,6 @@
         const raw = localStorage.getItem(IMAGE_VAULT_KEY) || localStorage.getItem("WANDERNOTE_JOURNAL_V82_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V80_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V78_IMAGES") || localStorage.getItem("WANDERNOTE_JOURNAL_V75_IMAGES");
         if (raw) imageVault = JSON.parse(raw) || {};
       } catch (e) { imageVault = {}; }
-      // 背景把既有圖片也同步一份進 IndexedDB，並從 IndexedDB 載入歷史圖片
       openPhotoIDB().then(async (db) => {
         if (db) {
           Object.entries(imageVault).forEach(([k, v]) => saveSingleImageToIDB(k, v));
@@ -1384,9 +1385,7 @@
     }
 
     function saveImageVault() {
-      // 1. 全部無上限存入 IndexedDB
       Object.entries(imageVault).forEach(([k, v]) => saveSingleImageToIDB(k, v));
-      // 2. localStorage 盡可能保存（若超過 5MB 上限，僅在 localStorage 淘汰最舊鍵值，IndexedDB 仍完整保留全部）
       const lsCopy = { ...imageVault };
       for (let guard = 0; guard < 120; guard++) {
         try {
@@ -1408,7 +1407,6 @@
       return trimmed;
     }
 
-    // 清晰高壓縮比：最長邊 680px、高畫質重採樣、WebP 0.56（或 JPEG 0.58），約 15~28KB/張，文字清晰且可容納萬張
     function compressAndBindImage(event, targetInputId, maxWidth = 680) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1713,6 +1711,10 @@
         if (name.includes(k) || k.includes(name)) return { ...v, region: "World" };
       }
 
+      if (!navigator.onLine) {
+        return { code: "W_" + Date.now().toString().slice(-2), flag: "🌍", currency: "USD", lang: "en", speech: "en-US", defaultRate: 32.4, region: "World" };
+      }
+
       try {
         let queryEn = name;
         const tRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(name)}`);
@@ -1811,7 +1813,7 @@
     }
 
     async function autoTranslatePhrasesForCountry(cid, langCode) {
-      if (["ja", "ko", "th", "zh-TW", "zh-CN"].includes(langCode)) return;
+      if (["ja", "ko", "th", "zh-TW", "zh-CN"].includes(langCode) || !navigator.onLine) return;
       try {
         const results = [];
         for (const item of BASE_ZH_PHRASES) {
@@ -1834,6 +1836,7 @@
       const c = getCountry();
       const q = document.getElementById("googleTransInput").value.trim();
       if (!q) return alert("請輸入想翻譯的句子！");
+      if (!navigator.onLine) return alert("目前處於離線本機模式，請連上網後再使用即時翻譯。");
       const resBox = document.getElementById("aiTransResultBox");
       const origEl = document.getElementById("aiTransOrigText");
       const targetEl = document.getElementById("aiTransTargetText");
@@ -2021,7 +2024,7 @@
         ],
         guides: [
           { id: "gd_1794736212819_1hu", title: "象神參拜", region: "曼谷", hours: "24 小時開放（20:00 - 01:00 香火最鼎盛）", price: "免費參拜", img: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】曼谷匯狂路口象神廟位於 MRT Huai Khwang 站 4 號出口旁，主祀掌管智慧、開運、事業與財運的象頭神。\n🌟 【必看亮點】參拜完畢後，走到象神座騎「小老鼠」雕像旁，一手摸老鼠頭、另一手摀住老鼠另一側耳朵，輕聲說出願望請牠代為傳話！", link: "" },
-          { id: "gd_1794757085734_kx0", title: "匯狂夜市", region: "泰國", hours: "18:00 - 凌晨 04:00", price: "免費逛街", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】匯狂夜市緊鄰 MRT 匯狂站 4 號出口與象神廟旁，是曼谷在地人最愛的宵夜天堂。\n🌟 【必看亮點】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋與芒果糯米飯。", link: "" },
+          { id: "gd_1794757085734_kx0", title: "匯狂夜市", region: "泰國", hours: "18:00 - 凌晨 04:00", price: "免費逛街", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】匯狂夜市緊鄰 MRT 匯狂站 4 號出口與象神廟旁，是曼谷在地人最愛的宵夜天堂。\n🌟 【必看亮點】泰式生醃海鮮、炭烤大頭蝦、火山排骨、泰北陶鍋小火鍋與現切芒果糯米飯。", link: "" },
           { id: "gd_1794759623457_x2t", title: "Central World", region: "泰國", hours: "10:00 - 22:00", price: "免費參觀", img: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】Central World 是泰國規模最大的旗艦級複合購物中心。\n🌟 【必看亮點】每年 11 月至跨年期間，戶外廣場會豎立東南亞最高的巨型聖誕樹與夢幻燈海。", link: "" },
           { id: "gd_1794760050838_go4", title: "ICONSIAM", region: "泰國", hours: "10:00 - 22:00 (水舞秀約 18:30 / 20:00)", price: "免費入場", img: "https://images.unsplash.com/photo-1583396618422-597b2755de83?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】昭披耶河畔頂級地標「暹羅天地 ICONSIAM」，G 樓設有冷氣室內水上市場。\n🌟 【必看亮點】河濱廣場長達 400 公尺的東南亞最長聲光水舞燈光秀。", link: "" },
           { id: "gd_1794760714745_7ms", title: "搭乘超級銀河號", region: "泰國", hours: "20:00 - 22:00", price: "依預訂票券", img: "https://images.unsplash.com/photo-1548574505-5e239809ee19?auto=format&fit=crop&w=900&q=80", imgHeight: 170, imgPosY: 50, desc: "✨ 【景點介紹】曼谷三層豪華雙體遊輪（Super Galaxy Cruise），頂層擁有 360 度全露天無遮擋甲板視野。\n🌟 【必看亮點】自 ICONSIAM 啟航，沿途飽覽鄭王廟、大皇宮與湄南河岸燈光節煙火。", link: "" }
@@ -2143,7 +2146,7 @@
       return CAT_NORM_MAP[rawCat] || "其他雜支";
     }
 
-    // ==================== 內容優先智慧聯集合併引擎（不互相覆蓋、抓最新/最多內容） ====================
+    // ==================== 內容優先智慧聯集合併引擎 ====================
     function getRecordRichness(rec) {
       if (!rec || typeof rec !== "object") return 0;
       return JSON.stringify(rec).length;
@@ -2385,7 +2388,6 @@
       localStorage.setItem(LOCAL_PACKING_KEY, JSON.stringify(localPackingItems));
     }
 
-    // 每次變動：立刻存本機 ＋ 0.6 秒後背景自動智慧合併上傳
     function commitChange(label = "更新手札") {
       saveAppState(true, label);
       renderAll();
@@ -2852,7 +2854,7 @@
       }
     }
 
-    // ==================== 12. 航班、天數、每日行程 ====================
+    // ==================== 12. 航班（完整顯示＋框內上下拖曳）、天數、每日行程 ====================
     function renderFlights() {
       const trip = getTrip();
       const box = document.getElementById("flightSegmentsContainer");
@@ -2901,15 +2903,14 @@
                 <div class="text-[10px] font-bold text-[#e07a5f] en-font">${displayArrTime ? `${displayArrTime} 抵達` : (f.note || "--:--")}</div>
               </div>
             </div>
-            
-                ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] wrap-text-safe px-1">📝 ${f.note}</div>` : ""}
+            ${imgSrc ? `
+              <div onclick="event.stopPropagation()" class="mt-1 max-h-40 overflow-y-auto overscroll-contain rounded-xl border border-[#e6dec8] bg-white p-1 shadow-xs" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+                <img src="${imgSrc}" onclick="openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')" class="w-full h-auto object-contain rounded-lg cursor-zoom-in" />
+              </div>
+            ` : ""}
+            ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] wrap-text-safe px-1">📝 ${f.note}</div>` : ""}
           `;
         };
-   ${imgSrc ? `
-  <div onclick="event.stopPropagation()" class="mt-1 max-h-40 overflow-y-auto overscroll-contain rounded-xl border border-[#e6dec8] bg-white p-1 shadow-xs" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
-    <img src="${imgSrc}" onclick="openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')" class="w-full h-auto object-contain rounded-lg cursor-zoom-in" />
-  </div>
-` : ""}
 
         const openFlightInlineEditor = () => {
           const tmpImgId = "inline_fl_img_" + f.id;
@@ -4720,7 +4721,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 14. 📊 分帳記帳系統（直接顯示照片縮圖＋點擊放大） ====================
+    // ==================== 14. 📊 分帳記帳系統 ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -5170,7 +5171,7 @@
         transfers.length > 0 ? transfers.join("") : `<div class="text-xs text-[#52796f] font-bold">🎉 已結清或皆為個人自付</div>`;
     }
 
-    // ==================== 15. 🛍️ 清單中心（必買/必吃/備忘直接秀圖＋點擊放大） ====================
+    // ==================== 15. 🛍️ 清單中心 ====================
     function switchListTab(tabKey) {
       ["shopping", "food", "packing", "memo"].forEach(k => {
         document.getElementById("listBox-" + k).classList.toggle("hidden", k !== tabKey);
@@ -5609,7 +5610,7 @@
       commitChange(`新增備忘：${title || "圖片備忘"}`);
     }
 
-    // ==================== 16. 資訊與翻譯頁（憑證/交通圖直接顯示並可點擊放大） ====================
+    // ==================== 16. 資訊與翻譯頁 ====================
     function renderInfoSection() {
       const c = getCountry();
       const t = getTrip();
@@ -5915,13 +5916,11 @@
 
       if (autoSyncTimer) clearTimeout(autoSyncTimer);
       updateAutoSyncBadge("⏳ 準備同步");
-      // 0.6 秒極速防抖，輸入停頓後立刻合併並上傳
       autoSyncTimer = setTimeout(() => {
         smartSyncWithGist(false);
       }, 600);
     }
 
-    // 智慧雙向合併同步：先抓雲端與本機依 id 聯集合併（保留最新/最多內容），有 Token 則立刻回傳雲端
     async function smartSyncWithGist(showAlertToast = false) {
       const status = document.getElementById("gistStatusText");
       if (!navigator.onLine) {
@@ -5948,7 +5947,6 @@
       if (status) status.textContent = "⏳ 正在比對雲端與本機內容並智慧合併...";
 
       try {
-        // 第 1 步：先讀取雲端 Gist 並做內容聯集合併
         const headers = token ? { Authorization: `token ${token}` } : {};
         const getRes = await fetch(`https://api.github.com/gists/${gistId}?t=${Date.now()}`, { headers });
         if (!getRes.ok) {
@@ -5996,7 +5994,6 @@
         saveAppState(false);
         renderAll();
 
-        // 第 2 步：若有填寫 Token 且本地有資料，自動將合併後的最新成果寫回雲端
         if (token && countAllItems(state) > 0) {
           Object.values(state.trips).forEach(tr => sanitizeTripArrays(tr));
           const filesPayload = {
@@ -6137,7 +6134,7 @@
           if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
           try {
             const contentTxt = await readFileContent(fileObj);
-            convertAndMergeAnyLegacyData(JSON.parse(contentTxt), false, fileObj.filename);
+            convertAndMergeAnyLegacyData(parsed, false, fileObj.filename);
           } catch (err) {}
         }
 
@@ -6270,7 +6267,6 @@
       refreshCountryRate(false);
       renderAll();
 
-      // 開機自動檢查網路：有網且有 Gist ID 就自動合併一次，無網則安靜停在本機版
       if (navigator.onLine && gid) {
         smartSyncWithGist(false);
       } else if (!navigator.onLine) {
