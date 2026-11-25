@@ -2903,10 +2903,15 @@
                 <div class="text-[10px] font-bold text-[#e07a5f] en-font">${displayArrTime ? `${displayArrTime} 抵達` : (f.note || "--:--")}</div>
               </div>
             </div>
-            ${imgSrc ? `<img src="${imgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')" class="polaroid-img h-24 w-auto object-cover mt-1" />` : ""}
-            ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] wrap-text-safe px-1">📝 ${f.note}</div>` : ""}
+            
+                ${f.note && displayArrTime ? `<div class="text-[10px] text-[#78807b] wrap-text-safe px-1">📝 ${f.note}</div>` : ""}
           `;
         };
+   ${imgSrc ? `
+  <div onclick="event.stopPropagation()" class="mt-1 max-h-40 overflow-y-auto overscroll-contain rounded-xl border border-[#e6dec8] bg-white p-1 shadow-xs" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+    <img src="${imgSrc}" onclick="openImageLightbox('${(f.img || "").replace(/'/g, "")}', '${cleanFlightNo.replace(/'/g, "")}')" class="w-full h-auto object-contain rounded-lg cursor-zoom-in" />
+  </div>
+` : ""}
 
         const openFlightInlineEditor = () => {
           const tmpImgId = "inline_fl_img_" + f.id;
