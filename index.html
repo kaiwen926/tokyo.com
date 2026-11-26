@@ -452,9 +452,9 @@
         </div>
 
         <div id="chartEmbeddedDetailDrawer" class="drawer-panel open bg-white rounded-2xl border border-[#ece3d5]">
-          <div class="px-3 py-1.5 bg-[#fdf0ec]/50 border-b border-[#ece3d5] flex items-center justify-between text-[11px] font-bold text-[#c85a32] whitespace-nowrap">
-            <span id="embeddedListTitle">📋 帳務明細</span>
-            <span class="text-[10px] text-[#7a827d] font-normal">長按修改 · 右滑刪除</span>
+          <div class="px-3 py-1.5 bg-[#fdf0ec]/50 border-b border-[#ece3d5] flex items-center justify-between text-[11px] font-bold text-[#c85a32] whitespace-nowrap gap-2">
+            <span id="embeddedListTitle" class="truncate">📋 帳務明細</span>
+            <button type="button" onclick="if(state.activeExpenseCat!=='ALL'){state.activeExpenseCat='ALL';renderExpenseSection();}" class="text-[10px] text-[#52796f] underline shrink-0">全部類別</button>
           </div>
           <div id="chartEmbeddedListBox" class="p-2 space-y-1.5 max-h-80 overflow-y-auto"></div>
         </div>
@@ -520,7 +520,7 @@
               <option value="購物伴手禮">🛍️ 購物</option>
               <option value="交通機票">✈️ 交通</option>
               <option value="住宿飯店">🏨 住宿</option>
-              <option value="門票娛樂">🎫 門票</option>
+              <option value="活動">🎡 活動</option>
               <option value="其他雜支">✨ 其他</option>
             </select>
           </div>
@@ -1897,7 +1897,7 @@
     function attachLongPress(el, onLongPress) {
       let timer = null, startX = 0, startY = 0;
       const start = (e) => {
-        if (e.target.closest("input") || e.target.closest("select") || e.target.closest("textarea") || e.target.closest(".polaroid-img") || e.target.closest(".inline-full-editor") || e.target.closest(".iti-drag-handle")) return;
+        if (e.target.closest("input") || e.target.closest("select") || e.target.closest("textarea") || e.target.closest(".polaroid-img") || e.target.closest(".inline-full-editor") || e.target.closest(".iti-drag-handle") || e.target.closest(".exp-drag-handle")) return;
         const pt = e.touches ? e.touches[0] : e;
         startX = pt.clientX; startY = pt.clientY;
         timer = setTimeout(() => {
@@ -1932,7 +1932,7 @@
     function attachRowGestures(el, { onLongPressEdit, onSwipeDelete }) {
       let timer = null, startX = 0, startY = 0, currentX = 0, swipingRight = false;
       const onStart = (cx, cy, target) => {
-        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link") || target.closest(".iti-drag-handle") || target.closest(".img-adjust-panel") || target.closest(".hotel-dbl-zone")) return;
+        if (target.closest("input") || target.closest("select") || target.closest("textarea") || target.closest("button") || target.closest("a") || target.closest(".polaroid-img") || target.closest(".inline-full-editor") || target.closest(".spot-jump-link") || target.closest(".iti-drag-handle") || target.closest(".exp-drag-handle") || target.closest(".img-adjust-panel") || target.closest(".hotel-dbl-zone")) return;
         startX = cx; startY = cy; currentX = cx; swipingRight = false;
         el.classList.add("pressing");
         timer = setTimeout(() => {
@@ -2032,12 +2032,12 @@
         mustEat: [],
         shopping: [],
         expenses: [
+          { id: "ex_1794736508431", title: "台北曼谷機票", cat: "交通機票", amount: 7778, currency: "TWD", payer: "凱", mode: "treat", beneficiaries: ["淨", "凱"], note: "", img: "", date: "11/20", host: "淨" },
           { id: "ex_1794915878029", title: "Asoka", cat: "住宿飯店", amount: 2877, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/20" },
+          { id: "ex_1794914573276", title: "按摩", cat: "活動", amount: 769, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/21" },
+          { id: "ex_1794915475061", title: "郵輪", cat: "活動", amount: 2571, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/21" },
           { id: "ex_1794915791818", title: "Sotetsu Grand Fresa", cat: "住宿飯店", amount: 5311, currency: "THB", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/22" },
-          { id: "ex_1794915598183", title: "烹飪課", cat: "門票娛樂", amount: 975, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/23" },
-          { id: "ex_1794915475061", title: "郵輪", cat: "門票娛樂", amount: 2571, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/21" },
-          { id: "ex_1794914573276", title: "按摩", cat: "門票娛樂", amount: 769, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/21" },
-          { id: "ex_1794736508431", title: "台北曼谷機票", cat: "交通機票", amount: 7778, currency: "TWD", payer: "凱", mode: "treat", beneficiaries: ["淨", "凱"], note: "", img: "", date: "11/20", host: "淨" }
+          { id: "ex_1794915598183", title: "烹飪課", cat: "活動", amount: 975, currency: "TWD", payer: "凱", mode: "split", host: "", beneficiaries: ["凱", "淨"], note: "", img: "", date: "11/23" }
         ],
         memos: [
           { id: "mm_1794903977627", title: "換泰奶", body: "持JCB卡於暹羅百麗宮（Siam Paragon）、暹羅天地（ICONSIAM）、暹羅中心（Siam Center）或暹羅探索中心（Siam Discovery）單筆消費滿500泰銖或以上， 即可免費獲贈「ChaTraMue手標泰式茶」禮券一張（價值50泰銖）", img: "[📸 雲端圖片 #img_1794903976611_k3r]" }
@@ -2079,6 +2079,7 @@
         activePackCat: "ALL",
         activePhraseCat: "all",
         activeChartTarget: "ALL",
+        activeExpenseCat: "ALL",
         companions: [
           { id: "cp_1794669541733", name: "凱", avatar: "🐶" },
           { id: "cp_1794669558119", name: "淨", avatar: "🐱" },
@@ -2086,6 +2087,7 @@
         ],
         lastSelectedPayer: "凱",
         lastSelectedOwner: "凱",
+        lastSelectedBeneficiaries: ["凱", "淨"],
         countries: {
           JP: {
             id: "JP", name: "日本", flag: "🇯🇵", currency: "JPY", rate: 0.218, lang: "ja", speech: "ja-JP", region: "Asia",
@@ -2138,7 +2140,8 @@
       "購物": "購物伴手禮", "購物伴手禮": "購物伴手禮",
       "交通": "交通機票", "交通機票": "交通機票",
       "住宿": "住宿飯店", "住宿飯店": "住宿飯店",
-      "娛樂": "門票娛樂", "門票": "門票娛樂", "門票娛樂": "門票娛樂",
+      "娛樂": "活動", "門票": "活動", "門票娛樂": "活動",
+      "體驗": "活動", "行程": "活動", "旅拍": "活動", "一日遊": "活動", "體驗/行程": "活動", "活動": "活動",
       "其他": "其他雜支", "其他雜支": "其他雜支"
     };
 
@@ -2483,7 +2486,7 @@
       });
     });
 
-    // ==================== 10. 👥 旅伴系統 ====================
+    // ==================== 10. 👥 旅伴與分攤勾選記憶系統 ====================
     function getActiveCompanions() {
       const t = getTrip();
       if (!Array.isArray(t.companions) || t.companions.length === 0) {
@@ -2585,6 +2588,12 @@
       }
     }
 
+    function syncBeneficiaryMemory() {
+      const checked = Array.from(document.querySelectorAll(".exp-ben-item:checked")).map(x => x.value);
+      state.lastSelectedBeneficiaries = checked;
+      saveAppState(false);
+    }
+
     function renderMemberSelectors() {
       const comps = getActiveCompanions();
       const payerSel = document.getElementById("expPayerSelect");
@@ -2622,9 +2631,15 @@
       }
 
       if (benBox) {
-        benBox.innerHTML = comps.filter(c => c.name !== "公費").map(c => `
+        const people = comps.filter(c => c.name !== "公費");
+        const hasMemory = Array.isArray(state.lastSelectedBeneficiaries);
+        const rememberedSet = hasMemory
+          ? new Set(state.lastSelectedBeneficiaries.filter(name => people.some(p => p.name === name)))
+          : new Set(people.map(p => p.name));
+
+        benBox.innerHTML = people.map(c => `
           <label class="inline-flex items-center gap-1 pl-1 pr-2 py-0.5 rounded-full border border-[#dcd2c4] bg-[#fbf8f3] text-xs font-bold cursor-pointer shrink-0">
-            <input type="checkbox" class="exp-ben-item accent-[#52796f]" value="${c.name}" checked />
+            <input type="checkbox" class="exp-ben-item accent-[#52796f]" value="${c.name}" ${rememberedSet.has(c.name) ? "checked" : ""} onchange="syncBeneficiaryMemory()" />
             ${getCompanionAvatarHtml(c.name)}<span>${c.name}</span>
           </label>
         `).join("");
@@ -4721,7 +4736,7 @@
       commitChange(`儲存導覽：${title}`);
     }
 
-    // ==================== 14. 📊 分帳記帳系統 ====================
+    // ==================== 14. 📊 分帳記帳系統（活動類別＋按日期排序＋左側拖曳滑軌） ====================
     function tapCalc(k) {
       const box = document.getElementById("calcInputBox");
       if (k === "C") box.value = "";
@@ -4766,6 +4781,34 @@
       return m ? `${m[1]}/${m[2]}` : rawDate;
     }
 
+    function getExpenseDateSortKey(dateStr) {
+      if (!dateStr || typeof dateStr !== "string") return 999999;
+      const clean = dateStr.trim();
+      const ymd = clean.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+      if (ymd) return Number(ymd[2]) * 100 + Number(ymd[3]);
+      const md = clean.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+      if (md) return Number(md[1]) * 100 + Number(md[2]);
+      return 999999;
+    }
+
+    function sortExpensesByDateAsc(arr = []) {
+      return [...arr].sort((a, b) => {
+        const ka = getExpenseDateSortKey(a?.date);
+        const kb = getExpenseDateSortKey(b?.date);
+        if (ka !== kb) return ka - kb;
+        const oa = a?.manualOrder !== undefined ? Number(a.manualOrder) : 999999;
+        const ob = b?.manualOrder !== undefined ? Number(b.manualOrder) : 999999;
+        if (oa !== ob) return oa - ob;
+        return 0;
+      });
+    }
+
+    function selectExpenseCategoryFilter(catName) {
+      state.activeExpenseCat = state.activeExpenseCat === catName ? "ALL" : catName;
+      document.getElementById("chartEmbeddedDetailDrawer")?.classList.add("open");
+      renderExpenseSection();
+    }
+
     function saveExpense() {
       const t = getTrip();
       const c = getCountry();
@@ -4786,6 +4829,8 @@
       if (!payer) { openModal("memberModal"); return; }
 
       state.lastSelectedPayer = payer;
+      state.lastSelectedBeneficiaries = [...bens];
+
       const rec = {
         id: editId || ("ex_" + Date.now()),
         title, cat, amount,
@@ -4800,9 +4845,12 @@
 
       if (editId) {
         const idx = t.expenses.findIndex(x => x && x.id === editId);
-        if (idx > -1) t.expenses[idx] = rec;
-      } else t.expenses.unshift(rec);
+        if (idx > -1) t.expenses[idx] = { ...t.expenses[idx], ...rec };
+      } else {
+        t.expenses.push(rec);
+      }
 
+      t.expenses = sortExpensesByDateAsc(t.expenses);
       clearExpenseForm();
       commitChange(`儲存帳務：${title}`);
     }
@@ -4864,18 +4912,103 @@
       document.getElementById("chartEmbeddedDetailDrawer")?.classList.toggle("open");
     }
 
+    // 記帳明細左側滑軌上下拖曳調整順序
+    function bindExpenseDragSort(listBox) {
+      let draggingEl = null;
+
+      const onPointerDown = (e) => {
+        const handle = e.target.closest(".exp-drag-handle");
+        if (!handle) return;
+        const row = handle.closest(".exp-sortable-row");
+        if (!row) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        draggingEl = row;
+        row.classList.add("opacity-75", "scale-[0.99]", "ring-2", "ring-[#52796f]", "shadow-lg", "z-30", "bg-white");
+        if (navigator.vibrate) navigator.vibrate(25);
+
+        const onPointerMove = (moveEv) => {
+          if (!draggingEl) return;
+          if (moveEv.cancelable) moveEv.preventDefault();
+          const clientY = moveEv.touches ? moveEv.touches[0].clientY : moveEv.clientY;
+
+          const siblings = [...listBox.querySelectorAll(".exp-sortable-row")].filter(el => el !== draggingEl);
+          let nextSibling = null;
+          for (const sib of siblings) {
+            const rect = sib.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (clientY < midY) {
+              nextSibling = sib;
+              break;
+            }
+          }
+          if (nextSibling) {
+            listBox.insertBefore(draggingEl, nextSibling);
+          } else {
+            listBox.appendChild(draggingEl);
+          }
+        };
+
+        const onPointerUp = () => {
+          if (!draggingEl) return;
+          draggingEl.classList.remove("opacity-75", "scale-[0.99]", "ring-2", "ring-[#52796f]", "shadow-lg", "z-30", "bg-white");
+          draggingEl = null;
+
+          window.removeEventListener("mousemove", onPointerMove);
+          window.removeEventListener("mouseup", onPointerUp);
+          window.removeEventListener("touchmove", onPointerMove);
+          window.removeEventListener("touchend", onPointerUp);
+          window.removeEventListener("touchcancel", onPointerUp);
+
+          const trip = getTrip();
+          const newIdOrder = [...listBox.querySelectorAll(".exp-sortable-row")].map(el => el.dataset.expId);
+          const expMap = {};
+          (trip.expenses || []).filter(Boolean).forEach(ex => { expMap[ex.id] = ex; });
+
+          // 更新同日期或可見列表的 manualOrder 並重排 trip.expenses
+          newIdOrder.forEach((id, idx) => {
+            if (expMap[id]) {
+              expMap[id].manualOrder = idx;
+              expMap[id].updatedAt = Date.now();
+            }
+          });
+
+          const reorderedSubset = newIdOrder.map(id => expMap[id]).filter(Boolean);
+          let ptr = 0;
+          trip.expenses = (trip.expenses || []).filter(Boolean).map(ex => {
+            if (newIdOrder.includes(ex.id)) {
+              return reorderedSubset[ptr++];
+            }
+            return ex;
+          });
+
+          commitChange("調整帳務明細順序");
+        };
+
+        window.addEventListener("mousemove", onPointerMove, { passive: false });
+        window.addEventListener("mouseup", onPointerUp);
+        window.addEventListener("touchmove", onPointerMove, { passive: false });
+        window.addEventListener("touchend", onPointerUp);
+        window.addEventListener("touchcancel", onPointerUp);
+      };
+
+      listBox.addEventListener("mousedown", onPointerDown);
+      listBox.addEventListener("touchstart", onPointerDown, { passive: false });
+    }
+
     function renderExpenseSection() {
       const t = getTrip();
       const c = getCountry();
       const rate = c.rate || 1;
       const includeGift = document.getElementById("chkIncludeGiftTotal").checked;
-      const list = (t.expenses || []).filter(Boolean);
+      const list = sortExpensesByDateAsc((t.expenses || []).filter(Boolean));
 
       const catColors = {
         "餐飲美食": "#e07a5f", "交通機票": "#52796f", "購物伴手禮": "#f2cc8f",
-        "住宿飯店": "#6b9080", "門票娛樂": "#9d8189", "其他雜支": "#9ca3af"
+        "住宿飯店": "#6b9080", "活動": "#9d8189", "其他雜支": "#9ca3af"
       };
-      const groupCats = { "餐飲美食": 0, "交通機票": 0, "購物伴手禮": 0, "住宿飯店": 0, "門票娛樂": 0, "其他雜支": 0 };
+      const groupCats = { "餐飲美食": 0, "交通機票": 0, "購物伴手禮": 0, "住宿飯店": 0, "活動": 0, "其他雜支": 0 };
       let grandTotalTWD = 0;
 
       const peopleSet = new Set(getActiveCompanions().map(x => x.name).filter(n => n && n !== "公費"));
@@ -4889,7 +5022,7 @@
       peopleSet.forEach(p => {
         pStats[p] = {
           paid: 0, ownSpend: 0, giftRec: 0, net: 0,
-          cats: { "餐飲美食": 0, "交通機票": 0, "購物伴手禮": 0, "住宿飯店": 0, "門票娛樂": 0, "其他雜支": 0 },
+          cats: { "餐飲美食": 0, "交通機票": 0, "購物伴手禮": 0, "住宿飯店": 0, "活動": 0, "其他雜支": 0 },
           items: []
         };
       });
@@ -4915,7 +5048,7 @@
               pStats[b].ownSpend += share;
               pStats[b].cats[cKey] += share;
               pStats[b].items.push({
-                id: e.id, date: e.date || "", title: e.title, cat: cKey,
+                id: e.id, date: e.date || "", manualOrder: e.manualOrder, title: e.title, cat: cKey,
                 role: e.payer !== hostName ? `🥂 請客(${e.payer}先墊)` : `🥂 請客自享`,
                 shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false
               });
@@ -4923,7 +5056,7 @@
               pStats[b].giftRec += share;
               if (includeGift) pStats[b].cats[cKey] += share;
               pStats[b].items.push({
-                id: e.id, date: e.date || "", title: e.title, cat: cKey,
+                id: e.id, date: e.date || "", manualOrder: e.manualOrder, title: e.title, cat: cKey,
                 role: b === e.payer ? `🎁 ${hostName}請客·我先墊` : `🎁 ${hostName}請客`,
                 shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true
               });
@@ -4933,7 +5066,7 @@
             pStats[hostName].ownSpend += twd;
             if (!includeGift) pStats[hostName].cats[cKey] += twd;
             pStats[hostName].items.push({
-              id: e.id, date: e.date || "", title: e.title, cat: cKey,
+              id: e.id, date: e.date || "", manualOrder: e.manualOrder, title: e.title, cat: cKey,
               role: `🥂 請客(${e.payer}代墊)`,
               shareTWD: twd, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false
             });
@@ -4944,11 +5077,11 @@
             if (b !== e.payer) {
               pStats[b].giftRec += share;
               if (includeGift) pStats[b].cats[cKey] += share;
-              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `🎁 ${e.payer}請客`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true });
+              pStats[b].items.push({ id: e.id, date: e.date || "", manualOrder: e.manualOrder, title: e.title, cat: cKey, role: `🎁 ${e.payer}請客`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: true });
             } else {
               pStats[b].ownSpend += share;
               pStats[b].cats[cKey] += share;
-              pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `自付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
+              pStats[b].items.push({ id: e.id, date: e.date || "", manualOrder: e.manualOrder, title: e.title, cat: cKey, role: `自付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
             }
           });
         } else {
@@ -4958,12 +5091,13 @@
             pStats[b].ownSpend += share;
             if (e.payer !== "公費") pStats[b].net -= share;
             pStats[b].cats[cKey] += share;
-            pStats[b].items.push({ id: e.id, date: e.date || "", title: e.title, cat: cKey, role: `${e.payer}先付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
+            pStats[b].items.push({ id: e.id, date: e.date || "", manualOrder: e.manualOrder, title: e.title, cat: cKey, role: `${e.payer}先付`, shareTWD: share, orig: `${Number(e.amount).toLocaleString()} ${e.currency}`, img: e.img, isGiftRec: false });
           });
         }
       });
 
       const activeTarget = (state.activeChartTarget && pStats[state.activeChartTarget]) ? state.activeChartTarget : "ALL";
+      const activeCat = state.activeExpenseCat || "ALL";
 
       const pillsBox = document.getElementById("chartTargetPills");
       pillsBox.innerHTML = "";
@@ -5005,10 +5139,12 @@
       document.getElementById("donutTotalCenter").textContent = `NT$${Math.round(targetTotal).toLocaleString()}`;
       document.getElementById("expenseDonutChart").style.background = buildConicGradient(targetCats, targetTotal, catColors);
 
+      // 點擊不同細項（餐飲/購物/交通/住宿/活動/其他）可切換篩選並按日期排序顯示
       const legendHtml = Object.entries(targetCats).filter(([, v]) => v > 0).map(([k, v]) => {
         const pct = targetTotal > 0 ? Math.round((v / targetTotal) * 100) : 0;
+        const isCatActive = activeCat === k;
         return `
-          <div onclick="toggleChartDetailList()" class="flex items-center justify-between whitespace-nowrap cursor-pointer hover:opacity-80">
+          <div onclick="event.stopPropagation(); selectExpenseCategoryFilter('${k}')" class="flex items-center justify-between whitespace-nowrap cursor-pointer px-1.5 py-0.5 rounded-lg transition ${isCatActive ? "bg-[#fdf0ec] ring-1 ring-[#e07a5f]" : "hover:bg-white/70"}">
             <span class="flex items-center gap-1.5 font-bold text-[#2b302c]">
               <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${catColors[k]}"></span>
               <span>${k.slice(0, 2)}</span>
@@ -5046,7 +5182,7 @@
                 <option value="購物伴手禮" ${normalizeCatName(expObj.cat) === "購物伴手禮" ? "selected" : ""}>🛍️購物</option>
                 <option value="交通機票" ${normalizeCatName(expObj.cat) === "交通機票" ? "selected" : ""}>✈️交通</option>
                 <option value="住宿飯店" ${normalizeCatName(expObj.cat) === "住宿飯店" ? "selected" : ""}>🏨住宿</option>
-                <option value="門票娛樂" ${normalizeCatName(expObj.cat) === "門票娛樂" ? "selected" : ""}>🎫門票</option>
+                <option value="活動" ${normalizeCatName(expObj.cat) === "活動" ? "selected" : ""}>🎡活動</option>
                 <option value="其他雜支" ${normalizeCatName(expObj.cat) === "其他雜支" ? "selected" : ""}>✨其他</option>
               </select>
             </div>
@@ -5098,26 +5234,37 @@
       };
 
       const renderExpRowList = (itemsToRender, isPersonalView) => {
+        if (!itemsToRender.length) {
+          embeddedBox.innerHTML = `<div class="text-xs text-center text-[#7a827d] py-3">此篩選條件下尚無消費紀錄</div>`;
+          return;
+        }
         itemsToRender.forEach(entry => {
           const origExp = isPersonalView ? list.find(x => x.id === entry.id) : entry;
           if (!origExp) return;
           const twd = isPersonalView ? Math.round(entry.shareTWD) : Math.round(origExp.currency === "TWD" ? origExp.amount : origExp.amount * rate);
           const expImgSrc = resolveImageSrc(origExp.img);
           const cleanETitle = cleanParenText(origExp.title);
+          const normCatLabel = normalizeCatName(origExp.cat).slice(0, 2);
           const roleText = isPersonalView
             ? entry.role
             : (origExp.mode === "treat" ? `${origExp.payer}先墊·${origExp.host}請客` : `${origExp.payer}先付`);
           const row = document.createElement("div");
-          row.className = "gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center justify-between gap-2";
+          row.dataset.expId = origExp.id;
+          row.className = "exp-sortable-row gesture-box px-2.5 py-2 rounded-xl bg-[#fbf8f3] border border-[#e6dcd0] flex items-center justify-between gap-2 transition";
           row.innerHTML = `
-            <div class="flex flex-col gap-1 min-w-0 flex-1">
-              <div class="flex flex-wrap items-center gap-1.5">
-                ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
-                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${(origExp.cat || "消費").slice(0, 2)}</span>
-                <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanETitle}</span>
-                <span class="sub-pill shrink-0">${roleText}</span>
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <span class="exp-drag-handle cursor-grab active:cursor-grabbing px-1 py-0.5 -ml-1 rounded text-[#8c948f] hover:text-[#52796f] select-none shrink-0" title="按住上下拖曳調整順序" style="touch-action: none;">
+                <i class="fa-solid fa-grip-vertical text-xs"></i>
+              </span>
+              <div class="flex flex-col gap-0.5 min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  ${origExp.date ? `<span class="text-[10px] font-bold text-[#7a827d] en-font shrink-0">${origExp.date}</span>` : ""}
+                  <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white border text-[#3d5a52] shrink-0">${normCatLabel}</span>
+                  <span class="font-bold text-xs text-[#2b302c] wrap-text-safe">${cleanETitle}</span>
+                  <span class="sub-pill shrink-0">${roleText}</span>
+                </div>
+                ${origExp.note ? `<div class="text-[10px] text-[#7a827d] wrap-text-safe">${cleanParenText(origExp.note)}</div>` : ""}
               </div>
-              ${origExp.note ? `<div class="text-[10px] text-[#7a827d] wrap-text-safe">${cleanParenText(origExp.note)}</div>` : ""}
             </div>
             <div class="flex items-center gap-2 shrink-0">
               ${expImgSrc ? `<img src="${expImgSrc}" onclick="event.stopPropagation(); openImageLightbox('${(origExp.img || "").replace(/'/g, "")}', '${cleanETitle.replace(/'/g, "")}')" class="polaroid-img w-12 h-12 object-cover shrink-0" />` : ""}
@@ -5135,16 +5282,23 @@
           });
           embeddedBox.appendChild(row);
         });
+        bindExpenseDragSort(embeddedBox);
       };
 
+      const catTagHtml = activeCat !== "ALL" ? ` · ${activeCat.slice(0, 2)}` : "";
+
       if (activeTarget === "ALL") {
-        embeddedTitle.innerHTML = `📋 全體帳務明細 <span class="sub-pill ml-1">${list.length} 筆</span>`;
-        renderExpRowList(list, false);
+        const filteredList = list.filter(e => activeCat === "ALL" || normalizeCatName(e.cat) === activeCat);
+        const subSum = filteredList.reduce((acc, e) => acc + (e.currency === "TWD" ? Number(e.amount) : Number(e.amount) * rate), 0);
+        embeddedTitle.innerHTML = `📋 統整明細${catTagHtml} <span class="sub-pill ml-1">${filteredList.length} 筆 · NT$${Math.round(subSum).toLocaleString()}</span>`;
+        renderExpRowList(filteredList, false);
       } else {
         const s = pStats[activeTarget];
-        const visibleItems = s.items.filter(it => includeGift || !it.isGiftRec);
-        embeddedTitle.innerHTML = `📋 ${activeTarget} 的明細 <span class="sub-pill ml-1">實墊 NT$${Math.round(s.paid).toLocaleString()} · 受贈 NT$${Math.round(s.giftRec).toLocaleString()}</span>`;
-        renderExpRowList(visibleItems, true);
+        const sortedPersonal = sortExpensesByDateAsc(s.items.filter(it => includeGift || !it.isGiftRec))
+          .filter(it => activeCat === "ALL" || normalizeCatName(it.cat) === activeCat);
+        const subSum = sortedPersonal.reduce((acc, it) => acc + Number(it.shareTWD || 0), 0);
+        embeddedTitle.innerHTML = `📋 ${activeTarget} 明細${catTagHtml} <span class="sub-pill ml-1">NT$${Math.round(subSum).toLocaleString()}</span>`;
+        renderExpRowList(sortedPersonal, true);
       }
 
       const debtors = [], creditors = [];
@@ -6134,6 +6288,7 @@
           if (["travel_images.json", "wandernote_full_state.json", "global_trip_list.json"].includes(fileObj.filename)) continue;
           try {
             const contentTxt = await readFileContent(fileObj);
+            const parsed = JSON.parse(contentTxt);
             convertAndMergeAnyLegacyData(parsed, false, fileObj.filename);
           } catch (err) {}
         }
